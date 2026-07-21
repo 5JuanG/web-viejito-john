@@ -1,0 +1,13 @@
+{
+  "name": "mp-test-tool",
+  "version": "1.0.0",
+  "description": "Utility to create Mercado Pago preferences (sandbox) for testing",
+  "main": "create_preference.js",
+  "scripts": {
+    "create": "node create_preference.js"
+  },
+  "dependencies": {
+    "mercadopago": "^2.3.3",
+    "dotenv": "^16.0.0"
+  }
+}
