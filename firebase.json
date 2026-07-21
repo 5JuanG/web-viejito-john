@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "public": "extracted_files",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".gitignore",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
