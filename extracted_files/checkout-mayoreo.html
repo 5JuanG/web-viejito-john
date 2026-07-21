@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pago Seguro (Mayoreo) | El Viejito John</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#9dd090","surface-cream": "#FDFBF7","primary": "#154212",
+            "on-surface-variant": "#42493e","on-primary": "#ffffff","background": "#fcf9f4",
+            "primary-container": "#2d5a27","outline-variant": "#c2c9bb","surface": "#fcf9f4",
+            "surface-container": "#f0ede9","surface-container-low": "#f6f3ee",
+            "surface-container-high": "#ebe8e3","surface-container-highest": "#e5e2dd",
+            "surface-container-lowest": "#ffffff","leaf-vibrant": "#47842E","outline": "#72796e",
+            "on-surface": "#1c1c19","on-background": "#1c1c19"
+          },
+          "fontFamily": { "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"] },
+          "fontSize": {
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+            "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          },
+          "spacing": { "margin-desktop": "48px", "gutter": "24px", "container-max": "1280px" }
+        }
+      }
+    }
+</script>
+<!-- =============================================
+     CONFIGURACIÓN GENERAL DE PRODUCTOS DE MAYOREO
+     ⚙️ Edita SOLO este bloque para cambiar precios, nombres, imágenes o enlaces de Mercado Pago.
+============================================= -->
+<script>
+    const PRODUCTOS_MAYOREO = {
+        'keratex_pomada_200': {
+            nombreProducto: "Keratex Pomada (Caja de 200 pzas)",
+            descripcion: "Caja cerrada con 200 pomadas de 8g c/u. Cuidado cosmético para pies y piel.",
+            precioNormal: 12000,
+            ofertaActiva: true,
+            precioOferta: 8000,
+            textoPromo: "Mayoreo Especial",
+            imagen: "keratex_pomada_caja_200_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu", // ← Cambiar por link real de Mercado Pago
+            costoEnvio: 0
+        },
+        'keratex_gotas_100': {
+            nombreProducto: "Solución Gotas Keratex (Caja de 100 pzas)",
+            descripcion: "Caja cerrada con 100 soluciones gotas para el aspecto y brillo natural de las uñas.",
+            precioNormal: 6000,
+            ofertaActiva: true,
+            precioOferta: 4000,
+            textoPromo: "Mayoreo Especial",
+            imagen: "keratex_gotas_caja_100_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'gel_balsamico_12': {
+            nombreProducto: "Gel Balsámico Viejito John (Caja de 12 pzas - 700g)",
+            descripcion: "Caja cerrada con 12 tarros grandes de 700g c/u. Alivio y bienestar muscular.",
+            precioNormal: 11400,
+            ofertaActiva: true,
+            precioOferta: 7200,
+            textoPromo: "Mayoreo Especial",
+            imagen: "gel_balsamico_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'spray_viejito_24': {
+            nombreProducto: "Spray del Viejito John (Caja de 24 pzas)",
+            descripcion: "Caja cerrada con 24 atomizadores para fatiga y relajación muscular profunda.",
+            precioNormal: 2880,
+            ofertaActiva: true,
+            precioOferta: 2160,
+            textoPromo: "Mayoreo Especial",
+            imagen: "spray_viejito_john_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'balsamo_viejito_24': {
+            nombreProducto: "Bálsamo del Viejito John (Caja de 24 pzas)",
+            descripcion: "Caja cerrada con 24 tarros de bálsamo corporal reconfortante tradicional.",
+            precioNormal: 2280,
+            ofertaActiva: true,
+            precioOferta: 1680,
+            textoPromo: "Mayoreo Especial",
+            imagen: "balsamo_viejito_john_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'crema_johny_boy_50': {
+            nombreProducto: "Crema Johny Boy (Caja de 50 pzas - 8g)",
+            descripcion: "Caja cerrada con 50 cremas de 8g c/u. Cuidado e higiene facial nocturna.",
+            precioNormal: 3000,
+            ofertaActiva: true,
+            precioOferta: 2000,
+            textoPromo: "Mayoreo Especial",
+            imagen: "crema_johny_boy_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'gel_varispa_12': {
+            nombreProducto: "Gel Vari-Spa 700g (Caja de 12 pzas)",
+            descripcion: "Caja cerrada con 12 tarros de 700g de gel de masaje relajante y descanso.",
+            precioNormal: 4200,
+            ofertaActiva: true,
+            precioOferta: 3000,
+            textoPromo: "Mayoreo Especial",
+            imagen: "gel_varispa_700g_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'keratex_tubo_50': {
+            nombreProducto: "Tubo Keratex Pomada (Caja de 50 pzas)",
+            descripcion: "Caja cerrada con 50 tubos de pomada queratolítica para zonas extremadamente resecas.",
+            precioNormal: 4000,
+            ofertaActiva: true,
+            precioOferta: 2800,
+            textoPromo: "Mayoreo Especial",
+            imagen: "keratex_pomada_tubo_nueva_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'inhalador_viejito_50': {
+            nombreProducto: "Inhalador Viejito John (Caja de 50 pzas)",
+            descripcion: "Caja cerrada con 50 inhaladores aromáticos de bolsillo de mentol y eucalipto.",
+            precioNormal: 2250,
+            ofertaActiva: true,
+            precioOferta: 1600,
+            textoPromo: "Mayoreo Especial",
+            imagen: "inhalador_viejito_john_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'unguento_viejito_50': {
+            nombreProducto: "Ungüento del Viejito John Tubo (Caja de 50 pzas)",
+            descripcion: "Caja cerrada con 50 tubos de ungüento de masaje corporal relajante.",
+            precioNormal: 3750,
+            ofertaActiva: true,
+            precioOferta: 2600,
+            textoPromo: "Mayoreo Especial",
+            imagen: "unguento_viejito_john_tubo_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'unguento_pulmonar_50': {
+            nombreProducto: "Ungüento Pulmonar en Tubo (Caja de 50 pzas)",
+            descripcion: "Caja cerrada con 50 tubos de ungüento balsámico frotación pecho y espalda.",
+            precioNormal: 4000,
+            ofertaActiva: true,
+            precioOferta: 2800,
+            textoPromo: "Mayoreo Especial",
+            imagen: "unguento_pulmonar_tubo_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'talco_keratex_24': {
+            nombreProducto: "Talco Keratex 125g (Caja de 24 pzas)",
+            descripcion: "Caja cerrada con 24 envases de talco desodorante de rápida absorción.",
+            precioNormal: 2280,
+            ofertaActiva: true,
+            precioOferta: 1680,
+            textoPromo: "Mayoreo Especial",
+            imagen: "talco_keratex_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        },
+        'fungiderm_keratex_50': {
+            nombreProducto: "Fungiderm Keratex Pomada (Caja de 50 pzas)",
+            descripcion: "Caja cerrada con 50 pomadas de 10g c/u. Formulada con Óxido de Zinc y Azufre para piel fresca.",
+            precioNormal: 3000,
+            ofertaActiva: true,
+            precioOferta: 2200,
+            textoPromo: "Mayoreo Especial",
+            imagen: "fungiderm_original.png",
+            linkMercadoPago: "https://mpago.la/1ALUHtu",
+            costoEnvio: 0
+        }
+    };
+
+    // Configuración general del teléfono
+    const WHATSAPP_NUMERO = '5218113160143'; // ⚠️ CAMBIA ESTO por tu número real
+
+    // --- Leer precios del Admin (localStorage) si existen ---
+    (function() {
+        try {
+            const stored = JSON.parse(localStorage.getItem('vj_precios_mayoreo'));
+            if (stored) {
+                stored.forEach(function(adminProd) {
+                    if (PRODUCTOS_MAYOREO[adminProd.id]) {
+                        PRODUCTOS_MAYOREO[adminProd.id].precioNormal = adminProd.precio;
+                        PRODUCTOS_MAYOREO[adminProd.id].ofertaActiva = adminProd.ofertaActiva;
+                        PRODUCTOS_MAYOREO[adminProd.id].precioOferta = adminProd.precioOferta;
+                    }
+                });
+            }
+        } catch(e) { /* usar valores por defecto */ }
+    })();
+</script>
+<style>
+    .form-input {
+        width: 100%; background: white; border: 1px solid #c2c9bb80;
+        border-radius: 0.5rem; padding: 0.75rem 1rem;
+        outline: none; transition: all 0.2s;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .form-input:focus { ring: 2px; border-color: #154212; box-shadow: 0 0 0 2px #154212aa; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased" style="font-family:'Plus Jakarta Sans',sans-serif;">
+
+<!-- Header -->
+<header class="sticky top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <div class="flex justify-between items-center h-20 px-6 max-w-6xl mx-auto">
+        <div style="font-size:22px;font-weight:800;color:#154212;">El Viejito John</div>
+        <div class="flex items-center gap-2 text-gray-500">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:20px;">lock</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Pago Seguro Mayoreo</span>
+        </div>
+    </div>
+</header>
+
+<main class="py-12 px-6">
+    <div class="max-w-6xl mx-auto">
+        <a href="products.html" class="inline-flex items-center gap-2 text-gray-500 hover:text-green-800 mb-6 transition-colors text-sm font-medium">
+            <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> Volver al catálogo
+        </a>
+        <h1 style="font-size:32px;font-weight:700;color:#154212;margin-bottom:32px;">Finalizar Pedido de Mayoreo</h1>
+
+        <form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+
+            <!-- Columna izquierda: Formulario -->
+            <div class="lg:col-span-7 space-y-10">
+
+                <!-- Envío -->
+                <section class="space-y-5">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white" style="background:#154212;">1</span>
+                        <h2 style="font-size:22px;font-weight:700;">Información de Envío / Distribuidor</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Correo Electrónico</label>
+                            <input id="campo-email" class="form-input" placeholder="ejemplo@correo.com" type="email" required/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Nombre(s) o Negocio</label>
+                            <input id="campo-nombre" class="form-input" type="text" placeholder="Tu nombre o Razón social" required/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Teléfono de Contacto</label>
+                            <input id="campo-telefono" class="form-input" type="text" placeholder="10 dígitos con Lada" required/>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Dirección Completa de Envío</label>
+                            <input id="campo-direccion" class="form-input" placeholder="Calle, número, colonia, referencias" type="text" required/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Ciudad / Estado</label>
+                            <input id="campo-ciudad" class="form-input" placeholder="Ciudad, Estado" type="text" required/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Código Postal</label>
+                            <input id="campo-cp" class="form-input" placeholder="5 dígitos" type="text" required/>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Método de Pago (visual) -->
+                <section class="space-y-5">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white" style="background:#154212;">2</span>
+                        <h2 style="font-size:22px;font-weight:700;">Método de Pago Seguro</h2>
+                    </div>
+                    <div class="border-2 rounded-xl p-6 bg-gray-50" style="border-color:#154212;">
+                        <div class="flex justify-between items-center mb-5">
+                            <span class="font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined">credit_card</span>
+                                Plataforma Segura
+                            </span>
+                            <div class="flex gap-2">
+                                <div class="w-10 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-[9px] font-bold text-blue-700">VISA</div>
+                                <div class="w-10 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-[9px] font-bold text-red-600">MC</div>
+                                <div class="w-12 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-[9px] font-bold text-green-700">OXXO</div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">
+                            Los pedidos de mayoreo se procesan mediante <strong>Mercado Pago</strong> para asegurar tu transacción y darte la opción de pagar con tarjeta de crédito/débito, transferencia bancaria o efectivo en establecimientos autorizados.
+                        </p>
+                    </div>
+                    <p class="text-sm text-gray-500 text-center">Al completar tu pago, se abrirá un chat de WhatsApp con el resumen de tu pedido y serás redirigido a la pasarela segura para efectuar el pago.</p>
+                </section>
+            </div>
+
+            <!-- Columna derecha: Resumen del Pedido -->
+            <aside class="lg:col-span-5 lg:sticky lg:top-28">
+                <div class="bg-gray-100 p-8 rounded-2xl shadow-sm border border-gray-200">
+                    <h3 style="font-size:22px;font-weight:700;margin-bottom:20px;">Pedido de Mayoreo</h3>
+
+                    <!-- Producto -->
+                    <div class="flex gap-5 pb-6 border-b border-gray-300 mb-6">
+                        <div class="w-28 h-36 bg-white rounded-xl p-2 flex items-center justify-center overflow-hidden border border-gray-200 flex-shrink-0">
+                            <img id="co-product-img" alt="Caja Mayoreo" class="h-full w-full object-contain" src="producto.png"/>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-start gap-2 flex-wrap">
+                                <h4 class="font-bold text-base md:text-lg" id="co-product-name">Cargando producto...</h4>
+                                <span id="co-promo-badge" class="hidden text-xs font-bold text-white px-2 py-0.5 rounded-full" style="background:#2d5a27;">¡Mayoreo!</span>
+                            </div>
+                            <p class="text-gray-500 text-sm mt-1 leading-relaxed" id="co-product-desc"></p>
+                            <div class="mt-4 flex justify-between items-end">
+                                <span class="text-sm text-gray-500">Cantidad: 1 Caja</span>
+                                <div class="text-right">
+                                    <span id="co-price-original" class="hidden text-gray-400 line-through text-sm mr-1"></span>
+                                    <span id="co-price-final" class="font-bold text-lg" style="color:#154212;"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desglose de precio -->
+                    <div class="space-y-3 mb-6 text-gray-600">
+                        <div class="flex justify-between"><span>Subtotal Mayoreo</span><span id="co-subtotal"></span></div>
+                        <div class="flex justify-between"><span>Envío Terrestre</span><span id="co-shipping" class="font-bold"></span></div>
+                    </div>
+                    <div class="pt-4 border-t border-gray-300 flex justify-between items-center mb-6">
+                        <span style="font-size:20px;font-weight:700;">Total</span>
+                        <span id="co-total" style="font-size:20px;font-weight:800;color:#154212;"></span>
+                    </div>
+
+                    <!-- Botón CTA -->
+                    <button id="submit-btn" type="submit"
+                        class="w-full text-white py-5 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 hover:opacity-90"
+                        style="background:#154212;">
+                        <span id="submit-icon" class="material-symbols-outlined">verified_user</span>
+                        <span id="submit-text">Confirmar y Pagar Mayoreo</span>
+                    </button>
+                </div>
+            </aside>
+        </form>
+    </div>
+</main>
+
+<footer class="bg-gray-100 border-t border-gray-200 mt-16 py-10">
+    <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+            <div style="font-size:18px;font-weight:800;color:#154212;">El Viejito John</div>
+            <p class="text-gray-500 text-sm mt-1">© 2024 Todos los derechos reservados.</p>
+        </div>
+        <div class="flex flex-col gap-2">
+            <a class="text-gray-500 hover:text-green-800 text-sm transition-colors" href="#">Aviso de Privacidad</a>
+            <a class="text-gray-500 hover:text-green-800 text-sm transition-colors" href="#">Términos y Condiciones</a>
+            <a class="text-gray-500 hover:text-green-800 text-sm transition-colors" href="#">Contacto de Distribución</a>
+        </div>
+        <div class="flex items-center gap-3 md:justify-end">
+            <span class="material-symbols-outlined text-3xl" style="color:#2d5a27;">local_shipping</span>
+            <span class="material-symbols-outlined text-3xl" style="color:#2d5a27;">verified</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    let currentProduct = null;
+    let MERCADO_PAGO_LINK = 'https://mpago.la/1ALUHtu'; // Link fallback
+
+    // Cargar dinámicamente el producto desde los parámetros de la URL
+    (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const prodKey = urlParams.get('p') || 'keratex_pomada_200'; // Keratex pomada 200 por defecto
+        
+        currentProduct = PRODUCTOS_MAYOREO[prodKey];
+        if (!currentProduct) {
+            // Si el código del producto no existe, cargar el primero por defecto
+            currentProduct = PRODUCTOS_MAYOREO['keratex_pomada_200'];
+        }
+
+        const fmt = n => '$' + Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const precioFinal = currentProduct.ofertaActiva ? currentProduct.precioOferta : currentProduct.precioNormal;
+        const total = precioFinal + currentProduct.costoEnvio;
+        MERCADO_PAGO_LINK = currentProduct.linkMercadoPago || 'https://mpago.la/1ALUHtu';
+
+        // Título de la pestaña del navegador
+        document.title = `Pago Seguro - ${currentProduct.nombreProducto} | El Viejito John`;
+
+        // Renderizar elementos en pantalla
+        document.getElementById('co-product-name').textContent = currentProduct.nombreProducto;
+        document.getElementById('co-product-desc').textContent = currentProduct.descripcion;
+        
+        const imgEl = document.getElementById('co-product-img');
+        imgEl.src = currentProduct.imagen;
+        imgEl.alt = currentProduct.nombreProducto;
+
+        const origEl = document.getElementById('co-price-original');
+        const finalEl = document.getElementById('co-price-final');
+        const badgeEl = document.getElementById('co-promo-badge');
+
+        if (currentProduct.ofertaActiva) {
+            origEl.textContent = fmt(currentProduct.precioNormal);
+            origEl.classList.remove('hidden');
+            finalEl.textContent = fmt(currentProduct.precioOferta);
+            finalEl.style.color = '#154212';
+            badgeEl.textContent = currentProduct.textoPromo;
+            badgeEl.classList.remove('hidden');
+        } else {
+            origEl.classList.add('hidden');
+            finalEl.textContent = fmt(currentProduct.precioNormal);
+        }
+
+        document.getElementById('co-subtotal').textContent = fmt(precioFinal);
+        const shipEl = document.getElementById('co-shipping');
+        if (currentProduct.costoEnvio === 0) { 
+            shipEl.textContent = 'GRATIS'; 
+            shipEl.style.color = '#47842E'; 
+        } else {
+            shipEl.textContent = fmt(currentProduct.costoEnvio);
+        }
+        document.getElementById('co-total').textContent = fmt(total);
+    })();
+
+    // Checkout: Enviar WhatsApp y Redirigir a Mercado Pago
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const nombre = document.getElementById('campo-nombre')?.value.trim() || 'Sin nombre';
+        const telefono = document.getElementById('campo-telefono')?.value.trim() || 'Sin teléfono';
+        const direccion = document.getElementById('campo-direccion')?.value.trim() || 'Sin dirección';
+        const ciudad = document.getElementById('campo-ciudad')?.value.trim() || 'Sin ciudad';
+        const cp = document.getElementById('campo-cp')?.value.trim() || 'Sin CP';
+        const email = document.getElementById('campo-email')?.value.trim() || 'Sin correo';
+
+        const totalEl = document.getElementById('co-total');
+        const total = totalEl ? totalEl.textContent : '?';
+
+        // Formatear mensaje para WhatsApp
+        const fecha = new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+        const msg = [
+            '🛒 *NUEVO PEDIDO MAYOREO - El Viejito John*',
+            '─────────────────────',
+            `📦 *Producto:* ${currentProduct.nombreProducto}`,
+            `💰 *Total:* ${total}`,
+            `🕐 *Fecha:* ${fecha}`,
+            '─────────────────────',
+            '👤 *DATOS DEL DISTRIBUIDOR*',
+            `• Nombre/Negocio: ${nombre}`,
+            `• Teléfono: ${telefono}`,
+            `• Correo: ${email}`,
+            '─────────────────────',
+            '📍 *DIRECCIÓN DE ENTREGA*',
+            `• Dirección: ${direccion}`,
+            `• Ciudad/Edo: ${ciudad}`,
+            `• C.P.: ${cp}`,
+            '─────────────────────',
+            '⚠️ Cliente enviado a Mercado Pago para completar transacción.',
+        ].join('%0A');
+
+        const waURL = `https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`;
+
+        // Efectos del botón
+        const btn = document.getElementById('submit-btn');
+        const icon = document.getElementById('submit-icon');
+        const txt = document.getElementById('submit-text');
+        
+        btn.disabled = true;
+        icon.textContent = 'hourglass_empty';
+        icon.classList.add('animate-spin');
+        txt.textContent = 'Preparando pedido de Mayoreo...';
+
+        // Abrir WhatsApp en nueva pestaña y luego redirigir a Mercado Pago
+        setTimeout(() => {
+            window.open(waURL, '_blank');
+            txt.textContent = 'Redirigiendo a Mercado Pago...';
+            setTimeout(() => {
+                window.location.href = MERCADO_PAGO_LINK;
+            }, 1200);
+        }, 800);
+    });
+</script>
+</body></html>

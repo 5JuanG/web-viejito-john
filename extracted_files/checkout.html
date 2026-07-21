@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pago Seguro - El Viejito John</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e5e2dd",
+                    "inverse-primary": "#a1d494",
+                    "on-primary-fixed-variant": "#23501e",
+                    "text-main": "#1C1C1C",
+                    "on-primary-fixed": "#002201",
+                    "on-primary-container": "#9dd090",
+                    "secondary": "#725a42",
+                    "on-tertiary": "#ffffff",
+                    "surface-cream": "#FDFBF7",
+                    "primary": "#154212",
+                    "inverse-on-surface": "#f3f0eb",
+                    "primary-fixed": "#bcf0ae",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#2d5a27",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#813d0a",
+                    "secondary-container": "#fedcbe",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#31302d",
+                    "balm-red": "#B23B25",
+                    "on-tertiary-fixed-variant": "#753401",
+                    "tertiary-fixed-dim": "#ffb68c",
+                    "surface-container-high": "#ebe8e3",
+                    "surface-container-highest": "#e5e2dd",
+                    "tertiary": "#602900",
+                    "surface-bright": "#fcf9f4",
+                    "on-tertiary-fixed": "#321200",
+                    "error": "#ba1a1a",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#291806",
+                    "surface-container": "#f0ede9",
+                    "secondary-fixed-dim": "#e1c1a4",
+                    "on-tertiary-container": "#ffb183",
+                    "secondary-fixed": "#fedcbe",
+                    "on-surface": "#1c1c19",
+                    "on-surface-variant": "#42493e",
+                    "on-secondary-container": "#796048",
+                    "on-background": "#1c1c19",
+                    "outline": "#72796e",
+                    "on-secondary-fixed-variant": "#59422c",
+                    "on-primary": "#ffffff",
+                    "leaf-vibrant": "#47842E",
+                    "surface": "#fcf9f4",
+                    "surface-dim": "#dcdad5",
+                    "surface-container-low": "#f6f3ee",
+                    "background": "#fcf9f4",
+                    "outline-variant": "#c2c9bb",
+                    "primary-fixed-dim": "#a1d494",
+                    "tertiary-fixed": "#ffdbc9",
+                    "surface-tint": "#3b6934"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "container-max": "1280px",
+                    "margin-desktop": "48px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .form-input-focus:focus {
+            border-color: #154212;
+            box-shadow: 0 0 0 4px rgba(21, 66, 18, 0.1);
+            outline: none;
+        }
+        .payment-card-active {
+            border-color: #154212;
+            background-color: #f6f3ee;
+        }
+        @media (max-width: 768px) {
+            .mobile-stack { flex-direction: column; }
+        }
+    </style>
+    <!-- =============================================
+         CONFIGURACIÓN GENERAL DE LA TIENDA
+         ⚙️  Edita SOLO este bloque.
+         El resto del sistema se actualiza automáticamente.
+    ============================================= -->
+    <script>
+        const PRECIO_CONFIG = {
+            // Nombre y descripción del producto en el resumen
+            nombreProducto: "El Gel Balsámico",
+            descripcion: "Tarro Original 700g",
+
+            // Precio normal de venta al público (MXN)
+            precioNormal: 950,
+
+            // --- OFERTA / PROMOCIÓN ---
+            // Pon 'true' para activar la oferta, 'false' para desactivarla.
+            ofertaActiva: true,
+            precioOferta: 750,          // Precio con descuento
+            textoPromo: "¡Oferta Especial!", // Texto de la etiqueta de promo
+
+            // Costo de envío (0 = GRATIS)
+            costoEnvio: 0,
+
+            // --- NOTIFICACIONES WHATSAPP ---
+            // Tu número con código de país, sin + ni espacios.
+            // México: 521 + 10 dígitos  →  ej: 5215512345678
+            whatsappNumero: '5218113160143', // ⚠️ CAMBIA ESTO por tu número real
+        };
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary/20">
+<!-- Header (Simplified for Checkout focus) -->
+<header class="bg-surface/90 backdrop-blur-md sticky top-0 w-full z-50 border-b border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+<div class="flex items-center gap-4">
+    <a href="index.html" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container-low text-on-surface-variant hover:text-primary transition-all" title="Volver al inicio">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <div class="font-headline-md text-headline-md font-bold text-primary">
+        El Viejito John
+    </div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined">lock</span>
+<span class="font-label-sm uppercase tracking-widest">Pago Seguro</span>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-gutter py-margin-desktop">
+<form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Forms -->
+<div class="lg:col-span-7 space-y-gutter">
+<!-- Shipping Info Section -->
+<section class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-4 mb-8">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">local_shipping</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">Información de Envío</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="md:col-span-2">
+<label class="block font-label-sm text-on-surface-variant mb-2">Nombre Completo</label>
+<input id="campo-nombre" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="John Doe" type="text" required/>
+</div>
+<div class="md:col-span-2">
+<label class="block font-label-sm text-on-surface-variant mb-2">Dirección</label>
+<input id="campo-direccion" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="Calle Herbal 123" type="text" required/>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Ciudad</label>
+<input id="campo-ciudad" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="Ciudad de México" type="text" required/>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Código Postal</label>
+<input id="campo-cp" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="01000" type="text" required/>
+</div>
+<div class="md:col-span-2">
+<label class="block font-label-sm text-on-surface-variant mb-2">Correo Electrónico</label>
+<input id="campo-email" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="john@example.com" type="email" required/>
+</div>
+<div class="md:col-span-2">
+<label class="block font-label-sm text-on-surface-variant mb-2">Teléfono de Contacto</label>
+<input id="campo-telefono" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="55 1234 5678" type="tel" required/>
+</div>
+</div>
+</section>
+<!-- Payment Methods Section -->
+<section class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-4 mb-8">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">Método de Pago</h2>
+</div>
+<div class="space-y-4">
+<!-- Credit Card Option -->
+<div class="border-2 border-primary bg-surface-container-low p-4 rounded-xl cursor-pointer transition-all flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-3">
+<input checked="" class="text-primary focus:ring-primary h-5 w-5" name="payment" type="radio"/>
+<span class="font-body-lg font-bold">Tarjeta de Crédito o Débito</span>
+</div>
+<div class="flex gap-2">
+<div class="w-10 h-6 bg-surface-variant rounded flex items-center justify-center text-[10px] font-bold">VISA</div>
+<div class="w-10 h-6 bg-surface-variant rounded flex items-center justify-center text-[10px] font-bold">MC</div>
+<div class="w-10 h-6 bg-surface-variant rounded flex items-center justify-center text-[10px] font-bold">AMEX</div>
+</div>
+</div>
+<div id="cc-details" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
+<div class="md:col-span-4">
+<input class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="Número de Tarjeta" type="text" required/>
+</div>
+<div class="md:col-span-2">
+<input class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="MM/AA" type="text" required/>
+</div>
+<div class="md:col-span-2">
+<input class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="CVV" type="text" required/>
+</div>
+</div>
+</div>
+<!-- PayPal Option -->
+<div class="border border-outline-variant p-4 rounded-xl cursor-pointer hover:bg-surface-container-low transition-all flex justify-between items-center">
+<div class="flex items-center gap-3">
+<input class="text-primary focus:ring-primary h-5 w-5" name="payment" type="radio"/>
+<span class="font-body-lg">PayPal</span>
+</div>
+<span class="material-symbols-outlined text-secondary">account_balance_wallet</span>
+</div>
+<!-- Oxxo Option -->
+<div class="border border-outline-variant p-4 rounded-xl cursor-pointer hover:bg-surface-container-low transition-all flex justify-between items-center">
+<div class="flex items-center gap-3">
+<input class="text-primary focus:ring-primary h-5 w-5" name="payment" type="radio"/>
+<span class="font-body-lg">Pago en Efectivo (Oxxo Pay)</span>
+</div>
+<span class="font-label-sm bg-balm-red text-white px-2 py-1 rounded">OXXO</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Order Summary -->
+<div class="lg:col-span-5 space-y-gutter lg:sticky lg:top-28">
+<section class="bg-surface-container-highest p-8 rounded-xl border border-outline-variant/30 shadow-sm">
+<h3 class="font-headline-md text-headline-md text-primary mb-6">Resumen del Pedido</h3>
+<div class="flex items-center gap-4 mb-8 pb-6 border-b border-outline-variant/30">
+<div class="w-24 h-24 rounded-lg flex items-center justify-center overflow-hidden">
+<img alt="Tarro El Gel Balsámico del Viejito John" class="max-h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYOG8ME0qOYBEyzVxd3u4hJNlFV5P5oKxakxUgaLXq6mjpmcpFG4yMjP2FtpKRxMMXme_GZS2misNZiWBxiARAnsJdEwjAAC85PfMPlgzW-tb0ckh8lNAbWe3jO94S4CQB6jk6-NCBnyETuPWgZIb5ztHb-D7brSRAJmLCc64CjzKMOyhxHQ7_cO-0dRONc3nTmez_MVqhiJteCKUT2U8m3hfe46yTxNkQEkrdQwhe2d4NSqTUDnGiuqdMwdORCsAiCzO_anQt1S4"/>
+</div>
+<div class="flex-1">
+    <div class="flex items-center gap-2">
+        <h4 class="font-bold text-primary" id="co-product-name"></h4>
+        <span id="co-promo-badge" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse"></span>
+    </div>
+    <p class="text-on-surface-variant font-label-sm" id="co-product-desc"></p>
+    <div class="flex justify-between items-center mt-2">
+        <span class="text-on-surface-variant">Cant: 1</span>
+        <div class="text-right">
+            <span id="co-price-original" class="text-on-surface-variant line-through text-sm mr-1 hidden"></span>
+            <span id="co-price-final" class="font-bold text-primary"></span>
+        </div>
+    </div>
+</div>
+</div>
+<div class="space-y-3 mb-8">
+<div class="flex justify-between text-on-surface-variant">
+<span>Subtotal</span>
+<span id="co-subtotal"></span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Envío</span>
+<span id="co-shipping" class="font-bold"></span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant flex justify-between items-center text-primary">
+<span class="font-headline-md text-headline-md">Total</span>
+<span class="font-headline-md text-headline-md" id="co-total"></span>
+</div>
+<button type="submit" id="submit-btn" class="w-full bg-primary text-white py-5 rounded-lg font-bold text-lg hover:bg-primary-container transition-all transform active:scale-[0.98] shadow-md flex items-center justify-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed">
+<span id="submit-icon" class="material-symbols-outlined">verified_user</span>
+                        <span id="submit-text">Completar Compra Segura</span>
+                    </button>
+<p class="text-center text-on-surface-variant font-label-sm mt-4">
+                        Precio incluye todos los impuestos y envío.
+                    </p>
+</section>
+<!-- Trust Signals -->
+<div class="grid grid-cols-1 gap-4">
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-leaf-vibrant shrink-0">
+<span class="material-symbols-outlined" data-weight="fill">eco</span>
+</div>
+<div>
+<p class="font-bold text-sm">Ingredientes 100% Naturales</p>
+<p class="text-xs text-on-surface-variant leading-tight">Base de árnica, mentol y aceite de eucalipto.</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined" data-weight="fill">shield</span>
+</div>
+<div>
+<p class="font-bold text-sm">Transacción Encriptada</p>
+<p class="text-xs text-on-surface-variant leading-tight">Tus datos están protegidos por encriptación SSL de 256 bits.</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-lg border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined" data-weight="fill">thumb_up</span>
+</div>
+<div>
+<p class="font-bold text-sm">Satisfacción Garantizada</p>
+<p class="text-xs text-on-surface-variant leading-tight">Garantía de devolución de 30 días si no sientes alivio.</p>
+</div>
+</div>
+</div>
+</div>
+</form>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-highest dark:bg-surface-container-lowest w-full py-margin-desktop border-t border-outline-variant">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-gutter max-w-container-max mx-auto">
+<div class="space-y-4">
+<div class="font-headline-md text-headline-md font-bold text-primary">El Viejito John</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Combinando la sabiduría herbolaria ancestral con estándares farmacéuticos modernos para el alivio muscular natural.</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<ul class="space-y-2">
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-all" href="#">Política de Privacidad</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-all" href="#">Términos de Servicio</a></li>
+</ul>
+<ul class="space-y-2">
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-all" href="#">Contáctanos</a></li>
+<li class=""><a class="text-on-surface-variant hover:text-primary transition-all" href="#">Información de Envío</a></li>
+</ul>
+</div>
+<div class="flex flex-col md:items-end justify-between">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-secondary opacity-50">lock_outline</span>
+<span class="material-symbols-outlined text-secondary opacity-50">verified</span>
+<span class="material-symbols-outlined text-secondary opacity-50">credit_card</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-4 md:text-right">
+                    © 2024 El Gel Balsámico del Viejito John. Todos los derechos reservados.
+                </p>
+</div>
+</div>
+</footer>
+<!-- Success Modal -->
+<div id="success-modal" class="fixed inset-0 bg-text-main/50 backdrop-blur-sm z-[100] hidden flex items-center justify-center px-4">
+    <div class="bg-surface-container-lowest p-8 rounded-2xl max-w-md w-full shadow-2xl text-center transform scale-95 opacity-0 transition-all duration-300" id="success-modal-content">
+        <div class="w-20 h-20 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined" style="font-size: 40px;">check_circle</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md text-primary mb-2">¡Compra Exitosa!</h3>
+        <p class="text-on-surface-variant font-body-md mb-8">Tu pedido de "El Gel Balsámico" ha sido procesado correctamente. Recibirás un correo con los detalles.</p>
+        <button type="button" id="close-modal-btn" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary-container transition-all">
+            Volver al inicio
+        </button>
+    </div>
+</div>
+<script>
+        // Micro-interaction for payment method selection
+        const paymentRadios = document.querySelectorAll('input[name="payment"]');
+        const ccDetails = document.getElementById('cc-details');
+        const ccInputs = ccDetails.querySelectorAll('input');
+
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Reset all containers
+                paymentRadios.forEach(r => {
+                    const container = r.closest('div.border, div.border-2');
+                    if (container) {
+                        container.classList.remove('border-primary', 'bg-surface-container-low', 'border-2');
+                        container.classList.add('border-outline-variant', 'border');
+                    }
+                });
+                
+                // Highlight selected
+                if (e.target.checked) {
+                    const parent = e.target.closest('.border') || e.target.closest('.border-2');
+                    if (parent) {
+                        parent.classList.add('border-primary', 'bg-surface-container-low', 'border-2');
+                        parent.classList.remove('border-outline-variant', 'border');
+                    }
+                    
+                    // Toggle CC details visibility and requirements
+                    if (e.target.parentElement.textContent.includes('Tarjeta')) {
+                        ccDetails.classList.remove('hidden');
+                        ccInputs.forEach(input => input.setAttribute('required', 'true'));
+                    } else {
+                        ccDetails.classList.add('hidden');
+                        ccInputs.forEach(input => input.removeAttribute('required'));
+                    }
+                }
+            });
+        });
+
+        // Form focus visual feedback
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"]');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('label')?.classList.add('text-primary');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('label')?.classList.remove('text-primary');
+            });
+        });
+
+        // Form Submission Logic
+        const checkoutForm = document.getElementById('checkout-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const submitIcon = document.getElementById('submit-icon');
+        const submitText = document.getElementById('submit-text');
+        const successModal = document.getElementById('success-modal');
+        const successModalContent = document.getElementById('success-modal-content');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // ===================================================
+        // LINK DE PAGO MERCADO PAGO
+        // Para cambiarlo, solo reemplaza la URL de abajo.
+        // ===================================================
+        const MERCADO_PAGO_LINK = 'https://mpago.la/1ALUHtu'; // ⚠️ LINK DE PRUEBA $5 - Cambiar al link real cuando termines la prueba
+
+        // Número de WhatsApp tomado desde la configuración central de arriba
+        const WHATSAPP_NUMERO = PRECIO_CONFIG.whatsappNumero;
+
+
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // --- Recopilar datos del cliente ---
+                const nombre    = document.getElementById('campo-nombre')?.value.trim()    || 'Sin nombre';
+                const direccion = document.getElementById('campo-direccion')?.value.trim() || 'Sin dirección';
+                const ciudad    = document.getElementById('campo-ciudad')?.value.trim()    || 'Sin ciudad';
+                const cp        = document.getElementById('campo-cp')?.value.trim()        || 'Sin CP';
+                const email     = document.getElementById('campo-email')?.value.trim()     || 'Sin correo';
+                const telefono  = document.getElementById('campo-telefono')?.value.trim()  || 'Sin teléfono';
+
+                // Precio final del pedido
+                const totalEl = document.getElementById('co-total');
+                const total   = totalEl ? totalEl.textContent : '?';
+
+                // --- Armar mensaje de WhatsApp ---
+                const fecha = new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+                const msg = [
+                    '🛒 *NUEVO PEDIDO - El Viejito John*',
+                    '─────────────────────',
+                    `📦 *Producto:* El Gel Balsámico`,
+                    `💰 *Total:* ${total}`,
+                    `🕐 *Fecha:* ${fecha}`,
+                    '─────────────────────',
+                    '👤 *DATOS DEL CLIENTE*',
+                    `• Nombre: ${nombre}`,
+                    `• Tel: ${telefono}`,
+                    `• Email: ${email}`,
+                    '─────────────────────',
+                    '📍 *DIRECCIÓN DE ENTREGA*',
+                    `• Calle: ${direccion}`,
+                    `• Ciudad: ${ciudad}`,
+                    `• C.P.: ${cp}`,
+                    '─────────────────────',
+                    '⚠️ Cliente fue enviado a Mercado Pago para completar el pago.',
+                ].join('%0A');
+
+                const waURL = `https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`;
+
+                // Mostrar estado de carga
+                submitBtn.disabled = true;
+                submitIcon.textContent = 'hourglass_empty';
+                submitIcon.classList.add('animate-spin');
+                submitText.textContent = 'Preparando pedido...';
+
+                // Abrir WhatsApp en nueva pestaña y redirigir a Mercado Pago
+                setTimeout(() => {
+                    window.open(waURL, '_blank');
+                    submitText.textContent = 'Redirigiendo a Mercado Pago...';
+                    setTimeout(() => {
+                        window.location.href = MERCADO_PAGO_LINK;
+                    }, 1500);
+                }, 800);
+            });
+        }
+
+
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                successModalContent.classList.remove('scale-100', 'opacity-100');
+                successModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    successModal.classList.add('hidden');
+                    window.location.href = 'index.html';
+                }, 300);
+            });
+        }
+
+        // ---- Renderizar precios dinámicos desde PRECIO_CONFIG ----
+        (function renderPrices() {
+            const cfg = PRECIO_CONFIG;
+            const fmt = (n) => '$' + n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            const precioFinal = cfg.ofertaActiva ? cfg.precioOferta : cfg.precioNormal;
+            const total = precioFinal + cfg.costoEnvio;
+
+            // Nombre y descripcion
+            document.getElementById('co-product-name').textContent = cfg.nombreProducto;
+            document.getElementById('co-product-desc').textContent = cfg.descripcion;
+
+            // Precio con o sin oferta
+            const originalEl = document.getElementById('co-price-original');
+            const finalEl    = document.getElementById('co-price-final');
+            const badgeEl    = document.getElementById('co-promo-badge');
+
+            if (cfg.ofertaActiva) {
+                originalEl.textContent = fmt(cfg.precioNormal);
+                originalEl.classList.remove('hidden');
+                finalEl.textContent = fmt(cfg.precioOferta);
+                finalEl.classList.add('text-red-600');
+                badgeEl.textContent = cfg.textoPromo;
+                badgeEl.classList.remove('hidden');
+            } else {
+                originalEl.classList.add('hidden');
+                finalEl.textContent = fmt(cfg.precioNormal);
+            }
+
+            // Subtotal, envio, total
+            document.getElementById('co-subtotal').textContent = fmt(precioFinal);
+            const shippingEl = document.getElementById('co-shipping');
+            if (cfg.costoEnvio === 0) {
+                shippingEl.textContent = 'GRATIS';
+                shippingEl.classList.add('text-green-600');
+            } else {
+                shippingEl.textContent = fmt(cfg.costoEnvio);
+            }
+            document.getElementById('co-total').textContent = fmt(total);
+        })();
+    </script>
+</body></html>

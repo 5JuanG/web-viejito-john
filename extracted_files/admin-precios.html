@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Precios | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#154212",
+                        "primary-light": "#2d5a27",
+                        "surface": "#f3f4f6",
+                        "card": "#ffffff",
+                        "accent": "#059669",
+                        "danger": "#dc2626",
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .toast-enter { animation: slideIn 0.3s ease-out; }
+        .toast-exit { animation: slideOut 0.3s ease-in; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-surface font-sans text-gray-800 antialiased min-h-screen" x-data="preciosAdmin()" x-cloak>
+
+    <!-- LOGIN SCREEN -->
+    <div x-show="!authenticated" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 max-w-md w-full overflow-hidden">
+            <div class="bg-primary p-8 text-center">
+                <span class="material-symbols-outlined text-5xl text-green-300 mb-3 block">admin_panel_settings</span>
+                <h1 class="text-2xl font-extrabold text-white">Panel de Precios</h1>
+                <p class="text-green-200/80 text-sm mt-1">El Viejito John — Acceso Restringido</p>
+            </div>
+            <form @submit.prevent="login" class="p-8 space-y-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Token de Acceso</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400">key</span>
+                        <input type="password" x-model="tokenInput" required placeholder="Ingresa tu token secreto"
+                            class="w-full pl-10 pr-4 py-3 rounded-xl border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
+                    </div>
+                    <p x-show="loginError" class="text-red-500 text-xs mt-2 font-medium" x-transition>
+                        <span class="material-symbols-outlined text-xs align-middle mr-1">error</span>Token incorrecto. Intenta de nuevo.
+                    </p>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-light transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">login</span> Acceder
+                </button>
+                <p class="text-center text-xs text-gray-400">El token por defecto es: <code class="bg-gray-100 px-2 py-1 rounded font-mono text-primary font-bold">viejitojohn2024</code></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div x-show="authenticated" x-transition class="min-h-screen">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-2xl">storefront</span>
+                    <h1 class="text-lg font-extrabold text-gray-800">Administrador de Precios</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-xs text-gray-400 hidden md:block">Los precios se guardan en este navegador (localStorage)</span>
+                    <button @click="authenticated = false; tokenInput = ''" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium">
+                        <span class="material-symbols-outlined text-sm">logout</span> Salir
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="max-w-7xl mx-auto px-6 pt-6">
+            <div class="flex gap-2 border-b border-gray-200 pb-0">
+                <button @click="activeTab = 'menudeo'" :class="activeTab === 'menudeo' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-3 font-bold text-sm transition-colors">
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">shopping_bag</span> Precios Menudeo
+                </button>
+                <button @click="activeTab = 'mayoreo'" :class="activeTab === 'mayoreo' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-3 font-bold text-sm transition-colors">
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">local_shipping</span> Precios Mayoreo
+                </button>
+            </div>
+        </div>
+
+        <!-- MENUDEO TABLE -->
+        <div x-show="activeTab === 'menudeo'" class="max-w-7xl mx-auto px-6 py-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="font-bold text-gray-700 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">sell</span> Productos Menudeo
+                    </h2>
+                    <button @click="guardarPrecios('menudeo')" class="bg-primary text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-primary-light transition-all active:scale-[0.97] flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">save</span> Guardar Cambios
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+                                <th class="px-6 py-3 font-medium">Producto</th>
+                                <th class="px-6 py-3 font-medium">Precio Normal ($)</th>
+                                <th class="px-6 py-3 font-medium">¿Oferta Activa?</th>
+                                <th class="px-6 py-3 font-medium">Precio Oferta ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <template x-for="(prod, idx) in preciosMenudeo" :key="idx">
+                                <tr class="hover:bg-gray-50/80 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-gray-800" x-text="prod.nombre"></div>
+                                        <div class="text-xs text-gray-400" x-text="prod.descripcion"></div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.precio"
+                                                class="pl-7 w-32 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" x-model="prod.ofertaActiva" class="sr-only peer">
+                                            <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
+                                        </label>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta"
+                                                :disabled="!prod.ofertaActiva"
+                                                :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'"
+                                                class="pl-7 w-32 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAYOREO TABLE -->
+        <div x-show="activeTab === 'mayoreo'" class="max-w-7xl mx-auto px-6 py-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="font-bold text-gray-700 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">warehouse</span> Productos Mayoreo
+                    </h2>
+                    <button @click="guardarPrecios('mayoreo')" class="bg-primary text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-primary-light transition-all active:scale-[0.97] flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">save</span> Guardar Cambios
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+                                <th class="px-6 py-3 font-medium">Producto</th>
+                                <th class="px-6 py-3 font-medium">Precio Normal ($)</th>
+                                <th class="px-6 py-3 font-medium">¿Oferta Activa?</th>
+                                <th class="px-6 py-3 font-medium">Precio Oferta ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <template x-for="(prod, idx) in preciosMayoreo" :key="idx">
+                                <tr class="hover:bg-gray-50/80 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-gray-800" x-text="prod.nombre"></div>
+                                        <div class="text-xs text-gray-400" x-text="prod.descripcion"></div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.precio"
+                                                class="pl-7 w-36 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" x-model="prod.ofertaActiva" class="sr-only peer">
+                                            <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
+                                        </label>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta"
+                                                :disabled="!prod.ofertaActiva"
+                                                :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'"
+                                                class="pl-7 w-36 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="max-w-7xl mx-auto px-6 pb-8">
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
+                <span class="material-symbols-outlined text-amber-500 mt-0.5">info</span>
+                <div>
+                    <h4 class="font-bold text-amber-800 text-sm">¿Cómo funciona?</h4>
+                    <p class="text-amber-700 text-xs mt-1">Los precios se guardan en el <strong>localStorage</strong> de este navegador. Las páginas de checkout (<code>checkout-gel.html</code>, <code>checkout-keratex.html</code> y <code>checkout-mayoreo.html</code>) leerán estos precios automáticamente al cargar. Los cambios solo aplican en este navegador/dispositivo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div x-show="showToast" x-transition class="fixed top-6 right-6 z-[999] bg-accent text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-2 toast-enter">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span x-text="toastMessage"></span>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('preciosAdmin', () => ({
+                // Auth
+                authenticated: false,
+                tokenInput: '',
+                loginError: false,
+                SECRET_TOKEN: 'viejitojohn2024',
+
+                // UI
+                activeTab: 'menudeo',
+                showToast: false,
+                toastMessage: '',
+
+                // Data - Menudeo (matches products.html catalog)
+                preciosMenudeo: JSON.parse(localStorage.getItem('vj_precios_menudeo')) || [
+                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 24.99, ofertaActiva: false, precioOferta: 24.99 },
+                    { id: 'gel_varispa', nombre: 'Gel Vari-Spa (700 grs)', descripcion: 'Masaje terapéutico', precio: 350, ofertaActiva: false, precioOferta: 350 },
+                    { id: 'balsamo_viejito', nombre: 'Bálsamo del Viejito John', descripcion: 'Ungüento tradicional', precio: 95, ofertaActiva: false, precioOferta: 95 },
+                    { id: 'spray_viejito', nombre: 'Spray del Viejito John', descripcion: 'Alta concentración', precio: 120, ofertaActiva: false, precioOferta: 120 },
+                    { id: 'unguento_tubo', nombre: 'Ungüento del Viejito John (Tubo)', descripcion: 'Presentación tubo', precio: 75, ofertaActiva: false, precioOferta: 75 },
+                    { id: 'keratex_pomada', nombre: 'Keratex Pomada (8g)', descripcion: 'Cuidado pies y piel', precio: 60, ofertaActiva: false, precioOferta: 60 },
+                    { id: 'keratex_tubo', nombre: 'Tubo Keratex Pomada (Nueva Presentación)', descripcion: 'Aplicación en tubo', precio: 80, ofertaActiva: false, precioOferta: 80 },
+                    { id: 'keratex_gotas', nombre: 'Solución Gotas Keratex', descripcion: 'Gotas para uñas y piel', precio: 60, ofertaActiva: false, precioOferta: 60 },
+                    { id: 'fungiderm', nombre: 'Fungiderm Keratex Pomada (10g)', descripcion: 'Óxido de Zinc y Azufre', precio: 60, ofertaActiva: false, precioOferta: 60 },
+                    { id: 'talco_keratex', nombre: 'Talco Keratex (125g)', descripcion: 'Cuidado diario pies', precio: 95, ofertaActiva: false, precioOferta: 95 },
+                    { id: 'spray_keratex', nombre: 'Spray Keratex (60ml)', descripcion: 'Spray refrescante pies', precio: 95, ofertaActiva: false, precioOferta: 95 },
+                    { id: 'sulfato_cobre', nombre: 'Sulfato de Cobre (5 sobres)', descripcion: 'Limpieza profunda', precio: 35, ofertaActiva: false, precioOferta: 35 },
+                    { id: 'inhalador', nombre: 'Inhalador Viejito John', descripcion: 'Aroma eucalipto y mentol', precio: 45, ofertaActiva: false, precioOferta: 45 },
+                    { id: 'unguento_pulmonar', nombre: 'Ungüento Pulmonar (en Tubo)', descripcion: 'Bálsamo aromático', precio: 80, ofertaActiva: false, precioOferta: 80 },
+                    { id: 'crema_johny_boy', nombre: 'Crema Johny Boy (8g)', descripcion: 'Cuidado facial', precio: 60, ofertaActiva: false, precioOferta: 60 },
+                ],
+
+                // Data - Mayoreo (matches checkout-mayoreo.html PRODUCTOS_MAYOREO)
+                preciosMayoreo: JSON.parse(localStorage.getItem('vj_precios_mayoreo')) || [
+                    { id: 'keratex_pomada_200', nombre: 'Keratex Pomada (Caja de 200 pzas)', descripcion: '200 pzas 8g c/u', precio: 12000, ofertaActiva: true, precioOferta: 8000 },
+                    { id: 'keratex_gotas_100', nombre: 'Solución Gotas Keratex (Caja de 100 pzas)', descripcion: '100 pzas gotero', precio: 6000, ofertaActiva: true, precioOferta: 4000 },
+                    { id: 'gel_balsamico_12', nombre: 'Gel Balsámico 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 11400, ofertaActiva: true, precioOferta: 7200 },
+                    { id: 'spray_viejito_24', nombre: 'Spray Viejito John (Caja de 24 pzas)', descripcion: '24 atomizadores', precio: 2880, ofertaActiva: true, precioOferta: 2160 },
+                    { id: 'balsamo_viejito_24', nombre: 'Bálsamo Viejito John (Caja de 24 pzas)', descripcion: '24 tarros bálsamo', precio: 2280, ofertaActiva: true, precioOferta: 1680 },
+                    { id: 'crema_johny_boy_50', nombre: 'Crema Johny Boy (Caja de 50 pzas)', descripcion: '50 cremas 8g', precio: 3000, ofertaActiva: true, precioOferta: 2000 },
+                    { id: 'gel_varispa_12', nombre: 'Gel Vari-Spa 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 4200, ofertaActiva: true, precioOferta: 3000 },
+                    { id: 'keratex_tubo_50', nombre: 'Tubo Keratex Pomada (Caja de 50 pzas)', descripcion: '50 tubos', precio: 4000, ofertaActiva: true, precioOferta: 2800 },
+                    { id: 'inhalador_viejito_50', nombre: 'Inhalador Viejito John (Caja de 50 pzas)', descripcion: '50 inhaladores', precio: 2250, ofertaActiva: true, precioOferta: 1600 },
+                    { id: 'unguento_viejito_50', nombre: 'Ungüento Viejito John Tubo (Caja de 50 pzas)', descripcion: '50 tubos', precio: 3750, ofertaActiva: true, precioOferta: 2600 },
+                    { id: 'unguento_pulmonar_50', nombre: 'Ungüento Pulmonar Tubo (Caja de 50 pzas)', descripcion: '50 tubos', precio: 4000, ofertaActiva: true, precioOferta: 2800 },
+                    { id: 'talco_keratex_24', nombre: 'Talco Keratex 125g (Caja de 24 pzas)', descripcion: '24 envases', precio: 2280, ofertaActiva: true, precioOferta: 1680 },
+                    { id: 'fungiderm_keratex_50', nombre: 'Fungiderm Keratex (Caja de 50 pzas)', descripcion: '50 pomadas 10g', precio: 3000, ofertaActiva: true, precioOferta: 2200 },
+                ],
+
+                login() {
+                    if (this.tokenInput === this.SECRET_TOKEN) {
+                        this.authenticated = true;
+                        this.loginError = false;
+                    } else {
+                        this.loginError = true;
+                    }
+                },
+
+                guardarPrecios(tipo) {
+                    // Validación numérica
+                    const lista = tipo === 'menudeo' ? this.preciosMenudeo : this.preciosMayoreo;
+                    for (const prod of lista) {
+                        if (isNaN(prod.precio) || prod.precio < 0) {
+                            alert(`Error: El precio de "${prod.nombre}" no es válido. Usa solo números positivos.`);
+                            return;
+                        }
+                        if (prod.ofertaActiva && (isNaN(prod.precioOferta) || prod.precioOferta < 0)) {
+                            alert(`Error: El precio de oferta de "${prod.nombre}" no es válido.`);
+                            return;
+                        }
+                    }
+
+                    if (tipo === 'menudeo') {
+                        localStorage.setItem('vj_precios_menudeo', JSON.stringify(this.preciosMenudeo));
+                    } else {
+                        localStorage.setItem('vj_precios_mayoreo', JSON.stringify(this.preciosMayoreo));
+                    }
+
+                    this.toastMessage = tipo === 'menudeo' 
+                        ? '¡Precios de menudeo guardados!' 
+                        : '¡Precios de mayoreo guardados!';
+                    this.showToast = true;
+                    setTimeout(() => { this.showToast = false; }, 3000);
+                }
+            }))
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pago Seguro - Gel Balsámico | El Viejito John</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#154212","background": "#fcf9f4","surface": "#fcf9f4",
+            "on-surface-variant": "#42493e","outline-variant": "#c2c9bb","leaf-vibrant": "#47842E",
+            "surface-container-lowest": "#ffffff","on-surface": "#1c1c19"
+          },
+          "fontFamily": { "body-md": ["Plus Jakarta Sans"] },
+          "spacing": { "margin-desktop": "48px", "gutter": "24px", "container-max": "1280px" }
+        }
+      }
+    }
+</script>
+<!-- =============================================
+     CONFIGURACIÓN DE PRECIOS Y LINK DE PAGO
+     Edita SOLO este bloque para cambiar precios o activar una oferta.
+============================================= -->
+<script>
+    const PRECIO_CONFIG = {
+        nombreProducto: "Gel Balsámico El Viejito John",
+        descripcion: "60g — Gel de cuidado muscular y corporal",
+        precioNormal: 950,
+        ofertaActiva: true,
+        precioOferta: 750,
+        textoPromo: "¡Precio Especial!",
+        costoEnvio: 0,
+    };
+    const MERCADO_PAGO_LINK = 'https://mpago.la/2maKCBk'; // ← Link real del Gel $750
+
+    // --- Catálogo de productos (Fallback por si no hay datos en localStorage) ---
+    const PRODUCTOS_MENUDEO = [
+        { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 95, ofertaActiva: false, precioOferta: 95, imagen: 'gel_balsamico_original.png' },
+        { id: 'gel_varispa', nombre: 'Gel Vari-Spa (700 grs)', descripcion: 'Masaje terapéutico', precio: 350, ofertaActiva: false, precioOferta: 350, imagen: 'gel_varispa_700g_original.png' },
+        { id: 'balsamo_viejito', nombre: 'Bálsamo del Viejito John', descripcion: 'Ungüento tradicional', precio: 95, ofertaActiva: false, precioOferta: 95, imagen: 'balsamo_viejito_john_original.png' },
+        { id: 'spray_viejito', nombre: 'Spray del Viejito John', descripcion: 'Alta concentración', precio: 120, ofertaActiva: false, precioOferta: 120, imagen: 'spray_viejito_john_original.png' },
+        { id: 'unguento_tubo', nombre: 'Ungüento del Viejito John (Tubo)', descripcion: 'Presentación tubo', precio: 75, ofertaActiva: false, precioOferta: 75, imagen: 'unguento_viejito_john_tubo_original.png' },
+        { id: 'inhalador', nombre: 'Inhalador Viejito John', descripcion: 'Aroma eucalipto y mentol', precio: 45, ofertaActiva: false, precioOferta: 45, imagen: 'inhalador_viejito_john_original.png' },
+        { id: 'unguento_pulmonar', nombre: 'Ungüento Pulmonar (en Tubo)', descripcion: 'Bálsamo aromático', precio: 80, ofertaActiva: false, precioOferta: 80, imagen: 'unguento_pulmonar_tubo_original.png' },
+        { id: 'crema_johny_boy', nombre: 'Crema Johny Boy (8g)', descripcion: 'Cuidado facial', precio: 60, ofertaActiva: false, precioOferta: 60, imagen: 'crema_johny_boy_original.png' }
+    ];
+
+    // --- Leer precios y detalles dinámicamente ---
+    (function() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const pid = params.get('p') || 'gel_balsamico';
+            
+            // 1. Buscar primero en localStorage
+            let stored = JSON.parse(localStorage.getItem('vj_precios_menudeo'));
+            // 2. Si no hay localStorage, usar el fallback
+            if (!stored) { stored = PRODUCTOS_MENUDEO; }
+            
+            const prod = stored.find(p => p.id === pid);
+            const defaultProd = PRODUCTOS_MENUDEO.find(p => p.id === pid);
+
+            if (prod) {
+                PRECIO_CONFIG.nombreProducto = prod.nombre;
+                PRECIO_CONFIG.descripcion = prod.descripcion;
+                PRECIO_CONFIG.precioNormal = prod.precio;
+                PRECIO_CONFIG.ofertaActiva = prod.ofertaActiva;
+                PRECIO_CONFIG.precioOferta = prod.precioOferta;
+                // La imagen SIEMPRE la sacamos del catálogo estático
+                if (defaultProd) {
+                    PRECIO_CONFIG.imagen = defaultProd.imagen;
+                }
+            }
+        } catch(e) { /* usar valores por defecto */ }
+    })();
+</script>
+<style>
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .form-input {
+        width: 100%; background: white; border: 1px solid #c2c9bb80;
+        border-radius: 0.5rem; padding: 0.75rem 1rem;
+        outline: none; transition: all 0.2s;
+    }
+    .form-input:focus { box-shadow: 0 0 0 2px #154212; border-color: #154212; }
+</style>
+</head>
+<body style="background:#fcf9f4;color:#1c1c19;">
+
+<!-- Header -->
+<header style="position:sticky;top:0;width:100%;z-index:50;background:rgba(255,255,255,0.92);backdrop-filter:blur(8px);border-bottom:1px solid #e5e5e5;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <div style="display:flex;justify-content:space-between;align-items:center;height:80px;padding:0 24px;max-width:1200px;margin:0 auto;">
+        <div style="font-size:22px;font-weight:800;color:#154212;">El Viejito John</div>
+        <div style="display:flex;align-items:center;gap:8px;color:#6b7280;">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:20px;">lock</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Pago Seguro</span>
+        </div>
+    </div>
+</header>
+
+<main style="padding:48px 24px;">
+    <div style="max-width:1200px;margin:0 auto;">
+        <a href="products.html" style="display:inline-flex;align-items:center;gap:6px;color:#6b7280;margin-bottom:24px;font-size:14px;font-weight:600;text-decoration:none;" onmouseover="this.style.color='#154212'" onmouseout="this.style.color='#6b7280'">
+            <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> Volver al catálogo
+        </a>
+        <h1 style="font-size:32px;font-weight:700;color:#154212;margin-bottom:32px;">Finalizar Compra</h1>
+
+        <form id="checkout-form" style="display:grid;grid-template-columns:1fr;gap:48px;">
+            <div style="display:grid;grid-template-columns:1fr;gap:48px;" class="lg-grid">
+
+                <!-- Columna izquierda: Formulario -->
+                <div id="form-col" style="grid-column:1/8;">
+
+                    <!-- Envío -->
+                    <section style="margin-bottom:40px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                            <span style="width:32px;height:32px;border-radius:50%;background:#154212;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">1</span>
+                            <h2 style="font-size:22px;font-weight:700;margin:0;">Información de Envío</h2>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div style="grid-column:1/3;">
+                                <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Correo Electrónico</label>
+                                <input class="form-input" placeholder="ejemplo@correo.com" type="email" required/>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Nombre(s)</label>
+                                <input class="form-input" type="text" required/>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Apellidos</label>
+                                <input class="form-input" type="text" required/>
+                            </div>
+                            <div style="grid-column:1/3;">
+                                <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Dirección Completa</label>
+                                <input class="form-input" placeholder="Calle, número, colonia" type="text" required/>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Ciudad</label>
+                                <input class="form-input" type="text" required/>
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Código Postal</label>
+                                <input class="form-input" type="text" required/>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Pago -->
+                    <section style="margin-bottom:40px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                            <span style="width:32px;height:32px;border-radius:50%;background:#154212;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">2</span>
+                            <h2 style="font-size:22px;font-weight:700;margin:0;">Método de Pago</h2>
+                        </div>
+                        <div style="border:2px solid #154212;border-radius:12px;padding:24px;background:#f6f3ee;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                                <span style="font-weight:700;display:flex;align-items:center;gap:8px;">
+                                    <span class="material-symbols-outlined">credit_card</span>
+                                    Tarjeta de Crédito / Débito
+                                </span>
+                                <div style="display:flex;gap:6px;">
+                                    <div style="width:36px;height:22px;background:white;border:1px solid #e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1d4ed8;">VISA</div>
+                                    <div style="width:36px;height:22px;background:white;border:1px solid #e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#dc2626;">MC</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:16px;">
+                                <div>
+                                    <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Número de Tarjeta</label>
+                                    <input class="form-input" placeholder="0000 0000 0000 0000" type="text"/>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                                    <div>
+                                        <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Vencimiento</label>
+                                        <input class="form-input" placeholder="MM/AA" type="text"/>
+                                    </div>
+                                    <div>
+                                        <label style="display:block;font-size:11px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">CVV</label>
+                                        <input class="form-input" placeholder="123" type="text"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="text-align:center;font-size:13px;color:#6b7280;margin-top:12px;">Al confirmar, serás redirigido a la plataforma segura de <strong>Mercado Pago</strong>.</p>
+                    </section>
+
+                    <!-- Sellos -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div style="padding:16px;background:#f0ede9;border-radius:12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;">
+                            <span class="material-symbols-outlined" style="color:#154212;font-size:28px;">eco</span>
+                            <span style="font-weight:700;font-size:13px;">Fórmula Natural</span>
+                        </div>
+                        <div style="padding:16px;background:#f0ede9;border-radius:12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;">
+                            <span class="material-symbols-outlined" style="color:#154212;font-size:28px;">encrypted</span>
+                            <span style="font-weight:700;font-size:13px;">Pago Encriptado</span>
+                        </div>
+                        <div style="padding:16px;background:#f0ede9;border-radius:12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;">
+                            <span class="material-symbols-outlined" style="color:#154212;font-size:28px;">verified_user</span>
+                            <span style="font-weight:700;font-size:13px;">Garantía de Calidad</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna derecha: Resumen -->
+                <aside id="summary-col" style="grid-column:8/13;">
+                    <div style="background:#e8ece7;padding:32px;border-radius:20px;border:1px solid #c2c9bb40;position:sticky;top:100px;">
+                        <h3 style="font-size:22px;font-weight:700;margin-bottom:20px;">Resumen del Pedido</h3>
+
+                        <!-- Producto -->
+                        <div style="display:flex;gap:16px;padding-bottom:20px;border-bottom:1px solid #c2c9bb;margin-bottom:20px;">
+                            <!-- Imagen real del producto -->
+                            <div style="width:96px;height:120px;background:white;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #e5e5e5;flex-shrink:0;">
+                                <img id="co-product-img" alt="Cargando imagen..."
+                                     style="height:100%;width:100%;object-fit:contain;"
+                                     src="producto.png"/>
+                            </div>
+                            <div style="flex:1;">
+                                <div style="display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+                                    <h4 style="font-weight:700;font-size:16px;margin:0;" id="co-product-name"></h4>
+                                    <span id="co-promo-badge" style="display:none;font-size:11px;font-weight:700;background:#dc2626;color:white;padding:2px 8px;border-radius:9999px;"></span>
+                                </div>
+                                <p style="color:#6b7280;font-size:13px;margin-top:4px;" id="co-product-desc"></p>
+                                <p style="color:#9ca3af;font-size:11px;margin-top:6px;font-style:italic;line-height:1.5;">Producto de uso tópico externo. Favorece la sensación de bienestar. No sustituye consulta médica.</p>
+                                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px;">
+                                    <span style="font-size:13px;color:#6b7280;">Cantidad: 1</span>
+                                    <div style="text-align:right;">
+                                        <span id="co-price-original" style="display:none;color:#9ca3af;text-decoration:line-through;font-size:13px;margin-right:4px;"></span>
+                                        <span id="co-price-final" style="font-weight:800;font-size:18px;color:#154212;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Desglose -->
+                        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;color:#6b7280;font-size:15px;">
+                            <div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span id="co-subtotal"></span></div>
+                            <div style="display:flex;justify-content:space-between;"><span>Envío</span><span id="co-shipping" style="font-weight:700;"></span></div>
+                        </div>
+                        <div style="padding-top:16px;border-top:1px solid #c2c9bb;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                            <span style="font-size:20px;font-weight:700;">Total</span>
+                            <span id="co-total" style="font-size:22px;font-weight:800;color:#154212;"></span>
+                        </div>
+
+                        <!-- Botón -->
+                        <button id="submit-btn" type="submit"
+                            style="width:100%;background:#154212;color:white;padding:18px;border-radius:9999px;font-weight:700;font-size:17px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:opacity 0.2s;box-shadow:0 4px 12px rgba(21,66,18,0.3);"
+                            onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                            <span id="submit-icon" class="material-symbols-outlined">verified_user</span>
+                            <span id="submit-text">Completar Pago Seguro</span>
+                        </button>
+
+                        <!-- Disclaimer COFEPRIS -->
+                        <div style="margin-top:16px;padding:14px;background:white;border-radius:12px;border:1px solid #e5e5e5;">
+                            <p style="font-size:10.5px;line-height:1.6;color:#9ca3af;text-align:center;font-style:italic;margin:0;">
+                                Producto cosmético elaborado con ingredientes naturales para favorecer la apariencia y el bienestar mediante uso tópico externo. No previene, trata ni cura enfermedades. Apto para piel sana. Conforme a NOM-141-SSA1/SCFI-2012.
+                            </p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer style="background:#e5e2dd;border-top:1px solid #c2c9bb;margin-top:64px;padding:40px 24px;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:start;">
+        <div>
+            <div style="font-size:18px;font-weight:800;color:#154212;">El Viejito John</div>
+            <p style="color:#6b7280;font-size:13px;margin-top:4px;">© 2024 Todos los derechos reservados.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            <a style="color:#6b7280;font-size:13px;text-decoration:none;" href="#">Aviso de Privacidad</a>
+            <a style="color:#6b7280;font-size:13px;text-decoration:none;" href="#">Términos y Condiciones</a>
+            <a style="color:#6b7280;font-size:13px;text-decoration:none;" href="#">Contacto</a>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center;">
+            <span class="material-symbols-outlined" style="color:#2d5a27;font-size:32px;">local_shipping</span>
+            <span class="material-symbols-outlined" style="color:#2d5a27;font-size:32px;">verified</span>
+        </div>
+    </div>
+</footer>
+
+<style>
+@media (min-width: 1024px) {
+    .lg-grid { display: grid !important; grid-template-columns: repeat(12, 1fr) !important; }
+}
+@media (max-width: 1023px) {
+    #summary-col { grid-column: auto !important; }
+    #form-col { grid-column: auto !important; }
+}
+</style>
+
+<script>
+    // Renderizar precios dinámicos
+    (function() {
+        const cfg = PRECIO_CONFIG;
+        const fmt = n => '$' + Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const precioFinal = cfg.ofertaActiva ? cfg.precioOferta : cfg.precioNormal;
+        const total = precioFinal + cfg.costoEnvio;
+
+        document.getElementById('co-product-name').textContent = cfg.nombreProducto;
+        document.getElementById('co-product-desc').textContent = cfg.descripcion;
+        
+        const imgEl = document.getElementById('co-product-img');
+        if (cfg.imagen && imgEl) {
+            imgEl.src = cfg.imagen;
+            imgEl.alt = cfg.nombreProducto;
+        }
+
+        const origEl = document.getElementById('co-price-original');
+        const finalEl = document.getElementById('co-price-final');
+        const badgeEl = document.getElementById('co-promo-badge');
+
+        if (cfg.ofertaActiva) {
+            origEl.textContent = fmt(cfg.precioNormal);
+            origEl.style.display = 'inline';
+            finalEl.textContent = fmt(cfg.precioOferta);
+            finalEl.style.color = '#dc2626';
+            badgeEl.textContent = cfg.textoPromo;
+            badgeEl.style.display = 'inline';
+        } else {
+            finalEl.textContent = fmt(cfg.precioNormal);
+        }
+
+        document.getElementById('co-subtotal').textContent = fmt(precioFinal);
+        const shipEl = document.getElementById('co-shipping');
+        if (cfg.costoEnvio === 0) { shipEl.textContent = 'GRATIS'; shipEl.style.color = '#47842E'; }
+        else shipEl.textContent = fmt(cfg.costoEnvio);
+        document.getElementById('co-total').textContent = fmt(total);
+    })();
+
+    // Redirigir a Mercado Pago
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        const icon = document.getElementById('submit-icon');
+        const txt = document.getElementById('submit-text');
+        btn.disabled = true; btn.style.opacity = '0.7';
+        icon.textContent = 'hourglass_empty';
+        txt.textContent = 'Redirigiendo a Mercado Pago...';
+        setTimeout(() => { window.location.href = MERCADO_PAGO_LINK; }, 1200);
+    });
+</script>
+</body></html>

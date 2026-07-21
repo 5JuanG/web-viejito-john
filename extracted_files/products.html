@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Nuestros Productos | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#154212",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#2d5a27",
+                        "on-primary-container": "#9dd090",
+                        "primary-fixed": "#bcf0ae",
+                        "secondary": "#725a42",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf9f4",
+                        "on-surface": "#1c1c19",
+                        "surface-variant": "#e5e2dd",
+                        "on-surface-variant": "#42493e",
+                        "surface-cream": "#FDFBF7",
+                        "outline-variant": "#c2c9bb",
+                        "balm-red": "#B23B25"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-desktop": "48px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-fixed selection:text-primary">
+
+    <!-- TopNavBar -->
+    <nav class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
+        <div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+            <a href="index.html" class="font-headline-md text-2xl font-bold text-primary hover:opacity-80 transition-opacity">
+                El Viejito John
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="text-primary font-bold transition-colors duration-200" href="products.html">Productos</a>
+                <a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="index.html#benefits">Beneficios</a>
+                <a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="index.html#testimonials">Testimonios</a>
+                <a class="text-on-surface-variant hover:text-primary transition-colors duration-200" href="index.html#about">Nosotros</a>
+            </div>
+            <a href="checkout.html" class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold hover:bg-primary-container transition-all active:scale-95 inline-block">
+                Ver Carrito
+            </a>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="pt-20 pb-16 bg-surface-cream border-b border-outline-variant/30 text-center px-gutter">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-primary mb-4">Catálogo de Productos</h1>
+        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Soluciones naturales de herbolaria tradicional para el cuidado de la piel, alivio muscular y bienestar integral.</p>
+    </header>
+
+    <main class="max-w-container-max mx-auto px-gutter py-24 space-y-24">
+
+        <!-- CATEGORY: Alivio Muscular -->
+        <section class="reveal active">
+            <div class="flex items-center gap-4 mb-8 border-b border-outline-variant/30 pb-4">
+                <span class="material-symbols-outlined text-4xl text-primary">fitness_center</span>
+                <h2 class="text-3xl font-bold text-primary">Línea de Alivio Muscular</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Gel Balsámico Clásico -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="gel_balsamico_original.png" alt="Gel Balsámico Clásico" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Gel Balsámico del Viejito John</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">Desde $24.99</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Fórmula ancestral con Árnica, Gaultheria, Mentol, Eucalipto, Alcanfor, Clavo y Ajo. Favorece la sensación de alivio y bienestar muscular.</p>
+                        <a href="checkout-gel.html?p=gel_balsamico" class="w-full text-center bg-surface-variant text-on-surface font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Gel Vari-Spa -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="gel_varispa_700g_original.png" alt="Gel Vari-Spa 700g" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Gel Vari-Spa (700 grs)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$350.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Presentación institucional para masaje terapéutico prolongado. Excelente para favorecer la relajación en áreas extensas del cuerpo.</p>
+                        <a href="checkout-gel.html?p=gel_varispa" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Bálsamo del Viejito John -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="balsamo_viejito_john_original.png" alt="Bálsamo" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Bálsamo del Viejito John</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$95.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Ungüento tradicional de textura rica. Ofrece una sensación cálida y reconfortante para el cuidado de músculos tensos.</p>
+                        <a href="checkout-gel.html?p=balsamo_viejito" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Spray del Viejito John -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col relative">
+                    <img src="spray_viejito_john_original.png" alt="Spray Viejito John" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Spray del Viejito John</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$120.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Alta concentración para masajes profundos. Favorece la relajación muscular rápida en zonas con fatiga o tensión.</p>
+                        <a href="checkout-gel.html?p=spray_viejito" class="w-full text-center bg-surface-variant text-on-surface font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Ungüento del Viejito John (Tubo) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="unguento_viejito_john_tubo_original.png" alt="Ungüento en tubo" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Ungüento del Viejito John (Tubo)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$75.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">La fórmula clásica ahora en práctica presentación de tubo para fácil aplicación y cuidado muscular en cualquier lugar.</p>
+                        <a href="checkout-gel.html?p=unguento_tubo" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CATEGORY: Cuidado Dermatológico y Podológico -->
+        <section class="reveal">
+            <div class="flex items-center gap-4 mb-8 border-b border-outline-variant/30 pb-4">
+                <span class="material-symbols-outlined text-4xl text-primary">footprint</span>
+                <h2 class="text-3xl font-bold text-primary">Cuidado de Pies y Piel (Keratex)</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Keratex Pomada y Solución -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col relative">
+                    <img src="keratex_pomada_original.png" alt="Cuidado cosmético de uñas y piel" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Keratex Pomada (8g)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$60.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-2">Pomada queratolítica de uso tópico para cuidado cosmético.</p>
+                        <p class="text-on-surface-variant text-sm font-bold mb-4 flex-grow">Favorece la apariencia estética y textura natural de la piel. Suave con tu cuerpo.</p>
+                        <a href="checkout-keratex.html?p=keratex_pomada" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Tubo Keratex Pomada (Nueva Presentación) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="keratex_pomada_tubo_nueva_original.png" alt="Tubo Keratex Pomada" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Tubo Keratex Pomada (Nueva Presentación)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$80.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Nuestra fórmula de siempre ahora en tubo. Facilita la aplicación para el cuidado y suavidad profunda de zonas resecas.</p>
+                        <a href="checkout-keratex.html?p=keratex_tubo" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Keratex Gotas / Solución -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col relative">
+                    <img src="keratex_gotas_original.png" alt="Keratex Gotas" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Solución Gotas Keratex (Nueva Presentación)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$60.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-2">Solución líquida de aplicación precisa para uñas y piel.</p>
+                        <p class="text-on-surface-variant text-sm font-bold mb-4 flex-grow">Mejora el aspecto visual y grosor de las uñas devolviéndoles su brillo natural. No arde al aplicar.</p>
+                        <a href="checkout-keratex.html?p=keratex_gotas" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Fungiderm Keratex -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col relative">
+                    <img src="fungiderm_original.png" alt="Cuidado refrescante para pies" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Fungiderm Keratex Pomada (10g)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$60.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-2">Formulado con extractos naturales, Óxido de Zinc y Azufre.</p>
+                        <p class="text-on-surface-variant text-sm font-bold mb-4 flex-grow">Ayuda a mantener la piel fresca, reduciendo la sensación de humedad y previniendo el mal olor.</p>
+                        <a href="checkout-keratex.html?p=fungiderm" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Talco Keratex -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="talco_keratex_original.png" alt="Talco Keratex" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Talco Keratex (125g)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$95.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Talco de uso diario de rápida absorción. Ayuda a mantener los pies secos, frescos y libres de mal olor durante todo el día.</p>
+                        <a href="checkout-keratex.html?p=talco_keratex" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Spray Keratex -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="spray_keratex_original.png" alt="Spray Keratex" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Spray Keratex (60ml)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$95.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Spray refrescante para el cuidado e higiene diaria de los pies. Proporciona una agradable sensación de limpieza y bienestar.</p>
+                        <a href="checkout-keratex.html?p=spray_keratex" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Sulfato de Cobre -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="sulfato_original.png" alt="Higiene profunda de la piel" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Sulfato de Cobre (5 sobres)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$35.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Solución de limpieza profunda para disolver en agua tibia. Favorece la higiene y el cuidado estético de la piel en pies y piernas.</p>
+                        <a href="checkout-keratex.html?p=sulfato_cobre" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CATEGORY: Cuidado Respiratorio (NUEVO) -->
+        <section class="reveal">
+            <div class="flex items-center gap-4 mb-8 border-b border-outline-variant/30 pb-4">
+                <span class="material-symbols-outlined text-4xl text-primary">air</span>
+                <h2 class="text-3xl font-bold text-primary">Cuidado Respiratorio</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Inhalador Viejito John -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="inhalador_viejito_john_original.png" alt="Inhalador Viejito John" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Inhalador Viejito John</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$45.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Aroma refrescante a base de eucalipto y mentol. Práctico formato de bolsillo que brinda una sensación de bienestar inmediata al inhalar.</p>
+                        <a href="checkout-gel.html?p=inhalador" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+                <!-- Ungüento pulmonar -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="unguento_pulmonar_tubo_original.png" alt="Ungüento Pulmonar en tubo" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Ungüento Pulmonar (en Tubo)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$80.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Bálsamo aromático ideal para frotar en pecho y espalda. Su fórmula ayuda a relajar y ofrece una sensación térmica de alivio y frescura.</p>
+                        <a href="checkout-gel.html?p=unguento_pulmonar" class="w-full text-center border border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary/5 transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CATEGORY: Cuidado Facial -->
+        <section class="reveal">
+            <div class="flex items-center gap-4 mb-8 border-b border-outline-variant/30 pb-4">
+                <span class="material-symbols-outlined text-4xl text-primary">face_retouching_natural</span>
+                <h2 class="text-3xl font-bold text-primary">Cuidado Facial</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Crema Johny Boy -->
+                <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col relative">
+                    <img src="crema_johny_boy_original.png" alt="Crema Johny Boy" class="w-full h-48 object-contain p-4 bg-white">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-primary">Crema Johny Boy (8g)</h3>
+                            <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">$60.00</span>
+                        </div>
+                        <p class="text-on-surface-variant text-sm font-bold mb-2">Ideal para el cuidado estético de imperfecciones faciales.</p>
+                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">Aplicación nocturna tras lavar con jabón neutro. Ayuda a mejorar la apariencia de la piel, dejándola más limpia y uniforme.</p>
+                        <a href="checkout-gel.html?p=crema_johny_boy" class="w-full text-center bg-surface-variant text-on-surface font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-colors">Comprar</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CATEGORY: Ventas al Mayoreo -->
+        <section class="reveal bg-primary/5 p-8 md:p-12 rounded-3xl border border-primary/20 mt-12">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-outline-variant/30 pb-6">
+                <div class="flex items-center gap-4">
+                    <span class="material-symbols-outlined text-4xl text-primary font-bold">store</span>
+                    <div>
+                        <h2 class="text-3xl font-bold text-primary">Distribución y Ventas al Mayoreo</h2>
+                        <p class="text-sm text-on-surface-variant">Precios preferenciales por caja cerrada para farmacias, tiendas y distribuidores.</p>
+                    </div>
+                </div>
+                <a href="https://wa.me/5218113160143?text=Hola,%20busco%20información%20para%20compras%20al%20mayoreo%20personalizadas." target="_blank" class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+                    <span class="material-symbols-outlined">chat</span> Cotización Personalizada
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Tarjeta 1: Keratex Pomada 200 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">200 PIEZAS</div>
+                    <img src="keratex_pomada_caja_200_original.png" alt="Keratex Pomada Caja 200" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Keratex Pomada (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja cerrada de 200 pzas (8g c/u). Ideal para reventa.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$12,000</span>
+                            <span class="text-primary font-bold text-lg block">$8,000.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=keratex_pomada_200" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Keratex Gotas 100 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">100 PIEZAS</div>
+                    <img src="keratex_gotas_caja_100_original.png" alt="Keratex Gotas Caja 100" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Keratex Gotas (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja cerrada de 100 pzas. Gotero dosificador.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$6,000</span>
+                            <span class="text-primary font-bold text-lg block">$4,000.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=keratex_gotas_100" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: Gel Balsámico 12 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">12 PIEZAS</div>
+                    <img src="gel_balsamico_original.png" alt="Gel Balsámico Viejito John" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Gel Balsámico 700g (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 12 tarros de 700g. Fórmula clásica.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$11,400</span>
+                            <span class="text-primary font-bold text-lg block">$7,200.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=gel_balsamico_12" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 4: Spray Viejito John 24 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">24 PIEZAS</div>
+                    <img src="spray_viejito_john_original.png" alt="Spray Viejito John" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Spray Viejito John (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 24 pzas. Spray de alivio rápido.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$2,880</span>
+                            <span class="text-primary font-bold text-lg block">$2,160.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=spray_viejito_24" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 5: Bálsamo Viejito John 24 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">24 PIEZAS</div>
+                    <img src="balsamo_viejito_john_original.png" alt="Bálsamo Viejito John" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Bálsamo Viejito John (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 24 pzas. Bálsamo tradicional.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$2,280</span>
+                            <span class="text-primary font-bold text-lg block">$1,680.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=balsamo_viejito_24" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 6: Crema Johny Boy 50 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">50 PIEZAS</div>
+                    <img src="crema_johny_boy_original.png" alt="Crema Johny Boy" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Crema Johny Boy (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 50 pzas (8g). Cuidado facial.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$3,000</span>
+                            <span class="text-primary font-bold text-lg block">$2,000.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=crema_johny_boy_50" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 7: Gel Vari-Spa 12 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">12 PIEZAS</div>
+                    <img src="gel_varispa_700g_original.png" alt="Gel Vari-Spa" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Gel Vari-Spa 700g (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 12 tarros de 700g. Gel corporal.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$4,200</span>
+                            <span class="text-primary font-bold text-lg block">$3,000.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=gel_varispa_12" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 8: Tubo Keratex Pomada 50 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">50 PIEZAS</div>
+                    <img src="keratex_pomada_tubo_nueva_original.png" alt="Tubo Keratex Pomada" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Tubo Keratex Pomada (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 50 tubos. Fácil aplicación.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$4,000</span>
+                            <span class="text-primary font-bold text-lg block">$2,800.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=keratex_tubo_50" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 9: Inhalador Viejito John 50 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">50 PIEZAS</div>
+                    <img src="inhalador_viejito_john_original.png" alt="Inhalador Viejito John" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Inhalador Viejito (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 50 inhaladores de bolsillo.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$2,250</span>
+                            <span class="text-primary font-bold text-lg block">$1,600.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=inhalador_viejito_50" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 10: Ungüento Viejito John Tubo 50 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">50 PIEZAS</div>
+                    <img src="unguento_viejito_john_tubo_original.png" alt="Ungüento Viejito John Tubo" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Ungüento Viejito Tubo (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 50 tubos. Alivio muscular.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$3,750</span>
+                            <span class="text-primary font-bold text-lg block">$2,600.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=unguento_viejito_50" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 11: Ungüento Pulmonar Tubo 50 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">50 PIEZAS</div>
+                    <img src="unguento_pulmonar_tubo_original.png" alt="Ungüento Pulmonar en Tubo" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Ungüento Pulmonar (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 50 tubos. Frotación balsámica.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$4,000</span>
+                            <span class="text-primary font-bold text-lg block">$2,800.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=unguento_pulmonar_50" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 12: Talco Keratex 24 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">24 PIEZAS</div>
+                    <img src="talco_keratex_original.png" alt="Talco Keratex" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Talco Keratex 125g (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 24 envases. Cuidado de pies.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$2,280</span>
+                            <span class="text-primary font-bold text-lg block">$1,680.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=talco_keratex_24" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 13: Fungiderm Keratex 50 -->
+                <div class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-all flex flex-col relative">
+                    <div class="absolute top-3 left-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">50 PIEZAS</div>
+                    <img src="fungiderm_original.png" alt="Fungiderm Keratex Pomada" class="w-full h-40 object-contain p-4 bg-white" onerror="this.src='producto.png'">
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="font-bold text-primary text-base mb-1">Fungiderm Keratex (Mayoreo)</h3>
+                        <p class="text-[11px] text-on-surface-variant mb-3">Caja con 50 pzas (10g). Piel fresca y sin mal olor.</p>
+                        <div class="mb-4">
+                            <span class="text-xs text-on-surface-variant line-through">$3,000</span>
+                            <span class="text-primary font-bold text-lg block">$2,200.00</span>
+                        </div>
+                        <a href="checkout-mayoreo.html?p=fungiderm_keratex_50" class="w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-surface-variant w-full py-12 border-t border-outline-variant/50">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-gutter max-w-container-max mx-auto">
+            <div>
+                <div class="font-bold text-xl text-primary mb-4">El Viejito John</div>
+                <p class="text-on-surface-variant text-sm mb-6 max-w-xs">
+                    Herbolaria tradicional y productos especializados para el cuidado de la piel y alivio muscular.
+                </p>
+            </div>
+            <div class="md:col-span-2 grid grid-cols-2 gap-8">
+                <div>
+                    <h4 class="font-bold text-primary mb-4">Categorías</h4>
+                    <ul class="space-y-2 text-sm text-on-surface-variant">
+                        <li><a href="#" class="hover:text-primary">Alivio Muscular</a></li>
+                        <li><a href="#" class="hover:text-primary">Cuidado de Pies</a></li>
+                        <li><a href="#" class="hover:text-primary">Cuidado Facial</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-primary mb-4">Contacto</h4>
+                    <ul class="space-y-2 text-sm text-on-surface-variant">
+                        <li>Ventas por Mayoreo</li>
+                        <li>Atención al Cliente</li>
+                        <li>Envíos a todo el país</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-container-max mx-auto px-gutter mt-12 pt-8 border-t border-outline-variant/30 text-center text-sm text-on-surface-variant">
+            <p>© 2024 El Viejito John. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        function reveal() {
+            const reveals = document.querySelectorAll(".reveal");
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        // --- Sincronizar precios con Admin (localStorage) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const fmt = n => '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            
+            const menudeo = JSON.parse(localStorage.getItem('vj_precios_menudeo')) || [];
+            const mayoreo = JSON.parse(localStorage.getItem('vj_precios_mayoreo')) || [];
+            const allProducts = [...menudeo, ...mayoreo];
+            
+            if (allProducts.length === 0) return;
+
+            document.querySelectorAll('a[href*="?p="]').forEach(link => {
+                const urlParams = new URLSearchParams(link.href.split('?')[1]);
+                const pid = urlParams.get('p');
+                if (!pid) return;
+
+                const prodData = allProducts.find(p => p.id === pid);
+                if (!prodData) return;
+
+                const card = link.closest('.bg-white');
+                if (!card) return;
+
+                const finalPrice = prodData.ofertaActiva ? prodData.precioOferta : prodData.precio;
+
+                // 1. Caso Menudeo (precio en span con fondo de color)
+                const menudeoSpan = card.querySelector('span.bg-primary\\/10');
+                if (menudeoSpan) {
+                    menudeoSpan.textContent = fmt(finalPrice);
+                    return;
+                }
+
+                // 2. Caso Mayoreo (precios en el div.mb-4)
+                const mayoreoContainer = card.querySelector('.mb-4');
+                if (mayoreoContainer) {
+                    const spans = mayoreoContainer.querySelectorAll('span');
+                    if (spans.length >= 2) { 
+                        // spans[0] es el precio viejo (line-through), spans[1] es el precio final
+                        if (prodData.ofertaActiva) {
+                            spans[0].textContent = fmt(prodData.precio);
+                            spans[1].textContent = fmt(prodData.precioOferta);
+                            spans[0].style.display = '';
+                        } else {
+                            spans[0].style.display = 'none';
+                            spans[1].textContent = fmt(prodData.precio);
+                        }
+                    } else if (spans.length === 1) {
+                        spans[0].textContent = fmt(finalPrice);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

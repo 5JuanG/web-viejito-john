@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo ERP | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#154212",
+                        "primary-light": "#2d5a27",
+                        "surface": "#f3f4f6",
+                        "card": "#ffffff",
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-sans text-gray-800 antialiased flex h-screen overflow-hidden" x-data="erpSystem()">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-primary text-white flex flex-col shadow-xl z-20 hidden md:flex">
+        <div class="h-20 flex items-center px-6 border-b border-white/10">
+            <span class="material-symbols-outlined mr-3 text-3xl text-green-300">spa</span>
+            <h1 class="text-xl font-bold tracking-wide">Viejito John</h1>
+        </div>
+        <div class="px-6 py-4 text-xs font-semibold text-green-300/60 uppercase tracking-wider">Gestión</div>
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+            <a href="#" @click.prevent="currentTab = 'dashboard'" :class="currentTab === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/5'" class="flex items-center gap-3 px-4 py-3 text-white rounded-xl transition-colors">
+                <span class="material-symbols-outlined">dashboard</span> <span class="font-medium">Resumen</span>
+            </a>
+            <a href="#" @click.prevent="currentTab = 'inventory'" :class="currentTab === 'inventory' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-white">
+                <span class="material-symbols-outlined">inventory_2</span> <span class="font-medium">Materia Prima</span>
+            </a>
+            <a href="#" @click.prevent="currentTab = 'formulas'" :class="currentTab === 'formulas' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-white">
+                <span class="material-symbols-outlined">science</span> <span class="font-medium">Fórmulas / Costos</span>
+            </a>
+            <a href="#" @click.prevent="currentTab = 'sales'" :class="currentTab === 'sales' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-white">
+                <span class="material-symbols-outlined">point_of_sale</span> <span class="font-medium">Ventas (POS)</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-20 bg-card shadow-sm flex items-center justify-between px-8 z-10">
+            <h2 class="text-2xl font-bold text-gray-800" x-text="getTabTitle()">Panel de Control</h2>
+            <div class="flex items-center gap-3 border-l pl-6">
+                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">VJ</div>
+                <div>
+                    <p class="text-sm font-bold text-gray-800">Administrador</p>
+                    <p class="text-xs text-red-500 font-bold">Modo Local</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Main Area -->
+        <main class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- VISTA: DASHBOARD -->
+            <div x-show="currentTab === 'dashboard'">
+                <div class="bg-primary-light/10 text-primary-light p-4 rounded-xl flex items-start gap-4 mb-8">
+                    <span class="material-symbols-outlined">info</span>
+                    <div>
+                        <h4 class="font-bold">Sistema ERP Operativo</h4>
+                        <p class="text-sm">Ve a la pestaña de "Ventas (POS)" para registrar una venta. El sistema descontará automáticamente los insumos utilizados.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                            <span class="material-symbols-outlined text-3xl">payments</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Ingresos Totales</p>
+                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getTotalSalesRevenue().toFixed(2)"></span></h3>
+                        </div>
+                    </div>
+                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                            <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Inversión (Compras)</p>
+                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getTotalInvestment().toFixed(2)"></span></h3>
+                        </div>
+                    </div>
+                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Ganancia Neta Bruta</p>
+                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getNetProfit().toFixed(2)"></span></h3>
+                        </div>
+                    </div>
+                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                            <span class="material-symbols-outlined text-3xl">inventory_2</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Valor en Almacén</p>
+                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getCurrentInventoryValue().toFixed(2)"></span></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA: MATERIA PRIMA (INVENTARIO) -->
+            <div x-show="currentTab === 'inventory'" style="display: none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Inventario de Insumos</h3>
+                    <div class="flex gap-4">
+                        <!-- Filtro por Producto -->
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">filter_alt</span>
+                            <select x-model="filterByProductIndex" class="pl-10 rounded-lg border-gray-300 w-56 text-sm text-gray-600">
+                                <option value="">Todos los insumos</option>
+                                <template x-for="(prod, idx) in products" :key="idx">
+                                    <option :value="idx" x-text="'Usados en: ' + prod.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <!-- Buscador -->
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">search</span>
+                            <input type="text" x-model="searchInventory" placeholder="Buscar insumo..." class="pl-10 rounded-lg border-gray-300 w-48 text-sm">
+                        </div>
+                        <button @click="showAddInventory = !showAddInventory; isRestocking = false; isEditingInventory = false; cancelInventoryForm(); showAddInventory = true;" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nuevo Insumo</button>
+                    </div>
+                </div>
+
+                <!-- Formulario Agregar/Reabastecer/Editar Insumo -->
+                <div x-show="showAddInventory || isRestocking || isEditingInventory" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 border-t-4 border-t-primary" x-transition>
+                    <h4 class="font-bold mb-4 text-primary" x-text="isRestocking ? 'Reabastecer Insumo Existente' : (isEditingInventory ? 'Editar Insumo' : 'Registrar Insumo Totalmente Nuevo')"></h4>
+                    <form @submit.prevent="saveInventoryItem" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Nombre (Ej. Extracto Eucalipto)</label>
+                            <input type="text" x-model="newItem.name" required class="w-full rounded-lg border-gray-300" :disabled="isRestocking" :class="isRestocking ? 'bg-gray-100' : ''">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Unidad de Medida</label>
+                            <select x-model="newItem.unit" class="w-full rounded-lg border-gray-300" :disabled="isRestocking" :class="isRestocking ? 'bg-gray-100' : ''">
+                                <option value="ml">Mililitros (ml)</option>
+                                <option value="L">Litros (L)</option>
+                                <option value="g">Gramos (g)</option>
+                                <option value="kg">Kilogramos (kg)</option>
+                                <option value="pz">Pieza / Unidad</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1" x-text="isEditingInventory ? 'Corregir Costo ($)' : 'Costo Total Pagado ($)'"></label>
+                            <input type="number" step="0.01" x-model="newItem.cost" required placeholder="Ej. 500" class="w-full rounded-lg border-gray-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1" x-text="isRestocking ? 'Cantidad Extra Comprada' : (isEditingInventory ? 'Corregir Stock' : 'Cantidad comprada')"></label>
+                            <input type="number" step="0.001" x-model="newItem.qty" required placeholder="Ej. 1000" class="w-full rounded-lg border-gray-300">
+                        </div>
+                        <div class="md:col-span-5 flex justify-end gap-2 mt-2">
+                            <button type="button" @click="cancelInventoryForm" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold" x-text="isRestocking ? 'Agregar al Stock' : (isEditingInventory ? 'Guardar Cambios' : 'Guardar Insumo')"></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                                <th class="px-6 py-4 font-medium">Insumo</th>
+                                <th class="px-6 py-4 font-medium">Stock Actual</th>
+                                <th class="px-6 py-4 font-medium">Costo Promedio (Unitario)</th>
+                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <template x-for="(item, index) in filteredInventory" :key="index">
+                                <tr class="hover:bg-gray-50" :class="item.qty <= 0 ? 'bg-red-50' : ''">
+                                    <td class="px-6 py-4 font-bold text-gray-800" x-text="item.name"></td>
+                                    <td class="px-6 py-4">
+                                        <span x-text="item.qty.toFixed(4)" :class="item.qty <= 0 ? 'text-red-600 font-bold' : ''"></span> <span x-text="item.unit" class="text-gray-500"></span>
+                                        <span x-show="item.qty <= 0" class="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">AGOTADO</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-green-600 font-medium">
+                                        $<span x-text="(item.cost / (item.originalQty || item.qty || 1)).toFixed(4)"></span> / <span x-text="item.unit"></span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                        <button @click="editInventoryItem(item.originalIndex)" title="Editar o Corregir Nombre" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">edit</button>
+                                        <button @click="startRestock(item.originalIndex)" title="Comprar Más (Reabastecer)" class="text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium bg-blue-50 px-2 py-1 rounded">
+                                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Reabastecer
+                                        </button>
+                                        <button @click="deleteInventoryItem(item.originalIndex)" title="Borrar Insumo" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm pt-1">delete</button>
+                                    </td>
+                                </tr>
+                            </template>
+                            <tr x-show="filteredInventory.length === 0">
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-400">No se encontraron insumos que coincidan con la búsqueda.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VISTA: FORMULAS / COSTOS -->
+            <div x-show="currentTab === 'formulas'" style="display: none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Fórmulas y Productos Finales</h3>
+                    <div class="flex gap-4">
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">search</span>
+                            <input type="text" x-model="searchProduct" placeholder="Buscar fórmula..." class="pl-10 rounded-lg border-gray-300 w-64 text-sm">
+                        </div>
+                        <button @click="openAddFormula()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nueva Fórmula</button>
+                    </div>
+                </div>
+
+                <!-- Formulario Agregar/Editar Producto -->
+                <div x-show="showAddProduct" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 border-t-4 border-t-primary" x-transition>
+                    <h4 class="font-bold mb-4 text-primary" x-text="editingProductIndex !== null ? 'Editando Fórmula' : 'Diseñar Nueva Fórmula'"></h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-4 md:col-span-1 border-r border-gray-100 pr-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Nombre del Producto Final</label>
+                                <input type="text" x-model="newProduct.name" placeholder="Ej. Gel Viejito John 60ml" class="w-full rounded-lg border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Precio Venta Público ($)</label>
+                                <input type="number" step="0.01" x-model="newProduct.retailPrice" class="w-full rounded-lg border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Precio Mayoreo ($)</label>
+                                <input type="number" step="0.01" x-model="newProduct.wholesalePrice" class="w-full rounded-lg border-gray-300">
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2 space-y-4">
+                            <label class="block text-sm font-bold text-gray-700">Receta / Insumos requeridos</label>
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1">
+                                    <select x-model="tempIngredient.inventoryIndex" class="w-full rounded-lg border-gray-300">
+                                        <option value="">-- Elige un insumo --</option>
+                                        <template x-for="(inv, idx) in inventory" :key="idx">
+                                            <option :value="idx" x-text="inv.name + ' (por ' + inv.unit + ')'"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="w-32">
+                                    <input type="number" step="0.001" x-model="tempIngredient.qty" placeholder="Ej. 1" class="w-full rounded-lg border-gray-300">
+                                </div>
+                                <button type="button" @click="addIngredientToFormula" class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-black">Agregar</button>
+                            </div>
+
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mt-4 min-h-[100px]">
+                                <ul class="space-y-2 text-sm">
+                                    <template x-for="(ing, idx) in newProduct.ingredients" :key="idx">
+                                        <li class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                            <span>
+                                                <strong x-text="ing.qty"></strong> <span x-text="inventory[ing.inventoryIndex]?.unit"></span> de <span x-text="inventory[ing.inventoryIndex]?.name"></span>
+                                            </span>
+                                            <div class="flex items-center gap-4">
+                                                <span class="text-green-600 font-medium">$<span x-text="calculateIngredientCost(ing).toFixed(2)"></span></span>
+                                                <button type="button" @click="newProduct.ingredients.splice(idx, 1)" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm">close</button>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                                <div class="mt-4 pt-2 border-t border-gray-200 text-right">
+                                    <span class="text-xs text-gray-500 uppercase font-bold">Costo Total de Fabricación: </span>
+                                    <span class="text-lg font-black text-green-700">$<span x-text="calculateFormulaCost(newProduct.ingredients).toFixed(2)"></span></span>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-2 mt-4">
+                                <button type="button" @click="showAddProduct = false; editingProductIndex = null;" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                                <button type="button" @click="saveProduct" class="px-6 py-2 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light" x-text="editingProductIndex !== null ? 'Guardar Cambios' : 'Crear Fórmula'"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles de Formula (Modal) -->
+                <div x-show="viewingProduct" style="display: none;" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative" @click.outside="viewingProduct = null">
+                        <button @click="viewingProduct = null" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800"><span class="material-symbols-outlined">close</span></button>
+                        <h3 class="text-2xl font-bold text-primary mb-1" x-text="viewingProduct?.name"></h3>
+                        <p class="text-sm text-gray-500 mb-6">Detalle de receta e ingredientes</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-xl mb-6">
+                            <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-2">Insumos Utilizados:</h4>
+                            <ul class="space-y-3">
+                                <template x-for="(ing, idx) in viewingProduct?.ingredients" :key="idx">
+                                    <li class="flex justify-between items-center text-sm">
+                                        <div>
+                                            <span class="font-bold text-gray-800" x-text="ing.qty + ' ' + inventory[ing.inventoryIndex]?.unit"></span>
+                                            <span class="text-gray-600 ml-1" x-text="inventory[ing.inventoryIndex]?.name"></span>
+                                        </div>
+                                        <span class="font-bold text-green-700">$<span x-text="calculateIngredientCost(ing).toFixed(2)"></span></span>
+                                    </li>
+                                </template>
+                            </ul>
+                            <div class="mt-4 pt-3 border-t border-gray-200 flex justify-between font-black text-lg">
+                                <span>Costo Fabricación:</span>
+                                <span class="text-red-600">$<span x-text="calculateFormulaCost(viewingProduct?.ingredients).toFixed(2)"></span></span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1 bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
+                                <p class="text-xs text-blue-600 font-bold uppercase">Precio Venta</p>
+                                <p class="text-lg font-bold text-gray-800">$<span x-text="viewingProduct?.retailPrice"></span></p>
+                            </div>
+                            <div class="flex-1 bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
+                                <p class="text-xs text-purple-600 font-bold uppercase">Margen</p>
+                                <p class="text-lg font-bold text-gray-800"><span x-text="calculateMargin(calculateFormulaCost(viewingProduct?.ingredients), viewingProduct?.retailPrice)"></span>%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                                <th class="px-6 py-4 font-medium">Producto Final</th>
+                                <th class="px-6 py-4 font-medium">Costo Fab.</th>
+                                <th class="px-6 py-4 font-medium">P. Menudeo (Margen)</th>
+                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <template x-for="(prod, idx) in filteredProducts" :key="idx">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-bold text-gray-800" x-text="prod.name"></td>
+                                    <td class="px-6 py-4 text-red-600 font-bold">$<span x-text="calculateFormulaCost(prod.ingredients).toFixed(2)"></span></td>
+                                    <td class="px-6 py-4">
+                                        $<span x-text="prod.retailPrice"></span> 
+                                        <span class="text-xs ml-2 text-green-600 bg-green-50 px-2 py-1 rounded-full font-bold" x-text="calculateMargin(calculateFormulaCost(prod.ingredients), prod.retailPrice) + '%'"></span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                        <button @click="viewingProduct = prod" title="Ver Receta" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">visibility</button>
+                                        <button @click="editProduct(prod.originalIndex)" title="Editar Fórmula" class="text-blue-500 hover:text-blue-800 material-symbols-outlined text-sm bg-blue-50 p-1.5 rounded">edit</button>
+                                        <button @click="deleteProduct(prod.originalIndex)" title="Borrar Producto" class="text-red-500 hover:text-red-800 material-symbols-outlined text-sm bg-red-50 p-1.5 rounded">delete</button>
+                                    </td>
+                                </tr>
+                            </template>
+                            <tr x-show="filteredProducts.length === 0">
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-400">No se encontraron productos.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VISTA: VENTAS (POS) -->
+            <div x-show="currentTab === 'sales'" style="display: none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Registro de Ventas (Descuenta Inventario)</h3>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 border-l-4 border-l-primary">
+                    <form @submit.prevent="registerSale" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">¿Qué producto vendiste?</label>
+                            <select x-model="newSale.productIndex" required class="w-full rounded-lg border-gray-300 focus:ring-primary">
+                                <option value="">-- Selecciona el producto --</option>
+                                <template x-for="(prod, idx) in products" :key="idx">
+                                    <option :value="idx" x-text="prod.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Cantidad</label>
+                            <input type="number" min="1" x-model="newSale.qty" required class="w-full rounded-lg border-gray-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Tipo de Precio</label>
+                            <select x-model="newSale.type" class="w-full rounded-lg border-gray-300">
+                                <option value="retail">Menudeo</option>
+                                <option value="wholesale">Mayoreo</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-4 flex justify-end">
+                            <button type="submit" class="px-6 py-3 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light flex items-center gap-2">
+                                <span class="material-symbols-outlined">shopping_cart_checkout</span> Registrar Venta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100"><h4 class="font-bold text-gray-700">Historial de Ventas</h4></div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">Producto</th>
+                                <th class="px-6 py-4 font-medium">Cantidad</th>
+                                <th class="px-6 py-4 font-medium">Tipo</th>
+                                <th class="px-6 py-4 font-medium text-right">Ingreso Generado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <template x-for="(sale, idx) in [...sales].reverse()" :key="idx">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 font-medium text-gray-800" x-text="sale.productName"></td>
+                                    <td class="px-6 py-4 font-bold" x-text="sale.qty"></td>
+                                    <td class="px-6 py-4">
+                                        <span x-text="sale.type === 'retail' ? 'Menudeo' : 'Mayoreo'" :class="sale.type === 'retail' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="px-2 py-1 rounded text-xs font-bold"></span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-bold text-green-700">$<span x-text="sale.revenue.toFixed(2)"></span></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Lógica de la Aplicación -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('erpSystem', () => ({
+                currentTab: 'inventory',
+                
+                // UI States
+                showAddInventory: false,
+                isRestocking: false,
+                isEditingInventory: false,
+                editingInventoryIndex: null,
+                restockingIndex: null,
+                searchInventory: '',
+                filterByProductIndex: '',
+                
+                showAddProduct: false,
+                editingProductIndex: null,
+                searchProduct: '',
+                viewingProduct: null,
+                
+                // Data
+                inventory: JSON.parse(localStorage.getItem('vj_inventory')) || [],
+                products: JSON.parse(localStorage.getItem('vj_products')) || [],
+                sales: JSON.parse(localStorage.getItem('vj_sales')) || [],
+                
+                newItem: { name: '', unit: 'ml', cost: null, qty: null },
+                newProduct: { name: '', retailPrice: null, wholesalePrice: null, ingredients: [] },
+                tempIngredient: { inventoryIndex: '', qty: null },
+                newSale: { productIndex: '', qty: 1, type: 'retail' },
+
+                getTabTitle() {
+                    const titles = { 'dashboard': 'Resumen de Negocio', 'inventory': 'Gestión de Materia Prima', 'formulas': 'Fórmulas y Costos', 'sales': 'Punto de Venta' };
+                    return titles[this.currentTab];
+                },
+
+                // INVENTARIO
+                get filteredInventory() {
+                    let filtered = this.inventory.map((item, index) => ({...item, originalIndex: index}));
+                    
+                    if (this.searchInventory !== '') {
+                        filtered = filtered.filter(item => item.name.toLowerCase().includes(this.searchInventory.toLowerCase()));
+                    }
+                    
+                    if (this.filterByProductIndex !== '') {
+                        const product = this.products[parseInt(this.filterByProductIndex)];
+                        if (product && product.ingredients) {
+                            const usedIndices = product.ingredients.map(ing => ing.inventoryIndex);
+                            filtered = filtered.filter(item => usedIndices.includes(item.originalIndex));
+                        }
+                    }
+                    return filtered;
+                },
+                saveInventoryItem() {
+                    if(this.newItem.name && this.newItem.cost !== null && this.newItem.qty !== null) {
+                        if (this.isRestocking && this.restockingIndex !== null) {
+                            // Reabastecer
+                            const existing = this.inventory[this.restockingIndex];
+                            const addedQty = parseFloat(this.newItem.qty);
+                            const addedCost = parseFloat(this.newItem.cost);
+                            existing.qty += addedQty;
+                            existing.cost += addedCost;
+                            existing.originalQty = (existing.originalQty || existing.qty) + addedQty;
+                        } else if (this.isEditingInventory && this.editingInventoryIndex !== null) {
+                            // Editar/Corregir
+                            const existing = this.inventory[this.editingInventoryIndex];
+                            existing.name = this.newItem.name;
+                            existing.unit = this.newItem.unit;
+                            existing.cost = parseFloat(this.newItem.cost);
+                            existing.qty = parseFloat(this.newItem.qty);
+                            existing.originalQty = parseFloat(this.newItem.qty); // Asumimos que la corrección resetea la base del costo
+                        } else {
+                            // Nuevo Insumo
+                            this.inventory.push({
+                                name: this.newItem.name, 
+                                unit: this.newItem.unit, 
+                                cost: parseFloat(this.newItem.cost), 
+                                qty: parseFloat(this.newItem.qty),
+                                originalQty: parseFloat(this.newItem.qty)
+                            });
+                        }
+                        this.saveData();
+                        this.cancelInventoryForm();
+                    }
+                },
+                startRestock(index) {
+                    this.restockingIndex = index;
+                    this.isRestocking = true;
+                    this.isEditingInventory = false;
+                    this.showAddInventory = true;
+                    const item = this.inventory[index];
+                    this.newItem = { name: item.name, unit: item.unit, cost: null, qty: null };
+                },
+                editInventoryItem(index) {
+                    this.editingInventoryIndex = index;
+                    this.isEditingInventory = true;
+                    this.isRestocking = false;
+                    this.showAddInventory = true;
+                    const item = this.inventory[index];
+                    // Cargar valores para editar
+                    this.newItem = { name: item.name, unit: item.unit, cost: item.cost, qty: item.qty };
+                },
+                cancelInventoryForm() {
+                    this.newItem = { name: '', unit: 'ml', cost: null, qty: null };
+                    this.showAddInventory = false;
+                    this.isRestocking = false;
+                    this.isEditingInventory = false;
+                    this.restockingIndex = null;
+                    this.editingInventoryIndex = null;
+                },
+                deleteInventoryItem(index) {
+                    if(confirm("¿Seguro que deseas borrar este insumo? Las fórmulas que lo usaban podrían fallar.")) {
+                        this.inventory.splice(index, 1);
+                        this.saveData();
+                    }
+                },
+
+                // FORMULAS
+                get filteredProducts() {
+                    if (this.searchProduct === '') {
+                        return this.products.map((item, index) => ({...item, originalIndex: index}));
+                    }
+                    return this.products
+                        .map((item, index) => ({...item, originalIndex: index}))
+                        .filter(item => item.name.toLowerCase().includes(this.searchProduct.toLowerCase()));
+                },
+                calculateIngredientCost(ing) {
+                    const invItem = this.inventory[ing.inventoryIndex];
+                    if (!invItem) return 0;
+                    const unitCost = invItem.cost / (invItem.originalQty || invItem.qty || 1);
+                    return unitCost * ing.qty;
+                },
+                calculateFormulaCost(ingredients) {
+                    if(!ingredients) return 0;
+                    return ingredients.reduce((total, ing) => total + this.calculateIngredientCost(ing), 0);
+                },
+                calculateMargin(cost, price) {
+                    if(!price || price <= 0) return 0;
+                    return (((price - cost) / price) * 100).toFixed(1);
+                },
+                openAddFormula() {
+                    this.editingProductIndex = null;
+                    this.newProduct = { name: '', retailPrice: null, wholesalePrice: null, ingredients: [] };
+                    this.showAddProduct = true;
+                },
+                addIngredientToFormula() {
+                    if (this.tempIngredient.inventoryIndex !== '' && this.tempIngredient.qty > 0) {
+                        this.newProduct.ingredients.push({
+                            inventoryIndex: parseInt(this.tempIngredient.inventoryIndex),
+                            qty: parseFloat(this.tempIngredient.qty)
+                        });
+                        this.tempIngredient = { inventoryIndex: '', qty: null };
+                    }
+                },
+                editProduct(index) {
+                    this.editingProductIndex = index;
+                    this.newProduct = JSON.parse(JSON.stringify(this.products[index]));
+                    this.showAddProduct = true;
+                },
+                saveProduct() {
+                    if (this.newProduct.name && this.newProduct.retailPrice && this.newProduct.ingredients.length > 0) {
+                        if (this.editingProductIndex !== null) {
+                            this.products[this.editingProductIndex] = JSON.parse(JSON.stringify(this.newProduct));
+                        } else {
+                            this.products.push(JSON.parse(JSON.stringify(this.newProduct)));
+                        }
+                        this.saveData();
+                        this.showAddProduct = false;
+                        this.editingProductIndex = null;
+                    } else {
+                        alert("Completa el nombre, el precio al público y agrega insumos.");
+                    }
+                },
+                deleteProduct(index) {
+                    if(confirm("¿Borrar este producto final?")) {
+                        this.products.splice(index, 1);
+                        this.saveData();
+                    }
+                },
+
+                // VENTAS
+                registerSale() {
+                    if(this.newSale.productIndex !== '' && this.newSale.qty > 0) {
+                        const product = this.products[this.newSale.productIndex];
+                        const saleQty = parseInt(this.newSale.qty);
+                        const priceToUse = this.newSale.type === 'retail' ? product.retailPrice : (product.wholesalePrice || product.retailPrice);
+                        const revenue = parseFloat(priceToUse) * saleQty;
+
+                        product.ingredients.forEach(ing => {
+                            const invItem = this.inventory[ing.inventoryIndex];
+                            if(invItem) invItem.qty -= (ing.qty * saleQty);
+                        });
+
+                        this.sales.push({
+                            productName: product.name, qty: saleQty, type: this.newSale.type,
+                            revenue: revenue, cost: this.calculateFormulaCost(product.ingredients) * saleQty,
+                            date: new Date().toISOString()
+                        });
+
+                        this.saveData();
+                        this.newSale = { productIndex: '', qty: 1, type: 'retail' };
+                        alert("¡Venta registrada exitosamente!");
+                    }
+                },
+
+                // DASHBOARD
+                getTotalSalesRevenue() { return this.sales.reduce((total, sale) => total + sale.revenue, 0); },
+                getTotalInvestment() { return this.inventory.reduce((total, item) => total + (item.cost || 0), 0); },
+                getNetProfit() { return this.sales.reduce((total, sale) => total + (sale.revenue - (sale.cost || 0)), 0); },
+                getCurrentInventoryValue() {
+                    return this.inventory.reduce((total, item) => {
+                        const unitCost = item.cost / (item.originalQty || item.qty || 1);
+                        return total + (unitCost * Math.max(0, item.qty));
+                    }, 0);
+                },
+
+                saveData() {
+                    localStorage.setItem('vj_inventory', JSON.stringify(this.inventory));
+                    localStorage.setItem('vj_products', JSON.stringify(this.products));
+                    localStorage.setItem('vj_sales', JSON.stringify(this.sales));
+                }
+            }))
+        })
+    </script>
+</body>
+</html>
