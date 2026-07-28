@@ -1,4 +1,44 @@
 <!DOCTYPE html>
+<!-- ===== SISTEMA DE AUTENTICACIÓN ===== -->
+<div id="auth-overlay" style="position:fixed;inset:0;background:#154212;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;">
+    <div style="background:#fcf9f4;padding:40px;border-radius:20px;max-width:400px;width:90%;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+        <div style="width:64px;height:64px;background:#2d5a27;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <span class="material-symbols-outlined" style="font-size:32px;color:#9dd090;">admin_panel_settings</span>
+        </div>
+        <h2 style="color:#154212;font-size:24px;font-weight:700;margin-bottom:8px;">Panel Administrativo</h2>
+        <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">Ingresa la contraseña para continuar</p>
+        <input type="password" id="auth-password" placeholder="Contraseña" style="width:100%;padding:14px 16px;border:2px solid #c2c9bb;border-radius:12px;font-size:16px;outline:none;box-sizing:border-box;margin-bottom:16px;transition:border-color 0.2s;" onkeydown="if(event.key==='Enter')checkAuth()">
+        <button onclick="checkAuth()" style="width:100%;padding:14px;background:#154212;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Acceder</button>
+        <p id="auth-error" style="color:#ba1a1a;font-size:13px;margin-top:12px;display:none;">❌ Contraseña incorrecta</p>
+    </div>
+</div>
+<script>
+(function(){
+    const AUTH_KEY = 'vj_admin_auth';
+    const CORRECT_PASSWORD = 'vjlab2024'; // ⚠️ CAMBIA ESTA CONTRASEÑA
+
+    // Si ya está autenticado en esta sesión, mostrar contenido
+    if (sessionStorage.getItem(AUTH_KEY) === 'true') {
+        document.getElementById('auth-overlay').style.display = 'none';
+        return;
+    }
+
+    window.checkAuth = function() {
+        const input = document.getElementById('auth-password');
+        const error = document.getElementById('auth-error');
+        if (input.value === CORRECT_PASSWORD) {
+            sessionStorage.setItem(AUTH_KEY, 'true');
+            document.getElementById('auth-overlay').style.display = 'none';
+        } else {
+            error.style.display = 'block';
+            input.value = '';
+            input.focus();
+        }
+    };
+})();
+</script>
+<!-- ===== FIN AUTENTICACIÓN ===== -->
+
 <html lang="es">
 <head>
     <meta charset="utf-8">
@@ -26,6 +66,7 @@
             }
         }
     </script>
+<base target="_blank">
 </head>
 <body class="bg-surface font-sans text-gray-800 antialiased flex h-screen overflow-hidden" x-data="erpSystem()">
 
