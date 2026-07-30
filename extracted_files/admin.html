@@ -1,44 +1,4 @@
 <!DOCTYPE html>
-<!-- ===== SISTEMA DE AUTENTICACIÓN ===== -->
-<div id="auth-overlay" style="position:fixed;inset:0;background:#154212;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;">
-    <div style="background:#fcf9f4;padding:40px;border-radius:20px;max-width:400px;width:90%;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
-        <div style="width:64px;height:64px;background:#2d5a27;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-            <span class="material-symbols-outlined" style="font-size:32px;color:#9dd090;">admin_panel_settings</span>
-        </div>
-        <h2 style="color:#154212;font-size:24px;font-weight:700;margin-bottom:8px;">Panel Administrativo</h2>
-        <p style="color:#6b7280;font-size:14px;margin-bottom:24px;">Ingresa la contraseña para continuar</p>
-        <input type="password" id="auth-password" placeholder="Contraseña" style="width:100%;padding:14px 16px;border:2px solid #c2c9bb;border-radius:12px;font-size:16px;outline:none;box-sizing:border-box;margin-bottom:16px;transition:border-color 0.2s;" onkeydown="if(event.key==='Enter')checkAuth()">
-        <button onclick="checkAuth()" style="width:100%;padding:14px;background:#154212;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Acceder</button>
-        <p id="auth-error" style="color:#ba1a1a;font-size:13px;margin-top:12px;display:none;">❌ Contraseña incorrecta</p>
-    </div>
-</div>
-<script>
-(function(){
-    const AUTH_KEY = 'vj_admin_auth';
-    const CORRECT_PASSWORD = 'viejitojohn2024'; // ⚠️ CAMBIA ESTA CONTRASEÑA
-
-    // Si ya está autenticado en esta sesión, mostrar contenido
-    if (sessionStorage.getItem(AUTH_KEY) === 'true') {
-        document.getElementById('auth-overlay').style.display = 'none';
-        return;
-    }
-
-    window.checkAuth = function() {
-        const input = document.getElementById('auth-password');
-        const error = document.getElementById('auth-error');
-        if (input.value === CORRECT_PASSWORD) {
-            sessionStorage.setItem(AUTH_KEY, 'true');
-            document.getElementById('auth-overlay').style.display = 'none';
-        } else {
-            error.style.display = 'block';
-            input.value = '';
-            input.focus();
-        }
-    };
-})();
-</script>
-<!-- ===== FIN AUTENTICACIÓN ===== -->
-
 <html lang="es">
 <head>
     <meta charset="utf-8">
@@ -47,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             theme: {
@@ -58,6 +18,10 @@
                         "primary-light": "#2d5a27",
                         "surface": "#f3f4f6",
                         "card": "#ffffff",
+                        "accent": "#059669",
+                        "danger": "#dc2626",
+                        "accent-orange": "#E85D04",
+                        "amber-warm": "#F59E0B",
                     },
                     fontFamily: {
                         "sans": ["Plus Jakarta Sans", "sans-serif"],
@@ -66,632 +30,1318 @@
             }
         }
     </script>
-
+    <style>
+        [x-cloak] { display: none !important; }
+        .toast-enter { animation: slideIn 0.3s ease-out; }
+        .toast-exit { animation: slideOut 0.3s ease-in; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+        .sidebar-link { transition: all 0.2s; }
+        .sidebar-link:hover, .sidebar-link.active { background: rgba(255,255,255,0.15); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(21,66,18,0.12); }
+        .unit-badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: #e5e7eb; color: #374151; font-weight: 700; text-transform: uppercase; }
+        .cost-breakdown-bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; }
+        .cost-breakdown-bar > div { height: 100%; transition: width 0.5s ease; }
+        .sensitivity-row:hover { background: #f9fafb; }
+        .audit-log-item { border-left: 3px solid #154212; padding-left: 12px; margin-bottom: 8px; }
+        .scenario-card { border: 2px solid transparent; transition: all 0.3s; }
+        .scenario-card:hover { border-color: #154212; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+    </style>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+<base target="_blank">
 </head>
-<body class="bg-surface font-sans text-gray-800 antialiased flex h-screen overflow-hidden" x-data="erpSystem()">
+<body class="bg-surface font-sans text-gray-800 antialiased flex h-screen overflow-hidden" x-data="erpSystem()" x-cloak>
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-primary text-white flex flex-col shadow-xl z-20 hidden md:flex">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-primary text-white flex flex-col shadow-xl z-20 hidden md:flex flex-shrink-0">
         <div class="h-20 flex items-center px-6 border-b border-white/10">
             <span class="material-symbols-outlined mr-3 text-3xl text-green-300">spa</span>
             <h1 class="text-xl font-bold tracking-wide">Viejito John</h1>
         </div>
-        <div class="px-6 py-4 text-xs font-semibold text-green-300/60 uppercase tracking-wider">Gestión</div>
-        <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
-            <a href="#" @click.prevent="currentTab = 'dashboard'" :class="currentTab === 'dashboard' ? 'bg-white/20' : 'hover:bg-white/5'" class="flex items-center gap-3 px-4 py-3 text-white rounded-xl transition-colors">
+        <div class="px-6 py-3 text-xs font-semibold text-green-300/60 uppercase tracking-wider">Gestión</div>
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+            <a href="#" @click.prevent="currentTab = 'dashboard'" :class="currentTab === 'dashboard' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white">
                 <span class="material-symbols-outlined">dashboard</span> <span class="font-medium">Resumen</span>
             </a>
-            <a href="#" @click.prevent="currentTab = 'inventory'" :class="currentTab === 'inventory' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-white">
+            <a href="#" @click.prevent="currentTab = 'insumos'" :class="currentTab === 'insumos' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">inventory_2</span> <span class="font-medium">Materia Prima</span>
             </a>
-            <a href="#" @click.prevent="currentTab = 'formulas'" :class="currentTab === 'formulas' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-white">
+            <a href="#" @click.prevent="currentTab = 'formulas'" :class="currentTab === 'formulas' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">science</span> <span class="font-medium">Fórmulas / Costos</span>
             </a>
-            <a href="#" @click.prevent="currentTab = 'sales'" :class="currentTab === 'sales' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70'" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-white">
+            <a href="#" @click.prevent="currentTab = 'fabricacion'" :class="currentTab === 'fabricacion' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">precision_manufacturing</span> <span class="font-medium">Costo de Fabricación</span>
+            </a>
+            <a href="#" @click.prevent="currentTab = 'escenarios'" :class="currentTab === 'escenarios' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">analytics</span> <span class="font-medium">Escenarios & Análisis</span>
+            </a>
+            <a href="#" @click.prevent="currentTab = 'sales'" :class="currentTab === 'sales' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">point_of_sale</span> <span class="font-medium">Ventas (POS)</span>
             </a>
+            <a href="#" @click.prevent="currentTab = 'auditoria'" :class="currentTab === 'auditoria' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">history</span> <span class="font-medium">Auditoría</span>
+            </a>
         </nav>
+        <div class="p-4 border-t border-white/10">
+            <div class="bg-white/10 rounded-xl p-3 text-xs">
+                <p class="text-green-300 font-bold mb-1">Firebase Online</p>
+                <p class="text-white/60">Datos sincronizados en la nube</p>
+            </div>
+        </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        
-        <!-- Header -->
-        <header class="h-20 bg-card shadow-sm flex items-center justify-between px-8 z-10">
-            <h2 class="text-2xl font-bold text-gray-800" x-text="getTabTitle()">Panel de Control</h2>
-            <div class="flex items-center gap-3 border-l pl-6">
+
+        <!-- HEADER -->
+        <header class="h-16 bg-card shadow-sm flex items-center justify-between px-6 z-10 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden p-2 text-gray-600" @click="mobileMenuOpen = !mobileMenuOpen">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h2 class="text-xl font-bold text-gray-800" x-text="getTabTitle()"></h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <div x-show="isLoading" class="flex items-center gap-2 text-sm text-gray-500">
+                    <span class="material-symbols-outlined animate-spin">sync</span> Sincronizando...
+                </div>
                 <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">VJ</div>
-                <div>
+                <div class="hidden sm:block">
                     <p class="text-sm font-bold text-gray-800">Administrador</p>
-                    <p class="text-xs text-red-500 font-bold">Modo Local</p>
+                    <p class="text-xs text-green-600 font-bold">Firebase Online</p>
                 </div>
             </div>
         </header>
 
-        <!-- Dynamic Main Area -->
-        <main class="flex-1 overflow-y-auto p-8 relative">
-            
-            <!-- VISTA: DASHBOARD -->
-            <div x-show="currentTab === 'dashboard'">
-                <div class="bg-primary-light/10 text-primary-light p-4 rounded-xl flex items-start gap-4 mb-8">
+        <!-- MOBILE MENU -->
+        <div x-show="mobileMenuOpen" class="md:hidden bg-primary text-white p-4 space-y-2" @click.away="mobileMenuOpen = false">
+            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'auditoria',l:'Auditoría',i:'history'}]">
+                <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
+                    <span class="material-symbols-outlined" x-text="item.i"></span> <span x-text="item.l"></span>
+                </a>
+            </template>
+        </div>
+
+        <!-- MAIN AREA -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+
+            <!-- LOADING OVERLAY -->
+            <div x-show="isLoading && currentTab !== 'dashboard'" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-4xl text-primary animate-spin">sync</span>
+                    <p class="text-sm text-gray-500 mt-2">Cargando datos...</p>
+                </div>
+            </div>
+
+            <!-- ===== DASHBOARD ===== -->
+            <div x-show="currentTab === 'dashboard'" x-transition>
+                <div class="bg-primary-light/10 text-primary-light p-4 rounded-xl flex items-start gap-4 mb-6">
                     <span class="material-symbols-outlined">info</span>
                     <div>
-                        <h4 class="font-bold">Sistema ERP Operativo</h4>
-                        <p class="text-sm">Ve a la pestaña de "Ventas (POS)" para registrar una venta. El sistema descontará automáticamente los insumos utilizados.</p>
+                        <h4 class="font-bold">Sistema ERP conectado a Firebase</h4>
+                        <p class="text-sm">Todos los datos se sincronizan en tiempo real. Ve a "Costo de Fabricación" para calcular costos unitarios con economías de escala.</p>
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                            <span class="material-symbols-outlined text-3xl">payments</span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-card p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 card-hover">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                            <span class="material-symbols-outlined text-2xl">payments</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Ingresos Totales</p>
-                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getTotalSalesRevenue().toFixed(2)"></span></h3>
+                            <p class="text-xs font-medium text-gray-500">Ingresos Totales</p>
+                            <h3 class="text-xl font-bold text-gray-800">$<span x-text="formatMoney(getTotalSalesRevenue())"></span></h3>
                         </div>
                     </div>
-                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                            <span class="material-symbols-outlined text-3xl">shopping_cart</span>
+                    <div class="bg-card p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 card-hover">
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                            <span class="material-symbols-outlined text-2xl">shopping_cart</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Inversión (Compras)</p>
-                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getTotalInvestment().toFixed(2)"></span></h3>
+                            <p class="text-xs font-medium text-gray-500">Inversión (Compras)</p>
+                            <h3 class="text-xl font-bold text-gray-800">$<span x-text="formatMoney(getTotalInvestment())"></span></h3>
                         </div>
                     </div>
-                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                            <span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+                    <div class="bg-card p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 card-hover">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Ganancia Neta Bruta</p>
-                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getNetProfit().toFixed(2)"></span></h3>
+                            <p class="text-xs font-medium text-gray-500">Ganancia Neta Bruta</p>
+                            <h3 class="text-xl font-bold text-gray-800">$<span x-text="formatMoney(getNetProfit())"></span></h3>
                         </div>
                     </div>
-                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                            <span class="material-symbols-outlined text-3xl">inventory_2</span>
+                    <div class="bg-card p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 card-hover">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                            <span class="material-symbols-outlined text-2xl">inventory_2</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500">Valor en Almacén</p>
-                            <h3 class="text-2xl font-bold text-gray-800">$<span x-text="getCurrentInventoryValue().toFixed(2)"></span></h3>
+                            <p class="text-xs font-medium text-gray-500">Valor en Almacén</p>
+                            <h3 class="text-xl font-bold text-gray-800">$<span x-text="formatMoney(getCurrentInventoryValue())"></span></h3>
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">trending_up</span> Evolución de Ventas
+                        </h3>
+                        <canvas id="chartVentas" height="200"></canvas>
+                    </div>
+                    <div class="bg-card p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">pie_chart</span> Composición de Costos
+                        </h3>
+                        <canvas id="chartCostos" height="200"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- VISTA: MATERIA PRIMA (INVENTARIO) -->
-            <div x-show="currentTab === 'inventory'" style="display: none;">
-                <div class="flex justify-between items-center mb-6">
+            <!-- ===== INSUMOS (MATERIA PRIMA) ===== -->
+            <div x-show="currentTab === 'insumos'" x-transition style="display:none;">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <h3 class="text-xl font-bold">Inventario de Insumos</h3>
-                    <div class="flex gap-4">
-                        <!-- Filtro por Producto -->
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">filter_alt</span>
-                            <select x-model="filterByProductIndex" class="pl-10 rounded-lg border-gray-300 w-56 text-sm text-gray-600">
-                                <option value="">Todos los insumos</option>
-                                <template x-for="(prod, idx) in products" :key="idx">
-                                    <option :value="idx" x-text="'Usados en: ' + prod.name"></option>
-                                </template>
-                            </select>
-                        </div>
+                    <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+                        <!-- Filtro por tipo de insumo -->
+                        <select x-model="filterInsumoTipo" class="rounded-lg border-gray-300 text-sm min-w-[140px]">
+                            <option value="">Todos los tipos</option>
+                            <option value="liquido">Líquidos (L, ml)</option>
+                            <option value="solido">Sólidos (kg, gr)</option>
+                            <option value="longitud">Longitud (m, cm)</option>
+                            <option value="etiqueta">Etiquetas (plantilla)</option>
+                            <option value="envase">Envases</option>
+                            <option value="empaque">Empaque (cajas)</option>
+                            <option value="otro">Otros</option>
+                        </select>
+                        <!-- Filtro por producto que lo usa -->
+                        <select x-model="filterInsumoPorProducto" class="rounded-lg border-gray-300 text-sm min-w-[180px]">
+                            <option value="">Usado en cualquier producto</option>
+                            <template x-for="(prod, idx) in products" :key="idx">
+                                <option :value="idx" x-text="'Usado en: ' + prod.name"></option>
+                            </template>
+                        </select>
                         <!-- Buscador -->
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">search</span>
-                            <input type="text" x-model="searchInventory" placeholder="Buscar insumo..." class="pl-10 rounded-lg border-gray-300 w-48 text-sm">
+                        <div class="relative flex-1 lg:flex-none lg:w-48">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                            <input type="text" x-model="searchInventory" placeholder="Buscar insumo..." class="pl-9 rounded-lg border-gray-300 w-full text-sm">
                         </div>
-                        <button @click="showAddInventory = !showAddInventory; isRestocking = false; isEditingInventory = false; cancelInventoryForm(); showAddInventory = true;" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nuevo Insumo</button>
+                        <button @click="openInsumoForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm whitespace-nowrap">+ Nuevo Insumo</button>
                     </div>
                 </div>
 
-                <!-- Formulario Agregar/Reabastecer/Editar Insumo -->
-                <div x-show="showAddInventory || isRestocking || isEditingInventory" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 border-t-4 border-t-primary" x-transition>
-                    <h4 class="font-bold mb-4 text-primary" x-text="isRestocking ? 'Reabastecer Insumo Existente' : (isEditingInventory ? 'Editar Insumo' : 'Registrar Insumo Totalmente Nuevo')"></h4>
-                    <form @submit.prevent="saveInventoryItem" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Nombre (Ej. Extracto Eucalipto)</label>
-                            <input type="text" x-model="newItem.name" required class="w-full rounded-lg border-gray-300" :disabled="isRestocking" :class="isRestocking ? 'bg-gray-100' : ''">
+                <!-- Formulario Insumo -->
+                <div x-show="showInsumoForm" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 border-t-4 border-t-primary" x-transition>
+                    <h4 class="font-bold mb-4 text-primary" x-text="editingInsumoIndex !== null ? 'Editar Insumo' : 'Registrar Nuevo Insumo'"></h4>
+                    <form @submit.prevent="saveInsumo" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <div class="lg:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Nombre del Insumo</label>
+                            <input type="text" x-model="insumoForm.name" required placeholder="Ej. Extracto de Eucalipto" class="w-full rounded-lg border-gray-300 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Unidad de Medida</label>
-                            <select x-model="newItem.unit" class="w-full rounded-lg border-gray-300" :disabled="isRestocking" :class="isRestocking ? 'bg-gray-100' : ''">
-                                <option value="ml">Mililitros (ml)</option>
-                                <option value="L">Litros (L)</option>
-                                <option value="g">Gramos (g)</option>
-                                <option value="kg">Kilogramos (kg)</option>
-                                <option value="pz">Pieza / Unidad</option>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Tipo de Insumo</label>
+                            <select x-model="insumoForm.tipo" @change="onTipoInsumoChange()" class="w-full rounded-lg border-gray-300 text-sm">
+                                <option value="liquido">Líquido</option>
+                                <option value="solido">Sólido</option>
+                                <option value="longitud">Longitud</option>
+                                <option value="etiqueta">Etiqueta (plantilla)</option>
+                                <option value="envase">Envase</option>
+                                <option value="empaque">Empaque (caja)</option>
+                                <option value="otro">Otro</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1" x-text="isEditingInventory ? 'Corregir Costo ($)' : 'Costo Total Pagado ($)'"></label>
-                            <input type="number" step="0.01" x-model="newItem.cost" required placeholder="Ej. 500" class="w-full rounded-lg border-gray-300">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Unidad de Medida</label>
+                            <select x-model="insumoForm.unit" class="w-full rounded-lg border-gray-300 text-sm">
+                                <template x-if="insumoForm.tipo === 'liquido'">
+                                    <option value="ml">Mililitros (ml)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'liquido'">
+                                    <option value="L">Litros (L)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'solido'">
+                                    <option value="gr">Gramos (gr)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'solido'">
+                                    <option value="kg">Kilogramos (kg)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'longitud'">
+                                    <option value="cm">Centímetros (cm)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'longitud'">
+                                    <option value="m">Metros (m)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'etiqueta'">
+                                    <option value="plantilla">Plantilla tabloide</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'envase'">
+                                    <option value="pz">Pieza / Unidad</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'empaque'">
+                                    <option value="caja">Caja</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'otro'">
+                                    <option value="pz">Pieza / Unidad</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'otro'">
+                                    <option value="ml">Mililitros (ml)</option>
+                                </template>
+                                <template x-if="insumoForm.tipo === 'otro'">
+                                    <option value="gr">Gramos (gr)</option>
+                                </template>
+                            </select>
+                        </div>
+                        <!-- Rendimiento para etiquetas -->
+                        <div x-show="insumoForm.tipo === 'etiqueta'" class="lg:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Rendimiento (etiquetas por plantilla)</label>
+                            <input type="number" x-model="insumoForm.rendimiento" placeholder="Ej. 100, 40, 30" class="w-full rounded-lg border-gray-300 text-sm">
+                            <p class="text-xs text-gray-400 mt-1">Cuántas etiquetas individuales salen de una plantilla tabloide</p>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1" x-text="isRestocking ? 'Cantidad Extra Comprada' : (isEditingInventory ? 'Corregir Stock' : 'Cantidad comprada')"></label>
-                            <input type="number" step="0.001" x-model="newItem.qty" required placeholder="Ej. 1000" class="w-full rounded-lg border-gray-300">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Costo Total Pagado ($)</label>
+                            <input type="number" step="0.01" x-model="insumoForm.cost" required placeholder="Ej. 500" class="w-full rounded-lg border-gray-300 text-sm">
                         </div>
-                        <div class="md:col-span-5 flex justify-end gap-2 mt-2">
-                            <button type="button" @click="cancelInventoryForm" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold" x-text="isRestocking ? 'Agregar al Stock' : (isEditingInventory ? 'Guardar Cambios' : 'Guardar Insumo')"></button>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Cantidad Comprada</label>
+                            <input type="number" step="0.001" x-model="insumoForm.qty" required placeholder="Ej. 1000" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Proveedor</label>
+                            <input type="text" x-model="insumoForm.proveedor" placeholder="Opcional" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <div class="lg:col-span-4 flex justify-end gap-2 mt-2">
+                            <button type="button" @click="closeInsumoForm()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg text-sm">Cancelar</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm" x-text="editingInsumoIndex !== null ? 'Guardar Cambios' : 'Guardar Insumo'"></button>
                         </div>
                     </form>
                 </div>
 
+                <!-- Tabla Insumos -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
-                                <th class="px-6 py-4 font-medium">Insumo</th>
-                                <th class="px-6 py-4 font-medium">Stock Actual</th>
-                                <th class="px-6 py-4 font-medium">Costo Promedio (Unitario)</th>
-                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                                <th class="px-4 py-3 font-medium">Insumo</th>
+                                <th class="px-4 py-3 font-medium">Tipo</th>
+                                <th class="px-4 py-3 font-medium">Stock</th>
+                                <th class="px-4 py-3 font-medium">Costo Unitario</th>
+                                <th class="px-4 py-3 font-medium">Proveedor</th>
+                                <th class="px-4 py-3 font-medium text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100">
-                            <template x-for="(item, index) in filteredInventory" :key="index">
+                            <template x-for="(item, index) in filteredInventory" :key="item.id">
                                 <tr class="hover:bg-gray-50" :class="item.qty <= 0 ? 'bg-red-50' : ''">
-                                    <td class="px-6 py-4 font-bold text-gray-800" x-text="item.name"></td>
-                                    <td class="px-6 py-4">
-                                        <span x-text="item.qty.toFixed(4)" :class="item.qty <= 0 ? 'text-red-600 font-bold' : ''"></span> <span x-text="item.unit" class="text-gray-500"></span>
-                                        <span x-show="item.qty <= 0" class="ml-2 text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">AGOTADO</span>
+                                    <td class="px-4 py-3">
+                                        <div class="font-bold text-gray-800" x-text="item.name"></div>
+                                        <div x-show="item.tipo === 'etiqueta' && item.rendimiento" class="text-xs text-amber-600 font-medium">
+                                            <span x-text="item.rendimiento"></span> etiquetas/plantilla
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 text-green-600 font-medium">
-                                        $<span x-text="(item.cost / (item.originalQty || item.qty || 1)).toFixed(4)"></span> / <span x-text="item.unit"></span>
+                                    <td class="px-4 py-3">
+                                        <span class="unit-badge" x-text="getTipoLabel(item.tipo)"></span>
                                     </td>
-                                    <td class="px-6 py-4 text-right flex justify-end gap-2">
-                                        <button @click="editInventoryItem(item.originalIndex)" title="Editar o Corregir Nombre" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">edit</button>
-                                        <button @click="startRestock(item.originalIndex)" title="Comprar Más (Reabastecer)" class="text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium bg-blue-50 px-2 py-1 rounded">
-                                            <span class="material-symbols-outlined text-sm">add_shopping_cart</span> Reabastecer
-                                        </button>
-                                        <button @click="deleteInventoryItem(item.originalIndex)" title="Borrar Insumo" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm pt-1">delete</button>
+                                    <td class="px-4 py-3">
+                                        <span x-text="formatNumber(item.qty)" :class="item.qty <= 0 ? 'text-red-600 font-bold' : ''"></span>
+                                        <span x-text="item.unit" class="text-gray-500 text-xs"></span>
+                                        <span x-show="item.qty <= 0" class="ml-1 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">AGOTADO</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-green-600 font-medium text-sm">
+                                        $<span x-text="formatMoney(getUnitCost(item))"></span>
+                                        <span class="text-gray-400 text-xs">/<span x-text="item.unit"></span></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-500 text-sm" x-text="item.proveedor || '-'"></td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="flex justify-end gap-1">
+                                            <button @click="editInsumo(item)" title="Editar" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">edit</button>
+                                            <button @click="restockInsumo(item)" title="Reabastecer" class="text-blue-600 hover:text-blue-800 material-symbols-outlined text-sm bg-blue-50 p-1.5 rounded">add_shopping_cart</button>
+                                            <button @click="deleteInsumo(item.id)" title="Borrar" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm bg-red-50 p-1.5 rounded">delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
                             <tr x-show="filteredInventory.length === 0">
-                                <td colspan="4" class="px-6 py-8 text-center text-gray-400">No se encontraron insumos que coincidan con la búsqueda.</td>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-400">No se encontraron insumos.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- VISTA: FORMULAS / COSTOS -->
-            <div x-show="currentTab === 'formulas'" style="display: none;">
-                <div class="flex justify-between items-center mb-6">
+            <!-- ===== FORMULAS ===== -->
+            <div x-show="currentTab === 'formulas'" x-transition style="display:none;">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <h3 class="text-xl font-bold">Fórmulas y Productos Finales</h3>
-                    <div class="flex gap-4">
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">search</span>
-                            <input type="text" x-model="searchProduct" placeholder="Buscar fórmula..." class="pl-10 rounded-lg border-gray-300 w-64 text-sm">
+                    <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+                        <div class="relative flex-1 lg:flex-none lg:w-56">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                            <input type="text" x-model="searchProduct" placeholder="Buscar fórmula..." class="pl-9 rounded-lg border-gray-300 w-full text-sm">
                         </div>
-                        <button @click="openAddFormula()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nueva Fórmula</button>
+                        <button @click="openFormulaForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm whitespace-nowrap">+ Nueva Fórmula</button>
                     </div>
                 </div>
 
-                <!-- Formulario Agregar/Editar Producto -->
-                <div x-show="showAddProduct" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 border-t-4 border-t-primary" x-transition>
-                    <h4 class="font-bold mb-4 text-primary" x-text="editingProductIndex !== null ? 'Editando Fórmula' : 'Diseñar Nueva Fórmula'"></h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="space-y-4 md:col-span-1 border-r border-gray-100 pr-6">
+                <!-- Formulario Fórmula -->
+                <div x-show="showFormulaForm" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 border-t-4 border-t-primary" x-transition>
+                    <h4 class="font-bold mb-4 text-primary" x-text="editingFormulaIndex !== null ? 'Editar Fórmula' : 'Nueva Fórmula'"></h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="space-y-4 lg:col-span-1 border-r border-gray-100 pr-0 lg:pr-6">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1">Nombre del Producto Final</label>
-                                <input type="text" x-model="newProduct.name" placeholder="Ej. Gel Viejito John 60ml" class="w-full rounded-lg border-gray-300">
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Nombre del Producto</label>
+                                <input type="text" x-model="formulaForm.name" placeholder="Ej. Gel Viejito John 60ml" class="w-full rounded-lg border-gray-300 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 mb-1">Precio Venta Público ($)</label>
-                                <input type="number" step="0.01" x-model="newProduct.retailPrice" class="w-full rounded-lg border-gray-300">
+                                <input type="number" step="0.01" x-model="formulaForm.retailPrice" class="w-full rounded-lg border-gray-300 text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 mb-1">Precio Mayoreo ($)</label>
-                                <input type="number" step="0.01" x-model="newProduct.wholesalePrice" class="w-full rounded-lg border-gray-300">
+                                <input type="number" step="0.01" x-model="formulaForm.wholesalePrice" class="w-full rounded-lg border-gray-300 text-sm">
                             </div>
                         </div>
-
-                        <div class="md:col-span-2 space-y-4">
-                            <label class="block text-sm font-bold text-gray-700">Receta / Insumos requeridos</label>
-                            <div class="flex gap-2 items-end">
+                        <div class="lg:col-span-2 space-y-4">
+                            <label class="block text-sm font-bold text-gray-700">Receta / Insumos</label>
+                            <div class="flex flex-col sm:flex-row gap-2 items-end">
                                 <div class="flex-1">
-                                    <select x-model="tempIngredient.inventoryIndex" class="w-full rounded-lg border-gray-300">
+                                    <select x-model="tempIngredient.insumoId" class="w-full rounded-lg border-gray-300 text-sm">
                                         <option value="">-- Elige un insumo --</option>
-                                        <template x-for="(inv, idx) in inventory" :key="idx">
-                                            <option :value="idx" x-text="inv.name + ' (por ' + inv.unit + ')'"></option>
+                                        <template x-for="inv in inventory" :key="inv.id">
+                                            <option :value="inv.id" x-text="inv.name + ' ($' + formatMoney(getUnitCost(inv)) + '/' + inv.unit + ')'"></option>
                                         </template>
                                     </select>
                                 </div>
-                                <div class="w-32">
-                                    <input type="number" step="0.001" x-model="tempIngredient.qty" placeholder="Ej. 1" class="w-full rounded-lg border-gray-300">
+                                <div class="w-28">
+                                    <input type="number" step="0.001" x-model="tempIngredient.qty" placeholder="Cant." class="w-full rounded-lg border-gray-300 text-sm">
                                 </div>
-                                <button type="button" @click="addIngredientToFormula" class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-black">Agregar</button>
+                                <button @click="addIngredientToFormula()" class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-black text-sm">Agregar</button>
                             </div>
-
-                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mt-4 min-h-[100px]">
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 min-h-[80px]">
                                 <ul class="space-y-2 text-sm">
-                                    <template x-for="(ing, idx) in newProduct.ingredients" :key="idx">
+                                    <template x-for="(ing, idx) in formulaForm.ingredients" :key="idx">
                                         <li class="flex justify-between items-center border-b border-gray-200 pb-2">
-                                            <span>
-                                                <strong x-text="ing.qty"></strong> <span x-text="inventory[ing.inventoryIndex]?.unit"></span> de <span x-text="inventory[ing.inventoryIndex]?.name"></span>
-                                            </span>
-                                            <div class="flex items-center gap-4">
-                                                <span class="text-green-600 font-medium">$<span x-text="calculateIngredientCost(ing).toFixed(2)"></span></span>
-                                                <button type="button" @click="newProduct.ingredients.splice(idx, 1)" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm">close</button>
+                                            <span><strong x-text="ing.qty"></strong> <span x-text="getInsumoById(ing.insumoId)?.unit"></span> de <span x-text="getInsumoById(ing.insumoId)?.name"></span></span>
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-green-600 font-medium">$<span x-text="formatMoney(calculateIngredientCost(ing))"></span></span>
+                                                <button @click="formulaForm.ingredients.splice(idx, 1)" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm">close</button>
                                             </div>
                                         </li>
                                     </template>
                                 </ul>
-                                <div class="mt-4 pt-2 border-t border-gray-200 text-right">
-                                    <span class="text-xs text-gray-500 uppercase font-bold">Costo Total de Fabricación: </span>
-                                    <span class="text-lg font-black text-green-700">$<span x-text="calculateFormulaCost(newProduct.ingredients).toFixed(2)"></span></span>
+                                <div class="mt-3 pt-2 border-t border-gray-200 text-right">
+                                    <span class="text-xs text-gray-500 uppercase font-bold">Costo de Fabricación: </span>
+                                    <span class="text-lg font-black text-green-700">$<span x-text="formatMoney(calculateFormulaCost(formulaForm.ingredients))"></span></span>
                                 </div>
                             </div>
-                            <div class="flex justify-end gap-2 mt-4">
-                                <button type="button" @click="showAddProduct = false; editingProductIndex = null;" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                                <button type="button" @click="saveProduct" class="px-6 py-2 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light" x-text="editingProductIndex !== null ? 'Guardar Cambios' : 'Crear Fórmula'"></button>
+                            <div class="flex justify-end gap-2">
+                                <button @click="closeFormulaForm()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg text-sm">Cancelar</button>
+                                <button @click="saveFormula()" class="px-6 py-2 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light text-sm" x-text="editingFormulaIndex !== null ? 'Guardar Cambios' : 'Crear Fórmula'"></button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Detalles de Formula (Modal) -->
-                <div x-show="viewingProduct" style="display: none;" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative" @click.outside="viewingProduct = null">
-                        <button @click="viewingProduct = null" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800"><span class="material-symbols-outlined">close</span></button>
-                        <h3 class="text-2xl font-bold text-primary mb-1" x-text="viewingProduct?.name"></h3>
-                        <p class="text-sm text-gray-500 mb-6">Detalle de receta e ingredientes</p>
-                        
-                        <div class="bg-gray-50 p-4 rounded-xl mb-6">
-                            <h4 class="font-bold text-sm text-gray-700 mb-3 border-b pb-2">Insumos Utilizados:</h4>
-                            <ul class="space-y-3">
-                                <template x-for="(ing, idx) in viewingProduct?.ingredients" :key="idx">
-                                    <li class="flex justify-between items-center text-sm">
-                                        <div>
-                                            <span class="font-bold text-gray-800" x-text="ing.qty + ' ' + inventory[ing.inventoryIndex]?.unit"></span>
-                                            <span class="text-gray-600 ml-1" x-text="inventory[ing.inventoryIndex]?.name"></span>
-                                        </div>
-                                        <span class="font-bold text-green-700">$<span x-text="calculateIngredientCost(ing).toFixed(2)"></span></span>
-                                    </li>
-                                </template>
-                            </ul>
-                            <div class="mt-4 pt-3 border-t border-gray-200 flex justify-between font-black text-lg">
-                                <span>Costo Fabricación:</span>
-                                <span class="text-red-600">$<span x-text="calculateFormulaCost(viewingProduct?.ingredients).toFixed(2)"></span></span>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-1 bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
-                                <p class="text-xs text-blue-600 font-bold uppercase">Precio Venta</p>
-                                <p class="text-lg font-bold text-gray-800">$<span x-text="viewingProduct?.retailPrice"></span></p>
-                            </div>
-                            <div class="flex-1 bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
-                                <p class="text-xs text-purple-600 font-bold uppercase">Margen</p>
-                                <p class="text-lg font-bold text-gray-800"><span x-text="calculateMargin(calculateFormulaCost(viewingProduct?.ingredients), viewingProduct?.retailPrice)"></span>%</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Tabla Fórmulas -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
-                                <th class="px-6 py-4 font-medium">Producto Final</th>
-                                <th class="px-6 py-4 font-medium">Costo Fab.</th>
-                                <th class="px-6 py-4 font-medium">P. Menudeo (Margen)</th>
-                                <th class="px-6 py-4 font-medium text-right">Acciones</th>
+                                <th class="px-4 py-3 font-medium">Producto</th>
+                                <th class="px-4 py-3 font-medium">Costo Fab.</th>
+                                <th class="px-4 py-3 font-medium">P. Menudeo</th>
+                                <th class="px-4 py-3 font-medium">Margen</th>
+                                <th class="px-4 py-3 font-medium text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100">
-                            <template x-for="(prod, idx) in filteredProducts" :key="idx">
+                            <template x-for="prod in filteredProducts" :key="prod.id">
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 font-bold text-gray-800" x-text="prod.name"></td>
-                                    <td class="px-6 py-4 text-red-600 font-bold">$<span x-text="calculateFormulaCost(prod.ingredients).toFixed(2)"></span></td>
-                                    <td class="px-6 py-4">
-                                        $<span x-text="prod.retailPrice"></span> 
-                                        <span class="text-xs ml-2 text-green-600 bg-green-50 px-2 py-1 rounded-full font-bold" x-text="calculateMargin(calculateFormulaCost(prod.ingredients), prod.retailPrice) + '%'"></span>
+                                    <td class="px-4 py-3 font-bold text-gray-800" x-text="prod.name"></td>
+                                    <td class="px-4 py-3 text-red-600 font-bold">$<span x-text="formatMoney(calculateFormulaCost(prod.ingredients))"></span></td>
+                                    <td class="px-4 py-3">$<span x-text="formatMoney(prod.retailPrice)"></span></td>
+                                    <td class="px-4 py-3">
+                                        <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full font-bold" x-text="calculateMargin(calculateFormulaCost(prod.ingredients), prod.retailPrice) + '%'"></span>
                                     </td>
-                                    <td class="px-6 py-4 text-right flex justify-end gap-2">
-                                        <button @click="viewingProduct = prod" title="Ver Receta" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">visibility</button>
-                                        <button @click="editProduct(prod.originalIndex)" title="Editar Fórmula" class="text-blue-500 hover:text-blue-800 material-symbols-outlined text-sm bg-blue-50 p-1.5 rounded">edit</button>
-                                        <button @click="deleteProduct(prod.originalIndex)" title="Borrar Producto" class="text-red-500 hover:text-red-800 material-symbols-outlined text-sm bg-red-50 p-1.5 rounded">delete</button>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="flex justify-end gap-1">
+                                            <button @click="viewFormula(prod)" title="Ver" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">visibility</button>
+                                            <button @click="editFormula(prod)" title="Editar" class="text-blue-500 hover:text-blue-800 material-symbols-outlined text-sm bg-blue-50 p-1.5 rounded">edit</button>
+                                            <button @click="deleteFormula(prod.id)" title="Borrar" class="text-red-500 hover:text-red-800 material-symbols-outlined text-sm bg-red-50 p-1.5 rounded">delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
-                            <tr x-show="filteredProducts.length === 0">
-                                <td colspan="4" class="px-6 py-8 text-center text-gray-400">No se encontraron productos.</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- VISTA: VENTAS (POS) -->
-            <div x-show="currentTab === 'sales'" style="display: none;">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold">Registro de Ventas (Descuenta Inventario)</h3>
+            <!-- ===== FABRICACIÓN (COSTO UNITARIO) ===== -->
+            <div x-show="currentTab === 'fabricacion'" x-transition style="display:none;">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold">Costo de Fabricación Unitario</h3>
+                        <p class="text-sm text-gray-500">Calcula el costo real por unidad incluyendo materia prima, empaque, mano de obra y logística.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <select x-model="fabSelectedProductId" @change="onFabProductChange()" class="rounded-lg border-gray-300 text-sm min-w-[220px]">
+                            <option value="">-- Selecciona un producto --</option>
+                            <template x-for="prod in products" :key="prod.id">
+                                <option :value="prod.id" x-text="prod.name"></option>
+                            </template>
+                        </select>
+                        <button @click="guardarConfigFabricacion()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">Guardar Config.</button>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 border-l-4 border-l-primary">
-                    <form @submit.prevent="registerSale" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div x-show="!fabSelectedProductId" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                    <span class="material-symbols-outlined text-5xl text-gray-300 mb-3">precision_manufacturing</span>
+                    <p class="text-gray-500 font-medium">Selecciona un producto para calcular su costo de fabricación unitario.</p>
+                </div>
+
+                <div x-show="fabSelectedProductId" class="space-y-6">
+                    <!-- Resumen rápido -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 card-hover">
+                            <p class="text-xs text-gray-500 font-bold uppercase">Costo Materia Prima</p>
+                            <p class="text-2xl font-black text-red-600">$<span x-text="formatMoney(fabCostoMateriaPrima)"></span></p>
+                            <p class="text-xs text-gray-400">por unidad</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 card-hover">
+                            <p class="text-xs text-gray-500 font-bold uppercase">Costo Total Unitario</p>
+                            <p class="text-2xl font-black text-primary">$<span x-text="formatMoney(fabCostoTotalUnitario)"></span></p>
+                            <p class="text-xs text-gray-400">con empaque, MO y logística</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 card-hover">
+                            <p class="text-xs text-gray-500 font-bold uppercase">Margen Sugerido</p>
+                            <p class="text-2xl font-black text-green-600"><span x-text="calculateMargin(fabCostoTotalUnitario, getProductById(fabSelectedProductId)?.retailPrice || 0)"></span>%</p>
+                            <p class="text-xs text-gray-400">vs precio de venta</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Columna izquierda: Configuración -->
+                        <div class="space-y-6">
+                            <!-- Volumen de producción -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">speed</span> Volumen de Producción
+                                </h4>
+                                <div class="mb-4">
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Unidades a producir en este lote</label>
+                                    <input type="range" min="1" max="5000" x-model="fabConfig.volumen" class="w-full accent-primary">
+                                    <div class="flex justify-between text-sm text-gray-600 mt-1">
+                                        <span>1</span>
+                                        <span class="font-bold text-primary text-lg" x-text="fabConfig.volumen"></span>
+                                        <span>5000</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empaque -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">package_2</span> Empaque y Cajas
+                                </h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Piezas por caja</label>
+                                        <input type="number" x-model="fabConfig.piezasPorCaja" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Costo de cada caja ($)</label>
+                                        <input type="number" step="0.01" x-model="fabConfig.costoCaja" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">Costo prorrateado por pieza: $<span x-text="formatMoney((fabConfig.costoCaja || 0) / (fabConfig.piezasPorCaja || 1))"></span></p>
+                            </div>
+
+                            <!-- Mano de obra -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">engineering</span> Mano de Obra Directa
+                                </h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Costo por hora ($)</label>
+                                        <input type="number" step="0.01" x-model="fabConfig.moCostoHora" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Horas por lote</label>
+                                        <input type="number" step="0.1" x-model="fabConfig.moHorasLote" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">MO prorrateada por pieza: $<span x-text="formatMoney(((fabConfig.moCostoHora || 0) * (fabConfig.moHorasLote || 0)) / (fabConfig.volumen || 1))"></span></p>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha: Logística y costos indirectos -->
+                        <div class="space-y-6">
+                            <!-- Logística -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">local_shipping</span> Logística y Distribución
+                                </h4>
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Gasolina por entrega ($)</label>
+                                            <input type="number" step="0.01" x-model="fabConfig.gasolinaPorEntrega" class="w-full rounded-lg border-gray-300 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-500 mb-1">Costo envío a cliente ($)</label>
+                                            <input type="number" step="0.01" x-model="fabConfig.costoEnvio" class="w-full rounded-lg border-gray-300 text-sm">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Piezas enviadas por entrega</label>
+                                        <input type="number" x-model="fabConfig.piezasPorEntrega" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2">Logística prorrateada: $<span x-text="formatMoney(((fabConfig.gasolinaPorEntrega || 0) + (fabConfig.costoEnvio || 0)) / (fabConfig.piezasPorEntrega || 1))"></span> / pieza</p>
+                            </div>
+
+                            <!-- Costos fijos mensuales -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">account_balance</span> Costos Fijos Mensuales (Overhead)
+                                </h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Renta / Local ($)</label>
+                                        <input type="number" step="0.01" x-model="fabConfig.cfRenta" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Luz y agua ($)</label>
+                                        <input type="number" step="0.01" x-model="fabConfig.cfLuzAgua" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Equipo / Mantenimiento ($)</label>
+                                        <input type="number" step="0.01" x-model="fabConfig.cfEquipo" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Otros gastos fijos ($)</label>
+                                        <input type="number" step="0.01" x-model="fabConfig.cfOtros" class="w-full rounded-lg border-gray-300 text-sm">
+                                    </div>
+                                </div>
+                                <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Total costos fijos mensuales:</span>
+                                        <span class="font-bold text-gray-800">$<span x-text="formatMoney((fabConfig.cfRenta||0)+(fabConfig.cfLuzAgua||0)+(fabConfig.cfEquipo||0)+(fabConfig.cfOtros||0))"></span></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm mt-1">
+                                        <span class="text-gray-600">Prorrateado por pieza (volumen <span x-text="fabConfig.volumen"></span>):</span>
+                                        <span class="font-bold text-primary">$<span x-text="formatMoney(fabCostoFijoUnitario)"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Desglose visual -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 mb-4">Desglose del Costo Unitario</h4>
+                                <div class="cost-breakdown-bar mb-3">
+                                    <div style="width:0%" :style="'width:' + fabPctMateria + '%'" class="bg-red-400"></div>
+                                    <div style="width:0%" :style="'width:' + fabPctEmpaque + '%'" class="bg-amber-400"></div>
+                                    <div style="width:0%" :style="'width:' + fabPctMO + '%'" class="bg-blue-400"></div>
+                                    <div style="width:0%" :style="'width:' + fabPctLogistica + '%'" class="bg-purple-400"></div>
+                                    <div style="width:0%" :style="'width:' + fabPctFijos + '%'" class="bg-gray-400"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-400"></span> Materia prima: $<span x-text="formatMoney(fabCostoMateriaPrima)"></span></div>
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-400"></span> Empaque: $<span x-text="formatMoney(fabCostoEmpaqueUnitario)"></span></div>
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-400"></span> Mano de obra: $<span x-text="formatMoney(fabCostoMOUnitario)"></span></div>
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-400"></span> Logística: $<span x-text="formatMoney(fabCostoLogisticaUnitario)"></span></div>
+                                    <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400"></span> Costos fijos: $<span x-text="formatMoney(fabCostoFijoUnitario)"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ESCENARIOS Y ANÁLISIS ===== -->
+            <div x-show="currentTab === 'escenarios'" x-transition style="display:none;">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold">Escenarios y Análisis de Sensibilidad</h3>
+                        <p class="text-sm text-gray-500">Simula diferentes volúmenes y variaciones de precios para tomar decisiones informadas.</p>
+                    </div>
+                    <select x-model="escSelectedProductId" @change="onEscProductChange()" class="rounded-lg border-gray-300 text-sm min-w-[220px]">
+                        <option value="">-- Selecciona un producto --</option>
+                        <template x-for="prod in products" :key="prod.id">
+                            <option :value="prod.id" x-text="prod.name"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div x-show="!escSelectedProductId" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                    <span class="material-symbols-outlined text-5xl text-gray-300 mb-3">analytics</span>
+                    <p class="text-gray-500 font-medium">Selecciona un producto para analizar escenarios.</p>
+                </div>
+
+                <div x-show="escSelectedProductId" class="space-y-6">
+                    <!-- Simulador de volumen -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">auto_graph</span> Curva de Costo por Volumen
+                        </h4>
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Volumen a simular: <span class="text-primary font-bold text-lg" x-text="escVolumen"></span> unidades</label>
+                            <input type="range" min="10" max="10000" step="10" x-model="escVolumen" @input="calcularEscenario()" class="w-full accent-primary">
+                            <div class="flex justify-between text-xs text-gray-400 mt-1"><span>10</span><span>10000</span></div>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                            <div class="bg-gray-50 p-3 rounded-xl text-center">
+                                <p class="text-xs text-gray-500">Costo Fijo / u</p>
+                                <p class="text-lg font-bold text-gray-700">$<span x-text="formatMoney(escResult.costoFijoUnitario)"></span></p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-xl text-center">
+                                <p class="text-xs text-gray-500">Costo Variable / u</p>
+                                <p class="text-lg font-bold text-blue-600">$<span x-text="formatMoney(escResult.costoVariableUnitario)"></span></p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-xl text-center">
+                                <p class="text-xs text-gray-500">Costo Total / u</p>
+                                <p class="text-lg font-bold text-primary">$<span x-text="formatMoney(escResult.costoTotalUnitario)"></span></p>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded-xl text-center border border-green-100">
+                                <p class="text-xs text-green-600">Margen a P. Venta</p>
+                                <p class="text-lg font-bold text-green-700"><span x-text="escResult.margen"></span>%</p>
+                            </div>
+                        </div>
+                        <canvas id="chartEscenario" height="180"></canvas>
+                    </div>
+
+                    <!-- Análisis de sensibilidad -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">thermostat</span> Análisis de Sensibilidad
+                        </h4>
+                        <p class="text-sm text-gray-500 mb-4">¿Qué pasa si los precios de los insumos cambian?</p>
+                        <div class="space-y-2">
+                            <div class="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase pb-2 border-b">
+                                <div class="col-span-4">Insumo</div>
+                                <div class="col-span-2">Costo Actual</div>
+                                <div class="col-span-2">+10%</div>
+                                <div class="col-span-2">+20%</div>
+                                <div class="col-span-2">Impacto</div>
+                            </div>
+                            <template x-for="sens in escSensibilidad" :key="sens.insumoId">
+                                <div class="grid grid-cols-12 gap-2 text-sm py-2 sensitivity-row items-center">
+                                    <div class="col-span-4 font-medium" x-text="sens.name"></div>
+                                    <div class="col-span-2">$<span x-text="formatMoney(sens.costoActual)"></span></div>
+                                    <div class="col-span-2 text-amber-600">$<span x-text="formatMoney(sens.costo10)"></span></div>
+                                    <div class="col-span-2 text-red-600">$<span x-text="formatMoney(sens.costo20)"></span></div>
+                                    <div class="col-span-2">
+                                        <span class="text-xs px-2 py-1 rounded-full font-bold" :class="sens.impacto > 5 ? 'bg-red-100 text-red-700' : (sens.impacto > 2 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700')" x-text="sens.impacto + '%'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Punto de equilibrio -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">balance</span> Punto de Equilibrio
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <p class="text-sm text-gray-600 mb-2">Necesitas vender <strong class="text-primary text-lg" x-text="escPuntoEquilibrio"></strong> unidades para cubrir todos los costos fijos.</p>
+                                <p class="text-sm text-gray-500">A precio de menudeo ($<span x-text="formatMoney(getProductById(escSelectedProductId)?.retailPrice || 0)"></span>)</p>
+                                <div class="mt-4 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full transition-all" :style="'width:' + Math.min(100, (escVolumen / Math.max(escPuntoEquilibrio, 1)) * 100) + '%'"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>0</span>
+                                    <span x-text="escPuntoEquilibrio + ' (equilibrio)'"></span>
+                                    <span x-text="escVolumen + ' (actual)'"></span>
+                                </div>
+                            </div>
+                            <div class="bg-primary/5 p-4 rounded-xl">
+                                <p class="text-xs text-gray-500 uppercase font-bold">Ganancia Estimada</p>
+                                <p class="text-2xl font-black text-green-600">$<span x-text="formatMoney(escResult.gananciaTotal)"></span></p>
+                                <p class="text-xs text-gray-400">con <span x-text="escVolumen"></span> unidades vendidas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== VENTAS (POS) ===== -->
+            <div x-show="currentTab === 'sales'" x-transition style="display:none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Registro de Ventas</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 border-l-4 border-l-primary">
+                    <form @submit.prevent="registerSale" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-500 mb-1">¿Qué producto vendiste?</label>
-                            <select x-model="newSale.productIndex" required class="w-full rounded-lg border-gray-300 focus:ring-primary">
-                                <option value="">-- Selecciona el producto --</option>
-                                <template x-for="(prod, idx) in products" :key="idx">
-                                    <option :value="idx" x-text="prod.name"></option>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Producto</label>
+                            <select x-model="newSale.productId" required class="w-full rounded-lg border-gray-300 text-sm focus:ring-primary">
+                                <option value="">-- Selecciona --</option>
+                                <template x-for="prod in products" :key="prod.id">
+                                    <option :value="prod.id" x-text="prod.name"></option>
                                 </template>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1">Cantidad</label>
-                            <input type="number" min="1" x-model="newSale.qty" required class="w-full rounded-lg border-gray-300">
+                            <input type="number" min="1" x-model="newSale.qty" required class="w-full rounded-lg border-gray-300 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Tipo de Precio</label>
-                            <select x-model="newSale.type" class="w-full rounded-lg border-gray-300">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Tipo</label>
+                            <select x-model="newSale.type" class="w-full rounded-lg border-gray-300 text-sm">
                                 <option value="retail">Menudeo</option>
                                 <option value="wholesale">Mayoreo</option>
                             </select>
                         </div>
                         <div class="md:col-span-4 flex justify-end">
-                            <button type="submit" class="px-6 py-3 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light flex items-center gap-2">
+                            <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light flex items-center gap-2 text-sm">
                                 <span class="material-symbols-outlined">shopping_cart_checkout</span> Registrar Venta
                             </button>
                         </div>
                     </form>
                 </div>
-
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100"><h4 class="font-bold text-gray-700">Historial de Ventas</h4></div>
+                    <div class="px-6 py-3 bg-gray-50 border-b border-gray-100"><h4 class="font-bold text-gray-700 text-sm">Historial de Ventas</h4></div>
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                                <th class="px-6 py-4 font-medium">Producto</th>
-                                <th class="px-6 py-4 font-medium">Cantidad</th>
-                                <th class="px-6 py-4 font-medium">Tipo</th>
-                                <th class="px-6 py-4 font-medium text-right">Ingreso Generado</th>
+                                <th class="px-4 py-3 font-medium">Fecha</th>
+                                <th class="px-4 py-3 font-medium">Producto</th>
+                                <th class="px-4 py-3 font-medium">Cant.</th>
+                                <th class="px-4 py-3 font-medium">Tipo</th>
+                                <th class="px-4 py-3 font-medium text-right">Ingreso</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100">
-                            <template x-for="(sale, idx) in [...sales].reverse()" :key="idx">
+                            <template x-for="sale in sales.slice().reverse()" :key="sale.id">
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 font-medium text-gray-800" x-text="sale.productName"></td>
-                                    <td class="px-6 py-4 font-bold" x-text="sale.qty"></td>
-                                    <td class="px-6 py-4">
-                                        <span x-text="sale.type === 'retail' ? 'Menudeo' : 'Mayoreo'" :class="sale.type === 'retail' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="px-2 py-1 rounded text-xs font-bold"></span>
+                                    <td class="px-4 py-3 text-gray-500 text-xs" x-text="formatDate(sale.date)"></td>
+                                    <td class="px-4 py-3 font-medium text-gray-800" x-text="sale.productName"></td>
+                                    <td class="px-4 py-3 font-bold" x-text="sale.qty"></td>
+                                    <td class="px-4 py-3">
+                                        <span x-text="sale.type === 'retail' ? 'Menudeo' : 'Mayoreo'" :class="sale.type === 'retail' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="px-2 py-0.5 rounded text-xs font-bold"></span>
                                     </td>
-                                    <td class="px-6 py-4 text-right font-bold text-green-700">$<span x-text="sale.revenue.toFixed(2)"></span></td>
+                                    <td class="px-4 py-3 text-right font-bold text-green-700">$<span x-text="formatMoney(sale.revenue)"></span></td>
                                 </tr>
                             </template>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- ===== AUDITORÍA ===== -->
+            <div x-show="currentTab === 'auditoria'" x-transition style="display:none;">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold">Trazabilidad y Auditoría</h3>
+                    <div class="flex gap-3">
+                        <select x-model="auditFilterTipo" class="rounded-lg border-gray-300 text-sm">
+                            <option value="">Todos los tipos</option>
+                            <option value="insumo">Insumos</option>
+                            <option value="formula">Fórmulas</option>
+                            <option value="precio">Precios</option>
+                            <option value="fabricacion">Fabricación</option>
+                            <option value="venta">Ventas</option>
+                        </select>
+                        <button @click="cargarAuditoria()" class="text-gray-500 hover:text-primary material-symbols-outlined bg-gray-100 p-2 rounded-lg">refresh</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="max-h-[600px] overflow-y-auto p-6">
+                        <template x-for="log in filteredAudit" :key="log.id">
+                            <div class="audit-log-item mb-4 pb-4 border-b border-gray-100">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <span class="text-xs font-bold px-2 py-0.5 rounded" :class="getAuditBadgeClass(log.tipo)" x-text="log.tipo.toUpperCase()"></span>
+                                        <span class="text-xs text-gray-400 ml-2" x-text="formatDate(log.fecha)"></span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700 mt-1" x-text="log.mensaje"></p>
+                                <div x-show="log.detalles" class="mt-2 bg-gray-50 p-2 rounded text-xs text-gray-600 font-mono" x-text="JSON.stringify(log.detalles)"></div>
+                            </div>
+                        </template>
+                        <div x-show="filteredAudit.length === 0" class="text-center text-gray-400 py-8">No hay registros de auditoría.</div>
+                    </div>
                 </div>
             </div>
 
         </main>
     </div>
 
-    <!-- Lógica de la Aplicación -->
+    <!-- TOAST -->
+    <div x-show="showToast" x-transition class="fixed top-6 right-6 z-[999] bg-accent text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-2 toast-enter">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span x-text="toastMessage"></span>
+    </div>
+
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('erpSystem', () => ({
-                currentTab: 'inventory',
-                
-                // UI States
-                showAddInventory: false,
-                isRestocking: false,
-                isEditingInventory: false,
-                editingInventoryIndex: null,
-                restockingIndex: null,
-                searchInventory: '',
-                filterByProductIndex: '',
-                
-                showAddProduct: false,
-                editingProductIndex: null,
-                searchProduct: '',
-                viewingProduct: null,
-                
-                // Data
-                inventory: JSON.parse(localStorage.getItem('vj_inventory')) || [],
-                products: JSON.parse(localStorage.getItem('vj_products')) || [],
-                sales: JSON.parse(localStorage.getItem('vj_sales')) || [],
-                
-                newItem: { name: '', unit: 'ml', cost: null, qty: null },
-                newProduct: { name: '', retailPrice: null, wholesalePrice: null, ingredients: [] },
-                tempIngredient: { inventoryIndex: '', qty: null },
-                newSale: { productIndex: '', qty: 1, type: 'retail' },
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('erpSystem', () => ({
+            // ===== STATE =====
+            currentTab: 'dashboard',
+            mobileMenuOpen: false,
+            isLoading: false,
+            showToast: false,
+            toastMessage: '',
+            db: null,
 
-                getTabTitle() {
-                    const titles = { 'dashboard': 'Resumen de Negocio', 'inventory': 'Gestión de Materia Prima', 'formulas': 'Fórmulas y Costos', 'sales': 'Punto de Venta' };
-                    return titles[this.currentTab];
-                },
+            // Insumos
+            inventory: [],
+            showInsumoForm: false,
+            editingInsumoIndex: null,
+            editingInsumoId: null,
+            searchInventory: '',
+            filterInsumoTipo: '',
+            filterInsumoPorProducto: '',
+            insumoForm: { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '' },
 
-                // INVENTARIO
-                get filteredInventory() {
-                    let filtered = this.inventory.map((item, index) => ({...item, originalIndex: index}));
-                    
-                    if (this.searchInventory !== '') {
-                        filtered = filtered.filter(item => item.name.toLowerCase().includes(this.searchInventory.toLowerCase()));
-                    }
-                    
-                    if (this.filterByProductIndex !== '') {
-                        const product = this.products[parseInt(this.filterByProductIndex)];
-                        if (product && product.ingredients) {
-                            const usedIndices = product.ingredients.map(ing => ing.inventoryIndex);
-                            filtered = filtered.filter(item => usedIndices.includes(item.originalIndex));
-                        }
-                    }
-                    return filtered;
-                },
-                saveInventoryItem() {
-                    if(this.newItem.name && this.newItem.cost !== null && this.newItem.qty !== null) {
-                        if (this.isRestocking && this.restockingIndex !== null) {
-                            // Reabastecer
-                            const existing = this.inventory[this.restockingIndex];
-                            const addedQty = parseFloat(this.newItem.qty);
-                            const addedCost = parseFloat(this.newItem.cost);
-                            existing.qty += addedQty;
-                            existing.cost += addedCost;
-                            existing.originalQty = (existing.originalQty || existing.qty) + addedQty;
-                        } else if (this.isEditingInventory && this.editingInventoryIndex !== null) {
-                            // Editar/Corregir
-                            const existing = this.inventory[this.editingInventoryIndex];
-                            existing.name = this.newItem.name;
-                            existing.unit = this.newItem.unit;
-                            existing.cost = parseFloat(this.newItem.cost);
-                            existing.qty = parseFloat(this.newItem.qty);
-                            existing.originalQty = parseFloat(this.newItem.qty); // Asumimos que la corrección resetea la base del costo
-                        } else {
-                            // Nuevo Insumo
-                            this.inventory.push({
-                                name: this.newItem.name, 
-                                unit: this.newItem.unit, 
-                                cost: parseFloat(this.newItem.cost), 
-                                qty: parseFloat(this.newItem.qty),
-                                originalQty: parseFloat(this.newItem.qty)
-                            });
-                        }
-                        this.saveData();
-                        this.cancelInventoryForm();
-                    }
-                },
-                startRestock(index) {
-                    this.restockingIndex = index;
-                    this.isRestocking = true;
-                    this.isEditingInventory = false;
-                    this.showAddInventory = true;
-                    const item = this.inventory[index];
-                    this.newItem = { name: item.name, unit: item.unit, cost: null, qty: null };
-                },
-                editInventoryItem(index) {
-                    this.editingInventoryIndex = index;
-                    this.isEditingInventory = true;
-                    this.isRestocking = false;
-                    this.showAddInventory = true;
-                    const item = this.inventory[index];
-                    // Cargar valores para editar
-                    this.newItem = { name: item.name, unit: item.unit, cost: item.cost, qty: item.qty };
-                },
-                cancelInventoryForm() {
-                    this.newItem = { name: '', unit: 'ml', cost: null, qty: null };
-                    this.showAddInventory = false;
-                    this.isRestocking = false;
-                    this.isEditingInventory = false;
-                    this.restockingIndex = null;
-                    this.editingInventoryIndex = null;
-                },
-                deleteInventoryItem(index) {
-                    if(confirm("¿Seguro que deseas borrar este insumo? Las fórmulas que lo usaban podrían fallar.")) {
-                        this.inventory.splice(index, 1);
-                        this.saveData();
-                    }
-                },
+            // Fórmulas
+            products: [],
+            showFormulaForm: false,
+            editingFormulaIndex: null,
+            editingFormulaId: null,
+            searchProduct: '',
+            formulaForm: { name: '', retailPrice: '', wholesalePrice: '', ingredients: [] },
+            tempIngredient: { insumoId: '', qty: '' },
 
-                // FORMULAS
-                get filteredProducts() {
-                    if (this.searchProduct === '') {
-                        return this.products.map((item, index) => ({...item, originalIndex: index}));
-                    }
-                    return this.products
-                        .map((item, index) => ({...item, originalIndex: index}))
-                        .filter(item => item.name.toLowerCase().includes(this.searchProduct.toLowerCase()));
-                },
-                calculateIngredientCost(ing) {
-                    const invItem = this.inventory[ing.inventoryIndex];
-                    if (!invItem) return 0;
-                    const unitCost = invItem.cost / (invItem.originalQty || invItem.qty || 1);
-                    return unitCost * ing.qty;
-                },
-                calculateFormulaCost(ingredients) {
-                    if(!ingredients) return 0;
-                    return ingredients.reduce((total, ing) => total + this.calculateIngredientCost(ing), 0);
-                },
-                calculateMargin(cost, price) {
-                    if(!price || price <= 0) return 0;
-                    return (((price - cost) / price) * 100).toFixed(1);
-                },
-                openAddFormula() {
-                    this.editingProductIndex = null;
-                    this.newProduct = { name: '', retailPrice: null, wholesalePrice: null, ingredients: [] };
-                    this.showAddProduct = true;
-                },
-                addIngredientToFormula() {
-                    if (this.tempIngredient.inventoryIndex !== '' && this.tempIngredient.qty > 0) {
-                        this.newProduct.ingredients.push({
-                            inventoryIndex: parseInt(this.tempIngredient.inventoryIndex),
-                            qty: parseFloat(this.tempIngredient.qty)
-                        });
-                        this.tempIngredient = { inventoryIndex: '', qty: null };
-                    }
-                },
-                editProduct(index) {
-                    this.editingProductIndex = index;
-                    this.newProduct = JSON.parse(JSON.stringify(this.products[index]));
-                    this.showAddProduct = true;
-                },
-                saveProduct() {
-                    if (this.newProduct.name && this.newProduct.retailPrice && this.newProduct.ingredients.length > 0) {
-                        if (this.editingProductIndex !== null) {
-                            this.products[this.editingProductIndex] = JSON.parse(JSON.stringify(this.newProduct));
-                        } else {
-                            this.products.push(JSON.parse(JSON.stringify(this.newProduct)));
-                        }
-                        this.saveData();
-                        this.showAddProduct = false;
-                        this.editingProductIndex = null;
-                    } else {
-                        alert("Completa el nombre, el precio al público y agrega insumos.");
-                    }
-                },
-                deleteProduct(index) {
-                    if(confirm("¿Borrar este producto final?")) {
-                        this.products.splice(index, 1);
-                        this.saveData();
-                    }
-                },
+            // Fabricación
+            fabSelectedProductId: '',
+            fabConfig: {
+                volumen: 100, piezasPorCaja: 100, costoCaja: 0,
+                moCostoHora: 0, moHorasLote: 0,
+                gasolinaPorEntrega: 0, costoEnvio: 0, piezasPorEntrega: 100,
+                cfRenta: 0, cfLuzAgua: 0, cfEquipo: 0, cfOtros: 0
+            },
+            fabSavedConfigs: {},
 
-                // VENTAS
-                registerSale() {
-                    if(this.newSale.productIndex !== '' && this.newSale.qty > 0) {
-                        const product = this.products[this.newSale.productIndex];
-                        const saleQty = parseInt(this.newSale.qty);
-                        const priceToUse = this.newSale.type === 'retail' ? product.retailPrice : (product.wholesalePrice || product.retailPrice);
-                        const revenue = parseFloat(priceToUse) * saleQty;
+            // Escenarios
+            escSelectedProductId: '',
+            escVolumen: 100,
+            escResult: { costoFijoUnitario: 0, costoVariableUnitario: 0, costoTotalUnitario: 0, margen: 0, gananciaTotal: 0 },
+            escSensibilidad: [],
+            escPuntoEquilibrio: 0,
+            escChart: null,
 
-                        product.ingredients.forEach(ing => {
-                            const invItem = this.inventory[ing.inventoryIndex];
-                            if(invItem) invItem.qty -= (ing.qty * saleQty);
-                        });
+            // Ventas
+            sales: [],
+            newSale: { productId: '', qty: 1, type: 'retail' },
 
-                        this.sales.push({
-                            productName: product.name, qty: saleQty, type: this.newSale.type,
-                            revenue: revenue, cost: this.calculateFormulaCost(product.ingredients) * saleQty,
-                            date: new Date().toISOString()
-                        });
+            // Auditoría
+            auditLogs: [],
+            auditFilterTipo: '',
 
-                        this.saveData();
-                        this.newSale = { productIndex: '', qty: 1, type: 'retail' };
-                        alert("¡Venta registrada exitosamente!");
-                    }
-                },
+            // ===== INIT =====
+            async init() {
+                this.db = firebase.firestore();
+                this.isLoading = true;
+                await Promise.all([
+                    this.loadCollection('inventory', 'vj_insumos'),
+                    this.loadCollection('products', 'vj_formulas'),
+                    this.loadCollection('sales', 'vj_ventas'),
+                    this.loadCollection('auditLogs', 'vj_auditoria', 100)
+                ]);
+                this.isLoading = false;
+                this.$nextTick(() => this.initDashboardCharts());
+            },
 
-                // DASHBOARD
-                getTotalSalesRevenue() { return this.sales.reduce((total, sale) => total + sale.revenue, 0); },
-                getTotalInvestment() { return this.inventory.reduce((total, item) => total + (item.cost || 0), 0); },
-                getNetProfit() { return this.sales.reduce((total, sale) => total + (sale.revenue - (sale.cost || 0)), 0); },
-                getCurrentInventoryValue() {
-                    return this.inventory.reduce((total, item) => {
-                        const unitCost = item.cost / (item.originalQty || item.qty || 1);
-                        return total + (unitCost * Math.max(0, item.qty));
-                    }, 0);
-                },
-
-                saveData() {
-                    localStorage.setItem('vj_inventory', JSON.stringify(this.inventory));
-                    localStorage.setItem('vj_products', JSON.stringify(this.products));
-                    localStorage.setItem('vj_sales', JSON.stringify(this.sales));
+            async loadCollection(prop, collectionName, limitCount = null) {
+                try {
+                    let q = this.db.collection(collectionName).orderBy('createdAt', 'desc');
+                    if (limitCount) q = q.limit(limitCount);
+                    const snap = await q.get();
+                    this[prop] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                } catch (e) {
+                    console.error('Error cargando', collectionName, e);
+                    this[prop] = [];
                 }
-            }))
-        })
+            },
+
+            // ===== HELPERS =====
+            getTabTitle() {
+                const t = { dashboard:'Resumen de Negocio', insumos:'Gestión de Materia Prima', formulas:'Fórmulas y Costos', fabricacion:'Costo de Fabricación', escenarios:'Escenarios y Análisis', sales:'Punto de Venta', auditoria:'Auditoría y Trazabilidad' };
+                return t[this.currentTab] || 'Panel';
+            },
+            formatMoney(n) { return n ? parseFloat(n).toFixed(2) : '0.00'; },
+            formatNumber(n) { return n ? parseFloat(n).toFixed(4) : '0.0000'; },
+            formatDate(d) { if(!d) return '-'; const date = d.toDate ? d.toDate() : new Date(d); return date.toLocaleString('es-MX', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}); },
+            getTipoLabel(t) { const map = { liquido:'Líquido', solido:'Sólido', longitud:'Longitud', etiqueta:'Etiqueta', envase:'Envase', empaque:'Empaque', otro:'Otro' }; return map[t] || t; },
+            getInsumoById(id) { return this.inventory.find(i => i.id === id) || {}; },
+            getProductById(id) { return this.products.find(p => p.id === id) || {}; },
+            toast(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => this.showToast = false, 3000); },
+
+            // ===== UNIT COST =====
+            getUnitCost(item) {
+                if (!item) return 0;
+                let baseQty = item.qty || 1;
+                // Si es etiqueta, el costo unitario es por etiqueta, no por plantilla
+                if (item.tipo === 'etiqueta' && item.rendimiento) {
+                    baseQty = baseQty * item.rendimiento;
+                }
+                return (item.cost || 0) / Math.max(baseQty, 1);
+            },
+
+            // Convertir cantidad de insumo a unidad base para cálculos
+            convertToBaseUnit(qty, unit) {
+                const conv = { 'L': 1000, 'ml': 1, 'kg': 1000, 'gr': 1, 'm': 100, 'cm': 1, 'plantilla': 1, 'pz': 1, 'caja': 1 };
+                return qty * (conv[unit] || 1);
+            },
+
+            // ===== INSUMOS =====
+            get filteredInventory() {
+                let f = [...this.inventory];
+                if (this.searchInventory) f = f.filter(i => i.name.toLowerCase().includes(this.searchInventory.toLowerCase()));
+                if (this.filterInsumoTipo) f = f.filter(i => i.tipo === this.filterInsumoTipo);
+                if (this.filterInsumoPorProducto !== '') {
+                    const prod = this.products[parseInt(this.filterInsumoPorProducto)];
+                    if (prod && prod.ingredients) {
+                        const ids = prod.ingredients.map(ing => ing.insumoId);
+                        f = f.filter(i => ids.includes(i.id));
+                    }
+                }
+                return f;
+            },
+            onTipoInsumoChange() {
+                const defaults = { liquido:'ml', solido:'gr', longitud:'cm', etiqueta:'plantilla', envase:'pz', empaque:'caja', otro:'pz' };
+                this.insumoForm.unit = defaults[this.insumoForm.tipo] || 'pz';
+            },
+            openInsumoForm() {
+                this.editingInsumoIndex = null;
+                this.editingInsumoId = null;
+                this.insumoForm = { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '' };
+                this.showInsumoForm = true;
+            },
+            closeInsumoForm() { this.showInsumoForm = false; this.editingInsumoIndex = null; this.editingInsumoId = null; },
+            editInsumo(item) {
+                this.editingInsumoIndex = this.inventory.findIndex(i => i.id === item.id);
+                this.editingInsumoId = item.id;
+                this.insumoForm = { name: item.name, tipo: item.tipo || 'otro', unit: item.unit, cost: item.cost, qty: item.qty, proveedor: item.proveedor || '', rendimiento: item.rendimiento || '' };
+                this.showInsumoForm = true;
+            },
+            async restockInsumo(item) {
+                const extraQty = prompt(`¿Cuántas ${item.unit} de "${item.name}" estás comprando?`);
+                if (!extraQty || isNaN(extraQty)) return;
+                const extraCost = prompt(`¿Cuánto pagaste en total por esta compra? ($)`);
+                if (!extraCost || isNaN(extraCost)) return;
+                const idx = this.inventory.findIndex(i => i.id === item.id);
+                if (idx === -1) return;
+                this.inventory[idx].qty += parseFloat(extraQty);
+                this.inventory[idx].cost += parseFloat(extraCost);
+                await this.db.collection('vj_insumos').doc(item.id).update({
+                    qty: this.inventory[idx].qty,
+                    cost: this.inventory[idx].cost,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                this.logAudit('insumo', `Reabastecido: ${item.name} (+${extraQty} ${item.unit}, +$${extraCost})`);
+                this.toast('Stock actualizado');
+            },
+            async saveInsumo() {
+                const data = {
+                    name: this.insumoForm.name,
+                    tipo: this.insumoForm.tipo,
+                    unit: this.insumoForm.unit,
+                    cost: parseFloat(this.insumoForm.cost) || 0,
+                    qty: parseFloat(this.insumoForm.qty) || 0,
+                    proveedor: this.insumoForm.proveedor || '',
+                    rendimiento: this.insumoForm.tipo === 'etiqueta' ? (parseInt(this.insumoForm.rendimiento) || 1) : null,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                if (this.editingInsumoId) {
+                    await this.db.collection('vj_insumos').doc(this.editingInsumoId).update(data);
+                    this.inventory[this.editingInsumoIndex] = { ...this.inventory[this.editingInsumoIndex], ...data };
+                    this.logAudit('insumo', `Insumo editado: ${data.name}`);
+                } else {
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    const ref = await this.db.collection('vj_insumos').add(data);
+                    this.inventory.unshift({ id: ref.id, ...data });
+                    this.logAudit('insumo', `Nuevo insumo creado: ${data.name}`);
+                }
+                this.closeInsumoForm();
+                this.toast('Insumo guardado');
+            },
+            async deleteInsumo(id) {
+                if (!confirm('¿Borrar este insumo?')) return;
+                await this.db.collection('vj_insumos').doc(id).delete();
+                this.inventory = this.inventory.filter(i => i.id !== id);
+                this.logAudit('insumo', `Insumo eliminado: ${id}`);
+                this.toast('Insumo eliminado');
+            },
+
+            // ===== FÓRMULAS =====
+            get filteredProducts() {
+                if (!this.searchProduct) return this.products;
+                return this.products.filter(p => p.name.toLowerCase().includes(this.searchProduct.toLowerCase()));
+            },
+            calculateIngredientCost(ing) {
+                const inv = this.getInsumoById(ing.insumoId);
+                if (!inv.id) return 0;
+                return this.getUnitCost(inv) * (ing.qty || 0);
+            },
+            calculateFormulaCost(ingredients) {
+                if (!ingredients) return 0;
+                return ingredients.reduce((t, ing) => t + this.calculateIngredientCost(ing), 0);
+            },
+            calculateMargin(cost, price) {
+                if (!price || price <= 0) return 0;
+                return (((parseFloat(price) - cost) / parseFloat(price)) * 100).toFixed(1);
+            },
+            openFormulaForm() {
+                this.editingFormulaIndex = null;
+                this.editingFormulaId = null;
+                this.formulaForm = { name: '', retailPrice: '', wholesalePrice: '', ingredients: [] };
+                this.showFormulaForm = true;
+            },
+            closeFormulaForm() { this.showFormulaForm = false; this.editingFormulaIndex = null; this.editingFormulaId = null; },
+            addIngredientToFormula() {
+                if (!this.tempIngredient.insumoId || !this.tempIngredient.qty) return;
+                this.formulaForm.ingredients.push({ insumoId: this.tempIngredient.insumoId, qty: parseFloat(this.tempIngredient.qty) });
+                this.tempIngredient = { insumoId: '', qty: '' };
+            },
+            editFormula(prod) {
+                this.editingFormulaIndex = this.products.findIndex(p => p.id === prod.id);
+                this.editingFormulaId = prod.id;
+                this.formulaForm = JSON.parse(JSON.stringify(prod));
+                this.showFormulaForm = true;
+            },
+            viewFormula(prod) { alert(`Receta de ${prod.name}:
+
+` + prod.ingredients.map(ing => { const i = this.getInsumoById(ing.insumoId); return `- ${ing.qty} ${i.unit} de ${i.name} ($${this.formatMoney(this.calculateIngredientCost(ing))})`; }).join('
+') + `
+
+Costo total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`); },
+            async saveFormula() {
+                if (!this.formulaForm.name || !this.formulaForm.retailPrice || this.formulaForm.ingredients.length === 0) {
+                    alert('Completa nombre, precio y al menos un insumo.'); return;
+                }
+                const data = {
+                    name: this.formulaForm.name,
+                    retailPrice: parseFloat(this.formulaForm.retailPrice) || 0,
+                    wholesalePrice: parseFloat(this.formulaForm.wholesalePrice) || 0,
+                    ingredients: this.formulaForm.ingredients,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                if (this.editingFormulaId) {
+                    await this.db.collection('vj_formulas').doc(this.editingFormulaId).update(data);
+                    this.products[this.editingFormulaIndex] = { ...this.products[this.editingFormulaIndex], ...data };
+                    this.logAudit('formula', `Fórmula editada: ${data.name}`);
+                } else {
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    const ref = await this.db.collection('vj_formulas').add(data);
+                    this.products.unshift({ id: ref.id, ...data });
+                    this.logAudit('formula', `Nueva fórmula: ${data.name}`);
+                }
+                this.closeFormulaForm();
+                this.toast('Fórmula guardada');
+            },
+            async deleteFormula(id) {
+                if (!confirm('¿Borrar esta fórmula?')) return;
+                await this.db.collection('vj_formulas').doc(id).delete();
+                this.products = this.products.filter(p => p.id !== id);
+                this.logAudit('formula', `Fórmula eliminada: ${id}`);
+                this.toast('Fórmula eliminada');
+            },
+
+            // ===== FABRICACIÓN =====
+            onFabProductChange() {
+                const prod = this.getProductById(this.fabSelectedProductId);
+                // Cargar config guardada si existe
+                if (this.fabSavedConfigs[this.fabSelectedProductId]) {
+                    this.fabConfig = { ...this.fabConfig, ...this.fabSavedConfigs[this.fabSelectedProductId] };
+                }
+                this.calcularFabricacion();
+            },
+            get fabCostoMateriaPrima() {
+                const prod = this.getProductById(this.fabSelectedProductId);
+                return prod.id ? this.calculateFormulaCost(prod.ingredients) : 0;
+            },
+            get fabCostoEmpaqueUnitario() {
+                return ((parseFloat(this.fabConfig.costoCaja) || 0) / Math.max(parseInt(this.fabConfig.piezasPorCaja) || 1, 1));
+            },
+            get fabCostoMOUnitario() {
+                return ((parseFloat(this.fabConfig.moCostoHora) || 0) * (parseFloat(this.fabConfig.moHorasLote) || 0)) / Math.max(parseInt(this.fabConfig.volumen) || 1, 1);
+            },
+            get fabCostoLogisticaUnitario() {
+                return ((parseFloat(this.fabConfig.gasolinaPorEntrega) || 0) + (parseFloat(this.fabConfig.costoEnvio) || 0)) / Math.max(parseInt(this.fabConfig.piezasPorEntrega) || 1, 1);
+            },
+            get fabCostoFijoUnitario() {
+                const totalFijos = (parseFloat(this.fabConfig.cfRenta) || 0) + (parseFloat(this.fabConfig.cfLuzAgua) || 0) + (parseFloat(this.fabConfig.cfEquipo) || 0) + (parseFloat(this.fabConfig.cfOtros) || 0);
+                return totalFijos / Math.max(parseInt(this.fabConfig.volumen) || 1, 1);
+            },
+            get fabCostoTotalUnitario() {
+                return this.fabCostoMateriaPrima + this.fabCostoEmpaqueUnitario + this.fabCostoMOUnitario + this.fabCostoLogisticaUnitario + this.fabCostoFijoUnitario;
+            },
+            get fabPctMateria() {
+                const t = this.fabCostoTotalUnitario; return t > 0 ? (this.fabCostoMateriaPrima / t * 100) : 0;
+            },
+            get fabPctEmpaque() {
+                const t = this.fabCostoTotalUnitario; return t > 0 ? (this.fabCostoEmpaqueUnitario / t * 100) : 0;
+            },
+            get fabPctMO() {
+                const t = this.fabCostoTotalUnitario; return t > 0 ? (this.fabCostoMOUnitario / t * 100) : 0;
+            },
+            get fabPctLogistica() {
+                const t = this.fabCostoTotalUnitario; return t > 0 ? (this.fabCostoLogisticaUnitario / t * 100) : 0;
+            },
+            get fabPctFijos() {
+                const t = this.fabCostoTotalUnitario; return t > 0 ? (this.fabCostoFijoUnitario / t * 100) : 0;
+            },
+            calcularFabricacion() { /* Reactividad de Alpine hace el cálculo automático */ },
+            async guardarConfigFabricacion() {
+                if (!this.fabSelectedProductId) { alert('Selecciona un producto primero'); return; }
+                this.fabSavedConfigs[this.fabSelectedProductId] = { ...this.fabConfig };
+                await this.db.collection('vj_fab_configs').doc(this.fabSelectedProductId).set({
+                    config: this.fabConfig,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                this.logAudit('fabricacion', `Config. de fabricación guardada para: ${this.getProductById(this.fabSelectedProductId).name}`);
+                this.toast('Configuración guardada');
+            },
+
+            // ===== ESCENARIOS =====
+            onEscProductChange() {
+                this.calcularEscenario();
+            },
+            calcularEscenario() {
+                const prod = this.getProductById(this.escSelectedProductId);
+                if (!prod.id) return;
+                const costoMP = this.calculateFormulaCost(prod.ingredients);
+                const volumen = parseInt(this.escVolumen) || 1;
+                // Usar config de fabricación si existe
+                const cfg = this.fabSavedConfigs[this.escSelectedProductId] || this.fabConfig;
+                const totalFijos = (parseFloat(cfg.cfRenta) || 0) + (parseFloat(cfg.cfLuzAgua) || 0) + (parseFloat(cfg.cfEquipo) || 0) + (parseFloat(cfg.cfOtros) || 0);
+                const costoFijoUnitario = totalFijos / volumen;
+                const costoEmpaque = ((parseFloat(cfg.costoCaja) || 0) / Math.max(parseInt(cfg.piezasPorCaja) || 1, 1));
+                const costoMO = ((parseFloat(cfg.moCostoHora) || 0) * (parseFloat(cfg.moHorasLote) || 0)) / volumen;
+                const costoLogistica = ((parseFloat(cfg.gasolinaPorEntrega) || 0) + (parseFloat(cfg.costoEnvio) || 0)) / Math.max(parseInt(cfg.piezasPorEntrega) || 1, 1);
+                const costoVariable = costoMP + costoEmpaque + costoMO + costoLogistica;
+                const costoTotal = costoVariable + costoFijoUnitario;
+                const price = parseFloat(prod.retailPrice) || 0;
+                this.escResult = {
+                    costoFijoUnitario, costoVariableUnitario: costoVariable,
+                    costoTotalUnitario: costoTotal,
+                    margen: price > 0 ? (((price - costoTotal) / price) * 100).toFixed(1) : 0,
+                    gananciaTotal: (price - costoTotal) * volumen
+                };
+                // Sensibilidad
+                this.escSensibilidad = prod.ingredients.map(ing => {
+                    const inv = this.getInsumoById(ing.insumoId);
+                    const costoActual = this.calculateIngredientCost(ing);
+                    const costo10 = costoActual * 1.1;
+                    const costo20 = costoActual * 1.2;
+                    const impacto = costoActual > 0 ? ((costo20 - costoActual) / costoTotal * 100) : 0;
+                    return { insumoId: ing.insumoId, name: inv.name || 'Desconocido', costoActual, costo10, costo20, impacto: impacto.toFixed(1) };
+                });
+                // Punto de equilibrio
+                const contribucionUnitaria = price - costoVariable;
+                this.escPuntoEquilibrio = contribucionUnitaria > 0 ? Math.ceil(totalFijos / contribucionUnitaria) : 0;
+                this.$nextTick(() => this.renderEscenarioChart());
+            },
+            renderEscenarioChart() {
+                const ctx = document.getElementById('chartEscenario');
+                if (!ctx) return;
+                if (this.escChart) this.escChart.destroy();
+                const vols = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+                const data = vols.map(v => {
+                    const totalFijos = (parseFloat(this.fabConfig.cfRenta) || 0) + (parseFloat(this.fabConfig.cfLuzAgua) || 0) + (parseFloat(this.fabConfig.cfEquipo) || 0) + (parseFloat(this.fabConfig.cfOtros) || 0);
+                    const costoVariable = this.escResult.costoVariableUnitario || 0;
+                    return { x: v, y: costoVariable + (totalFijos / v) };
+                });
+                this.escChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: vols.map(v => v.toString()), datasets: [{ label: 'Costo Unitario', data: data.map(d => d.y), borderColor: '#154212', backgroundColor: 'rgba(21,66,18,0.1)', fill: true, tension: 0.4 }] },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: '$ / unidad' } } } }
+                });
+            },
+
+            // ===== VENTAS =====
+            async registerSale() {
+                if (!this.newSale.productId || this.newSale.qty < 1) return;
+                const prod = this.getProductById(this.newSale.productId);
+                const qty = parseInt(this.newSale.qty);
+                const price = this.newSale.type === 'retail' ? prod.retailPrice : (prod.wholesalePrice || prod.retailPrice);
+                const revenue = parseFloat(price) * qty;
+                // Descontar inventario
+                for (const ing of prod.ingredients || []) {
+                    const inv = this.inventory.find(i => i.id === ing.insumoId);
+                    if (inv) {
+                        inv.qty -= (ing.qty * qty);
+                        await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    }
+                }
+                const saleData = {
+                    productId: prod.id, productName: prod.name, qty, type: this.newSale.type,
+                    revenue, cost: this.calculateFormulaCost(prod.ingredients) * qty,
+                    date: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                const ref = await this.db.collection('vj_ventas').add(saleData);
+                this.sales.unshift({ id: ref.id, ...saleData, date: new Date() });
+                this.newSale = { productId: '', qty: 1, type: 'retail' };
+                this.logAudit('venta', `Venta registrada: ${prod.name} x${qty} ($${this.formatMoney(revenue)})`);
+                this.toast('Venta registrada');
+                this.updateDashboardCharts();
+            },
+
+            // ===== DASHBOARD =====
+            getTotalSalesRevenue() { return this.sales.reduce((t, s) => t + (s.revenue || 0), 0); },
+            getTotalInvestment() { return this.inventory.reduce((t, i) => t + (i.cost || 0), 0); },
+            getNetProfit() { return this.sales.reduce((t, s) => t + ((s.revenue || 0) - (s.cost || 0)), 0); },
+            getCurrentInventoryValue() {
+                return this.inventory.reduce((t, i) => t + (this.getUnitCost(i) * Math.max(0, i.qty || 0)), 0);
+            },
+            initDashboardCharts() {
+                this.updateDashboardCharts();
+            },
+            updateDashboardCharts() {
+                // Ventas chart
+                const ctx1 = document.getElementById('chartVentas');
+                if (ctx1) {
+                    const ventasPorDia = {};
+                    this.sales.forEach(s => {
+                        const d = s.date ? (s.date.toDate ? s.date.toDate().toLocaleDateString('es-MX') : new Date(s.date).toLocaleDateString('es-MX')) : 'Hoy';
+                        ventasPorDia[d] = (ventasPorDia[d] || 0) + (s.revenue || 0);
+                    });
+                    const labels = Object.keys(ventasPorDia).slice(-7);
+                    const data = labels.map(l => ventasPorDia[l]);
+                    new Chart(ctx1, { type: 'bar', data: { labels, datasets: [{ label: 'Ingresos ($)', data, backgroundColor: '#154212', borderRadius: 6 }] }, options: { responsive: true, plugins: { legend: { display: false } } } });
+                }
+                // Costos chart
+                const ctx2 = document.getElementById('chartCostos');
+                if (ctx2 && this.products.length > 0) {
+                    const prod = this.products[0];
+                    const costoMP = this.calculateFormulaCost(prod.ingredients);
+                    new Chart(ctx2, { type: 'doughnut', data: { labels: ['Materia Prima', 'Empaque', 'MO', 'Logística', 'Fijos'], datasets: [{ data: [costoMP || 1, 1, 1, 1, 1], backgroundColor: ['#f87171', '#fbbf24', '#60a5fa', '#a78bfa', '#9ca3af'] }] }, options: { responsive: true } });
+                }
+            },
+
+            // ===== AUDITORÍA =====
+            get filteredAudit() {
+                if (!this.auditFilterTipo) return this.auditLogs;
+                return this.auditLogs.filter(l => l.tipo === this.auditFilterTipo);
+            },
+            getAuditBadgeClass(t) {
+                const map = { insumo:'bg-blue-100 text-blue-700', formula:'bg-purple-100 text-purple-700', precio:'bg-amber-100 text-amber-700', fabricacion:'bg-green-100 text-green-700', venta:'bg-red-100 text-red-700' };
+                return map[t] || 'bg-gray-100 text-gray-700';
+            },
+            async logAudit(tipo, mensaje, detalles = null) {
+                const data = { tipo, mensaje, detalles, fecha: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+                await this.db.collection('vj_auditoria').add(data);
+                this.auditLogs.unshift({ id: Date.now().toString(), ...data, fecha: new Date() });
+            },
+            async cargarAuditoria() {
+                this.isLoading = true;
+                await this.loadCollection('auditLogs', 'vj_auditoria', 100);
+                this.isLoading = false;
+            }
+        }));
+    });
     </script>
 </body>
 </html>

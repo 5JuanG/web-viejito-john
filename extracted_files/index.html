@@ -1,266 +1,538 @@
-<!DOCTYPE html><html class="scroll-smooth" lang="es"><head>
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+<head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>El Gel Balsámico del Viejito John | Alivio Natural</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
-            "colors": {
-                    "error-container": "#ffdad6",
-                    "surface-container-lowest": "#ffffff",
-                    "inverse-on-surface": "#f3f0eb",
-                    "secondary-fixed": "#fedcbe",
-                    "tertiary-fixed-dim": "#ffb68c",
-                    "primary-container": "#2d5a27",
-                    "error": "#ba1a1a",
-                    "tertiary-container": "#813d0a",
-                    "surface-dim": "#dcdad5",
-                    "secondary-fixed-dim": "#e1c1a4",
-                    "outline": "#72796e",
-                    "on-secondary-fixed": "#291806",
-                    "surface-cream": "#FDFBF7",
-                    "on-primary-fixed": "#002201",
-                    "surface-container-low": "#f6f3ee",
-                    "primary-fixed": "#bcf0ae",
-                    "background": "#fcf9f4",
-                    "text-main": "#1C1C1C",
-                    "on-background": "#1c1c19",
-                    "on-primary-fixed-variant": "#23501e",
-                    "outline-variant": "#c2c9bb",
-                    "balm-red": "#B23B25",
-                    "on-tertiary-fixed-variant": "#753401",
-                    "primary": "#154212",
-                    "on-secondary-container": "#796048",
-                    "on-secondary": "#ffffff",
-                    "on-tertiary-fixed": "#321200",
-                    "surface": "#fcf9f4",
-                    "surface-bright": "#fcf9f4",
-                    "on-error-container": "#93000a",
-                    "secondary": "#725a42",
-                    "on-primary-container": "#9dd090",
-                    "on-tertiary": "#ffffff",
-                    "surface-variant": "#e5e2dd",
-                    "secondary-container": "#fedcbe",
-                    "tertiary-fixed": "#ffdbc9",
-                    "primary-fixed-dim": "#a1d494",
-                    "surface-tint": "#3b6934",
-                    "surface-container": "#f0ede9",
-                    "on-primary": "#ffffff",
-                    "leaf-vibrant": "#47842E",
-                    "on-tertiary-container": "#ffb183",
-                    "surface-container-highest": "#e5e2dd",
-                    "inverse-primary": "#a1d494",
-                    "on-secondary-fixed-variant": "#59422c",
-                    "on-surface": "#1c1c19",
-                    "on-surface-variant": "#42493e",
-                    "inverse-surface": "#31302d",
-                    "on-error": "#ffffff",
-                    "tertiary": "#602900",
-                    "surface-container-high": "#ebe8e3"
+            colors: {
+              "primary": "#154212", "primary-container": "#2d5a27", "primary-fixed": "#bcf0ae",
+              "on-primary": "#ffffff", "on-primary-container": "#9dd090", "on-primary-fixed": "#002201",
+              "secondary": "#725a42", "secondary-fixed": "#fedcbe", "on-secondary": "#ffffff",
+              "on-secondary-fixed": "#291806", "tertiary": "#602900", "tertiary-fixed": "#ffdbc9",
+              "on-tertiary": "#ffffff", "on-tertiary-fixed": "#321200",
+              "surface": "#fcf9f4", "on-surface": "#1c1c19", "surface-variant": "#e5e2dd",
+              "on-surface-variant": "#42493e", "surface-cream": "#FDFBF7",
+              "surface-container-low": "#f6f3ee", "surface-container": "#f0ede9",
+              "outline": "#72796e", "outline-variant": "#c2c9bb",
+              "background": "#fcf9f4", "on-background": "#1c1c19",
+              "error": "#ba1a1a", "balm-red": "#B23B25",
+              "leaf-vibrant": "#47842E", "accent-orange": "#E85D04"
             },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
+            spacing: { "gutter": "24px", "container-max": "1280px" },
+            fontFamily: {
+              "body-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+              "headline-md": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"],
+              "display-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"]
             },
-            "spacing": {
-                    "gutter": "24px",
-                    "container-max": "1280px",
-                    "base": "8px",
-                    "margin-mobile": "16px",
-                    "margin-desktop": "48px"
-            },
-            "fontFamily": {
-                    "body-md": ["Plus Jakarta Sans"],
-                    "headline-lg": ["Plus Jakarta Sans"],
-                    "headline-md": ["Plus Jakarta Sans"],
-                    "headline-lg-mobile": ["Plus Jakarta Sans"],
-                    "label-sm": ["Plus Jakarta Sans"],
-                    "display-lg": ["Plus Jakarta Sans"],
-                    "body-lg": ["Plus Jakarta Sans"]
-            },
-            "fontSize": {
-                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
-                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
-                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            fontSize: {
+              "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}],
+              "headline-lg": ["32px", {lineHeight: "40px", fontWeight: "700"}],
+              "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}],
+              "label-sm": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}],
+              "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "800"}],
+              "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}]
             }
-          },
-        },
-      }
+          }
+        }
     </script>
 <style>
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-
+.reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+.reveal.active { opacity: 1; transform: translateY(0); }
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.hero-carousel { position: relative; width: 100%; height: 600px; overflow: hidden; }
+.hero-carousel-track { display: flex; transition: transform 0.7s ease-in-out; height: 100%; }
+.hero-slide { min-width: 100%; height: 100%; position: relative; }
+.hero-slide img { width: 100%; height: 100%; object-fit: cover; }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(21,66,18,0.85) 0%, rgba(21,66,18,0.4) 60%, transparent 100%); }
+.hero-content { position: absolute; inset: 0; display: flex; align-items: center; z-index: 10; }
+.hero-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.3s; }
+.hero-dot.active { background: #fff; width: 32px; border-radius: 6px; }
+.countdown-box { background: linear-gradient(135deg, #154212 0%, #2d5a27 100%); }
+.countdown-digit { font-variant-numeric: tabular-nums; }
+.product-card { transition: all 0.3s ease; }
+.product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(21,66,18,0.15); }
+@keyframes pulse-soft { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+.benefit-icon { animation: pulse-soft 3s ease-in-out infinite; }
+html { scroll-behavior: smooth; }
+@media (max-width: 768px) { .hero-carousel { height: 500px; } }
+</style>
+<base target="_blank">
 </head>
 <body class="bg-background text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
-<!-- TopNavBar -->
-<nav class="sticky top-0 w-full z-50 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
-<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
-<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">
-                El Viejito John
-            </div>
-<div class="hidden md:flex items-center gap-8">
-<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="products.html">Productos</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#benefits">Beneficios</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#testimonials">Testimonios</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-body-md text-body-md" href="#about">Nosotros</a>
+
+<!-- COUNTDOWN BANNER -->
+<div id="countdown-banner" class="countdown-box text-white py-3 px-4 hidden">
+    <div class="max-w-container-max mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-center">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-accent-orange">timer</span>
+            <span id="countdown-message" class="font-bold text-sm sm:text-base">¡Oferta especial por tiempo limitado!</span>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-lg font-bold">
+            <div class="bg-white/20 rounded-lg px-3 py-1 countdown-digit" id="cd-days">00</div><span class="text-white/60">:</span>
+            <div class="bg-white/20 rounded-lg px-3 py-1 countdown-digit" id="cd-hours">00</div><span class="text-white/60">:</span>
+            <div class="bg-white/20 rounded-lg px-3 py-1 countdown-digit" id="cd-minutes">00</div><span class="text-white/60">:</span>
+            <div class="bg-white/20 rounded-lg px-3 py-1 countdown-digit" id="cd-seconds">00</div>
+        </div>
+        <a href="products.html" class="bg-accent-orange text-white px-4 py-1.5 rounded-full text-sm font-bold hover:brightness-110 transition-all">Ver Ofertas</a>
+    </div>
 </div>
-<a href="checkout.html?p=gel_balsamico_700g" class="bg-primary text-on-primary px-8 py-3 rounded-full font-headline-md text-body-md hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95 inline-block text-center">
-                Shop Now
-            </a>
+
+<!-- NAV -->
+<nav class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
+<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+    <div class="font-headline-lg text-headline-lg font-bold text-primary">El Viejito John</div>
+    <div class="hidden md:flex items-center gap-8">
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="products.html">Productos</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#benefits">Beneficios</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#linea-alivio">Líneas</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#testimonials">Testimonios</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#about">Nosotros</a>
+    </div>
+    <a href="checkout.html?p=gel_balsamico" class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-bold text-sm hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95">Comprar</a>
 </div>
 </nav>
+
 <main>
-<!-- Hero Section -->
-<section class="relative overflow-hidden pt-12 pb-24 md:pt-24 md:pb-32 px-gutter max-w-container-max mx-auto">
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-<div class="reveal active">
-<span class="inline-block bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-6">TRADICIÓN HERBAL MODERNA</span>
-<h1 class="font-display-lg text-display-lg text-primary mb-6 leading-tight">
-                        Alivio Natural para tus Músculos
-                    </h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-lg">
-                        Siente el poder calmante de la naturaleza con el Gel Balsámico de El Viejito John. Una fórmula ancestral perfeccionada para el alivio inmediato de dolores musculares y articulares.
-                    </p>
-<div class="flex flex-col sm:flex-row gap-4">
-<a href="checkout.html?p=gel_balsamico_700g" class="bg-primary text-on-primary px-10 py-4 rounded-full font-headline-md text-body-md hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95 inline-block text-center">
-                            Comprar ahora
-                        </a>
-<button class="border border-primary text-primary px-10 py-4 rounded-full font-headline-md text-body-md hover:bg-surface-container-low transition-all">
-                            Más información
-                        </button>
-</div>
-<div class="mt-12 flex items-center gap-4 text-on-surface-variant">
-<div class="flex -space-x-3">
-<div class="w-10 h-10 rounded-full border-2 border-surface bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-xs">J</div>
-<div class="w-10 h-10 rounded-full border-2 border-surface bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed font-bold text-xs">M</div>
-<div class="w-10 h-10 rounded-full border-2 border-surface bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed font-bold text-xs">A</div>
-</div>
-<span class="font-body-md text-body-md">+5,000 Clientes Satisfechos</span>
-</div>
-</div>
-<div class="relative reveal delay-200 active" style="background: transparent;">
-<div class="absolute inset-0 bg-primary/5 rounded-full scale-110 blur-3xl -z-10"></div>
-<img alt="Envase Gel Balsámico del Viejito John" class="w-full h-auto object-contain mx-auto transform hover:scale-105 transition-transform duration-500" style="background: transparent;" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYOG8ME0qOYBEyzVxd3u4hJNlFV5P5oKxakxUgaLXq6mjpmcpFG4yMjP2FtpKRxMMXme_GZS2misNZiWBxiARAnsJdEwjAAC85PfMPlgzW-tb0ckh8lNAbWe3jO94S4CQB6jk6-NCBnyETuPWgZIb5ztHb-D7brSRAJmLCc64CjzKMOyhxHQ7_cO-0dRONc3nTmez_MVqhiJteCKUT2U8m3hfe46yTxNkQEkrdQwhe2d4NSqTUDnGiuqdMwdORCsAiCzO_anQt1S4" onerror="this.src='producto.png'"/>
-</div>
-</div>
+
+<!-- HERO CAROUSEL -->
+<section class="hero-carousel" id="hero">
+    <div class="hero-carousel-track" id="hero-track">
+        <div class="hero-slide">
+            <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=1920&auto=format&fit=crop" alt="Atleta de alto rendimiento">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="max-w-container-max mx-auto px-gutter w-full">
+                    <div class="max-w-xl">
+                        <span class="inline-block bg-accent-orange text-white px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">PARA ATLETAS DE ALTO RENDIMIENTO</span>
+                        <h1 class="font-display-lg text-display-lg text-white mb-4 leading-tight drop-shadow-lg">Recuperación Rápida para tu Cuerpo</h1>
+                        <p class="font-body-lg text-body-lg text-white/90 mb-8 max-w-lg drop-shadow">El Gel Balsámico del Viejito John favorece la sensación de alivio muscular después del entrenamiento intenso. Ideal para calambres, torceduras y fatiga deportiva.</p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="checkout.html?p=gel_balsamico" class="bg-white text-primary px-10 py-4 rounded-full font-bold hover:shadow-lg transition-all active:scale-95 text-center">Comprar Gel Balsámico</a>
+                            <a href="#reseña" class="border-2 border-white text-white px-10 py-4 rounded-full font-bold hover:bg-white/10 transition-all text-center">Conocer Más</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slide">
+            <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1920&auto=format&fit=crop" alt="Persona con dolor muscular">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="max-w-container-max mx-auto px-gutter w-full">
+                    <div class="max-w-xl">
+                        <span class="inline-block bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">ALIVIO NATURAL</span>
+                        <h1 class="font-display-lg text-display-lg text-white mb-4 leading-tight drop-shadow-lg">Adiós a los Dolores Musculares</h1>
+                        <p class="font-body-lg text-body-lg text-white/90 mb-8 max-w-lg drop-shadow">Fórmula de herbolaria tradicional que contribuye al bienestar muscular. Perfecto para lumbalgia, contracturas y molestias del día a día.</p>
+                        <a href="checkout.html?p=gel_balsamico" class="bg-white text-primary px-10 py-4 rounded-full font-bold hover:shadow-lg transition-all active:scale-95 text-center inline-block">Probar Ahora</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slide">
+            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1920&auto=format&fit=crop" alt="Persona aplicando gel">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="max-w-container-max mx-auto px-gutter w-full">
+                    <div class="max-w-xl">
+                        <span class="inline-block bg-secondary-fixed text-on-secondary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">FÓRMULA ANCESTRAL</span>
+                        <h1 class="font-display-lg text-display-lg text-white mb-4 leading-tight drop-shadow-lg">El Poder de la Naturaleza en tu Piel</h1>
+                        <p class="font-body-lg text-body-lg text-white/90 mb-8 max-w-lg drop-shadow">Con Árnica, Mentol, Eucalipto, Gaultheria, Clavo, Ajo y Alcanfor. Ingredientes naturales que favorecen la circulación local y el bienestar corporal.</p>
+                        <a href="products.html" class="bg-white text-primary px-10 py-4 rounded-full font-bold hover:shadow-lg transition-all active:scale-95 text-center inline-block">Ver Todos los Productos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-slide">
+            <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1920&auto=format&fit=crop" alt="Múltiples presentaciones">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="max-w-container-max mx-auto px-gutter w-full">
+                    <div class="max-w-xl">
+                        <span class="inline-block bg-tertiary-fixed text-on-tertiary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">MULTIPLES PRESENTACIONES</span>
+                        <h1 class="font-display-lg text-display-lg text-white mb-4 leading-tight drop-shadow-lg">Gel, Spray, Bálsamo y Más</h1>
+                        <p class="font-body-lg text-body-lg text-white/90 mb-8 max-w-lg drop-shadow">Encuentra la presentación perfecta para ti. Desde el clásico Gel Balsámico hasta el Spray de alta concentración para alivio rápido.</p>
+                        <a href="products.html" class="bg-white text-primary px-10 py-4 rounded-full font-bold hover:shadow-lg transition-all active:scale-95 text-center inline-block">Explorar Presentaciones</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button id="hero-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full text-white flex items-center justify-center hover:bg-white/40 transition-all z-20" aria-label="Anterior"><span class="material-symbols-outlined">chevron_left</span></button>
+    <button id="hero-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full text-white flex items-center justify-center hover:bg-white/40 transition-all z-20" aria-label="Siguiente"><span class="material-symbols-outlined">chevron_right</span></button>
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20" id="hero-dots">
+        <div class="hero-dot active" data-index="0"></div>
+        <div class="hero-dot" data-index="1"></div>
+        <div class="hero-dot" data-index="2"></div>
+        <div class="hero-dot" data-index="3"></div>
+    </div>
 </section>
-<!-- Benefits Section -->
+
+<!-- RESEÑA DEL PRODUCTO COFEPRIS -->
+<section class="py-20 md:py-28 px-gutter max-w-container-max mx-auto" id="reseña">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+            <div class="relative">
+                <div class="absolute -inset-4 bg-primary/5 rounded-3xl"></div>
+                <img src="gel_balsamico_original.png" alt="Gel Balsámico del Viejito John" class="relative w-full max-w-md mx-auto object-contain drop-shadow-2xl" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=600&auto=format&fit=crop'">
+                <div class="absolute -bottom-4 -right-4 bg-primary text-white px-6 py-3 rounded-2xl shadow-xl">
+                    <p class="font-bold text-lg">Desde $24.99</p>
+                    <p class="text-xs opacity-80">Presentación 60g</p>
+                </div>
+            </div>
+        </div>
+        <div class="reveal">
+            <span class="inline-block bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">PRODUCTO ESTRELLA</span>
+            <h2 class="font-headline-lg text-headline-lg text-primary mb-6">Gel Balsámico del Viejito John</h2>
+            <div class="space-y-4 text-on-surface-variant font-body-md text-body-md">
+                <p><strong class="text-primary">Fórmula:</strong> Producto de herbolaria tradicional elaborado con una cuidadosa selección de extractos botánicos naturales, incluyendo Árnica, Mentol, Eucalipto, Gaultheria (Wintergreen), Clavo de Olor, Ajo y Alcanfor. Su composición ha sido perfeccionada a lo largo de generaciones para ofrecer una experiencia de cuidado corporal integral.</p>
+                <p><strong class="text-primary">Modo de uso:</strong> Producto de uso tópico externo. Aplicar una cantidad generosa sobre la zona deseada y realizar un suave masaje circular hasta su completa absorción. Puede utilizarse de 2 a 3 veces al día según las necesidades personales de bienestar.</p>
+                <div class="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30 mt-6">
+                    <h3 class="font-bold text-primary mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-leaf-vibrant">verified</span>Beneficios que favorecen tu bienestar</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5">check_circle</span><span>Favorece la sensación de alivio y confort muscular en zonas con fatiga o tensión.</span></li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5">check_circle</span><span>Contribuye a mejorar la circulación local gracias a la acción del Mentol y el Alcanfor.</span></li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5">check_circle</span><span>Ayuda a mantener la sensación de frescura y bienestar en piernas y espalda.</span></li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5">check_circle</span><span>Ideal para masajes de relajación que favorecen la recuperación después de actividad física.</span></li>
+                        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5">check_circle</span><span>Fórmula libre de parabenos y químicos agresivos. No testado en animales.</span></li>
+                    </ul>
+                </div>
+                <p class="text-xs text-on-surface-variant/70 mt-4 italic">*Este producto es un auxiliar de herbolaria tradicional de uso tópico externo. No es un medicamento. Su uso no reemplaza la consulta médica profesional. En caso de irritación, suspender su uso. Mantener fuera del alcance de niños.</p>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-8">
+                <a href="checkout.html?p=gel_balsamico" class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95">Comprar Gel Balsámico</a>
+                <a href="products.html" class="border-2 border-primary text-primary px-8 py-3 rounded-full font-bold hover:bg-primary hover:text-white transition-all">Ver Presentaciones</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LÍNEA ALIVIO MUSCULAR -->
+<section class="bg-surface-container-low py-20 md:py-28" id="linea-alivio">
+    <div class="max-w-container-max mx-auto px-gutter">
+        <div class="text-center mb-16 reveal">
+            <span class="inline-block bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">LÍNEA COMPLETA</span>
+            <h2 class="font-headline-lg text-headline-lg text-primary mb-4">Alivio Muscular Viejito John</h2>
+            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Múltiples presentaciones para cada necesidad. Desde el gel clásico hasta el spray de alta concentración para alivio rápido.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal">
+                <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                    <img src="gel_balsamico_original.png" alt="Gel Balsámico" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=400&auto=format&fit=crop'">
+                    <span class="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">MÁS VENDIDO</span>
+                </div>
+                <div class="p-6">
+                    <h3 class="font-bold text-primary text-lg mb-2">Gel Balsámico</h3>
+                    <p class="text-sm text-on-surface-variant mb-4">Fórmula clásica 60g. Favorece el alivio muscular y el bienestar corporal.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary font-bold text-xl">$24.99</span>
+                        <a href="checkout.html?p=gel_balsamico" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-100">
+                <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                    <img src="spray_viejito_john_original.png" alt="Spray" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400&auto=format&fit=crop'">
+                    <span class="absolute top-3 left-3 bg-accent-orange text-white text-xs font-bold px-3 py-1 rounded-full">ALTA CONCENTRACIÓN</span>
+                </div>
+                <div class="p-6">
+                    <h3 class="font-bold text-primary text-lg mb-2">Spray Viejito John</h3>
+                    <p class="text-sm text-on-surface-variant mb-4">Alta concentración para fuertes dolores musculares. Efecto de alivio rápido.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary font-bold text-xl">$120.00</span>
+                        <a href="checkout.html?p=spray_viejito" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-200">
+                <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                    <img src="balsamo_viejito_john_original.png" alt="Bálsamo" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=400&auto=format&fit=crop'">
+                    <span class="absolute top-3 left-3 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full">PARA MASAJE</span>
+                </div>
+                <div class="p-6">
+                    <h3 class="font-bold text-primary text-lg mb-2">Aceite Balsámico</h3>
+                    <p class="text-sm text-on-surface-variant mb-4">Ideal para masajes terapéuticos. Usado por quiroprácticos para relajar contracturas.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary font-bold text-xl">$95.00</span>
+                        <a href="checkout.html?p=balsamo_viejito" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-300">
+                <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                    <img src="inhalador_viejito_john_original.png" alt="Inhalador" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1585435557343-3b092031a831?q=80&w=400&auto=format&fit=crop'">
+                    <span class="absolute top-3 left-3 bg-leaf-vibrant text-white text-xs font-bold px-3 py-1 rounded-full">RESPIRATORIO</span>
+                </div>
+                <div class="p-6">
+                    <h3 class="font-bold text-primary text-lg mb-2">Inhalador Viejito John</h3>
+                    <p class="text-sm text-on-surface-variant mb-4">Con Mentol, Alcanfor y Eucalipto. Favorece la sensación de alivio respiratorio.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary font-bold text-xl">$45.00</span>
+                        <a href="checkout.html?p=inhalador" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal flex flex-col sm:flex-row">
+                <div class="sm:w-48 h-48 bg-surface-cream flex items-center justify-center p-4 flex-shrink-0">
+                    <img src="unguento_viejito_john_tubo_original.png" alt="Ungüento Tubo" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=300&auto=format&fit=crop'">
+                </div>
+                <div class="p-6 flex flex-col justify-center">
+                    <h3 class="font-bold text-primary text-lg mb-2">Ungüento en Tubo</h3>
+                    <p class="text-sm text-on-surface-variant mb-3">La fórmula clásica en práctica presentación de tubo para fácil aplicación.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary font-bold text-xl">$75.00</span>
+                        <a href="checkout.html?p=unguento_tubo" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal flex flex-col sm:flex-row">
+                <div class="sm:w-48 h-48 bg-surface-cream flex items-center justify-center p-4 flex-shrink-0">
+                    <img src="unguento_pulmonar_tubo_original.png" alt="Ungüento Pulmonar" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=300&auto=format&fit=crop'">
+                </div>
+                <div class="p-6 flex flex-col justify-center">
+                    <h3 class="font-bold text-primary text-lg mb-2">Ungüento Pulmonar</h3>
+                    <p class="text-sm text-on-surface-variant mb-3">Bálsamo aromático para frotar en pecho y espalda. Sensación térmica de confort.</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-primary font-bold text-xl">$80.00</span>
+                        <a href="checkout.html?p=unguento_pulmonar" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LÍNEA KERATEX -->
+<section class="py-20 md:py-28 px-gutter max-w-container-max mx-auto" id="linea-keratex">
+    <div class="text-center mb-16 reveal">
+        <span class="inline-block bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">CUIDADO PODOLÓGICO</span>
+        <h2 class="font-headline-lg text-headline-lg text-primary mb-4">Línea Keratex</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Productos queratolíticos de uso tópico para el cuidado cosmético de pies, uñas y piel. No duele, no arde, no deja mancha. La clave es la constancia.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal">
+            <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                <img src="keratex_pomada_original.png" alt="Keratex Pomada" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=400&auto=format&fit=crop'">
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-primary text-lg mb-2">Keratex Pomada (8g)</h3>
+                <p class="text-sm text-on-surface-variant mb-4">Pomada queratolítica para cuidado cosmético de uñas y piel. Favorece la apariencia estética natural.</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-primary font-bold text-xl">$60.00</span>
+                    <a href="checkout.html?p=keratex_pomada" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                </div>
+            </div>
+        </div>
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-100">
+            <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                <img src="keratex_gotas_original.png" alt="Keratex Gotas" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1585435557343-3b092031a831?q=80&w=400&auto=format&fit=crop'">
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-primary text-lg mb-2">Keratex Gotas</h3>
+                <p class="text-sm text-on-surface-variant mb-4">Solución líquida de aplicación precisa. Mejora la apariencia visual y brillo natural de las uñas.</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-primary font-bold text-xl">$60.00</span>
+                    <a href="checkout.html?p=keratex_gotas" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                </div>
+            </div>
+        </div>
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-200">
+            <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                <img src="keratex_pomada_tubo_nueva_original_frente.png" alt="Keratex Tubo" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=400&auto=format&fit=crop'">
+                <span class="absolute top-3 left-3 bg-accent-orange text-white text-xs font-bold px-3 py-1 rounded-full">NUEVO</span>
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-primary text-lg mb-2">Keratex Tubo Nuevo</h3>
+                <p class="text-sm text-on-surface-variant mb-4">Nuestra fórmula en práctico tubo. Facilita la aplicación para suavidad profunda.</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-primary font-bold text-xl">$80.00</span>
+                    <a href="checkout.html?p=keratex_tubo" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                </div>
+            </div>
+        </div>
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal">
+            <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                <img src="talco_keratex_original.png" alt="Talco Keratex" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=400&auto=format&fit=crop'">
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-primary text-lg mb-2">Talco Keratex (125g)</h3>
+                <p class="text-sm text-on-surface-variant mb-4">Talco de uso diario de rápida absorción. Ayuda a mantener los pies secos y frescos.</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-primary font-bold text-xl">$95.00</span>
+                    <a href="checkout.html?p=talco_keratex" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                </div>
+            </div>
+        </div>
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-100">
+            <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                <img src="fungiderm_original.png" alt="Fungiderm" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400&auto=format&fit=crop'">
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-primary text-lg mb-2">Fungiderm Keratex (10g)</h3>
+                <p class="text-sm text-on-surface-variant mb-4">Con Óxido de Zinc y Azufre. Favorece la sensación de frescura y ayuda a reducir la humedad.</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-primary font-bold text-xl">$60.00</span>
+                    <a href="checkout.html?p=fungiderm" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                </div>
+            </div>
+        </div>
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal delay-200">
+            <div class="relative h-56 bg-surface-cream flex items-center justify-center p-4">
+                <img src="spray_keratex_original.png" alt="Spray Keratex" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=400&auto=format&fit=crop'">
+            </div>
+            <div class="p-6">
+                <h3 class="font-bold text-primary text-lg mb-2">Spray Keratex (60ml)</h3>
+                <p class="text-sm text-on-surface-variant mb-4">Spray refrescante para cuidado e higiene diaria de pies. Sensación de limpieza y bienestar.</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-primary font-bold text-xl">$95.00</span>
+                    <a href="checkout.html?p=spray_keratex" class="bg-primary text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                </div>
+            </div>
+        </div>
+        <div class="product-card bg-white rounded-2xl overflow-hidden border border-outline-variant/30 reveal md:col-span-2 lg:col-span-3">
+            <div class="flex flex-col md:flex-row">
+                <div class="md:w-1/3 h-56 md:h-auto bg-surface-cream flex items-center justify-center p-4">
+                    <img src="sulfato_original.png" alt="Sulfato de Cobre" class="h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1585435557343-3b092031a831?q=80&w=400&auto=format&fit=crop'">
+                </div>
+                <div class="md:w-2/3 p-6 md:p-8 flex flex-col justify-center">
+                    <h3 class="font-bold text-primary text-xl mb-3">Sulfato de Cobre (5 sobres)</h3>
+                    <p class="text-on-surface-variant mb-4">Solución de limpieza profunda para disolver en agua tibia. Favorece la higiene y cuidado estético de la piel en pies y piernas.</p>
+                    <div class="flex items-center gap-4">
+                        <span class="text-primary font-bold text-2xl">$35.00</span>
+                        <a href="checkout.html?p=sulfato_cobre" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold hover:bg-primary-container transition-colors">Comprar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LÍNEA VARI-SPA -->
+<section class="bg-surface-container-low py-20 md:py-28" id="linea-varispa">
+    <div class="max-w-container-max mx-auto px-gutter">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="reveal">
+                <span class="inline-block bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">CIRCULACIÓN Y PIERNAS</span>
+                <h2 class="font-headline-lg text-headline-lg text-primary mb-6">Gel Vari-Spa</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant mb-6">Gel especializado para el cuidado de piernas con sensación de pesadez, ardor y picor. Favorece la circulación y el bienestar de tus piernas.</p>
+                <ul class="space-y-4 mb-8">
+                    <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5 benefit-icon">check_circle</span><span class="font-body-md text-body-md">Favorece la sensación de ligereza en piernas cansadas.</span></li>
+                    <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5 benefit-icon">check_circle</span><span class="font-body-md text-body-md">Contribuye a mejorar la apariencia estética de la piel.</span></li>
+                    <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5 benefit-icon">check_circle</span><span class="font-body-md text-body-md">Ideal para masajes que favorecen la circulación local.</span></li>
+                    <li class="flex items-start gap-3"><span class="material-symbols-outlined text-leaf-vibrant mt-0.5 benefit-icon">check_circle</span><span class="font-body-md text-body-md">Presentación institucional de 700g para uso profesional.</span></li>
+                </ul>
+                <div class="flex items-center gap-4">
+                    <span class="text-primary font-bold text-3xl">$350.00</span>
+                    <a href="checkout.html?p=gel_varispa" class="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary-container transition-all active:scale-95">Comprar Vari-Spa</a>
+                </div>
+            </div>
+            <div class="reveal">
+                <div class="relative">
+                    <div class="absolute -inset-4 bg-primary/5 rounded-3xl"></div>
+                    <img src="gel_varispa_700g_original.png" alt="Gel Vari-Spa" class="relative w-full max-w-md mx-auto object-contain drop-shadow-2xl" onerror="this.src='https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=600&auto=format&fit=crop'">
+                    <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl p-4 border border-outline-variant/30">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-leaf-vibrant text-3xl">spa</span>
+                            <div><p class="font-bold text-primary text-sm">700 gramos</p><p class="text-xs text-on-surface-variant">Presentación profesional</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CUIDADO FACIAL -->
+<section class="py-20 md:py-28 px-gutter max-w-container-max mx-auto" id="cuidado-facial">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="order-2 lg:order-1 reveal">
+            <div class="relative">
+                <div class="absolute -inset-4 bg-secondary/5 rounded-3xl"></div>
+                <img src="crema_johny_boy_original.png" alt="Crema Johny Boy" class="relative w-full max-w-sm mx-auto object-contain drop-shadow-2xl" onerror="this.src='https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?q=80&w=600&auto=format&fit=crop'">
+            </div>
+        </div>
+        <div class="order-1 lg:order-2 reveal">
+            <span class="inline-block bg-secondary-fixed text-on-secondary-fixed px-4 py-1 rounded-full font-label-sm text-label-sm mb-4">CUIDADO FACIAL</span>
+            <h2 class="font-headline-lg text-headline-lg text-primary mb-6">Crema Johny Boy</h2>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mb-6">Crema especializada para el cuidado estético de imperfecciones faciales. Fórmula que ayuda a mejorar la apariencia de la piel, dejándola más limpia y uniforme.</p>
+            <div class="bg-surface-container-low rounded-2xl p-6 border border-outline-variant/30 mb-6">
+                <h3 class="font-bold text-primary mb-3">Modo de uso recomendado:</h3>
+                <ol class="space-y-2 text-on-surface-variant">
+                    <li class="flex items-start gap-2"><span class="font-bold text-primary">1.</span><span>Lavar el rostro con jabón neutro y secar suavemente.</span></li>
+                    <li class="flex items-start gap-2"><span class="font-bold text-primary">2.</span><span>Aplicar una capa fina sobre las zonas deseadas.</span></li>
+                    <li class="flex items-start gap-2"><span class="font-bold text-primary">3.</span><span>Usar preferentemente en aplicación nocturna.</span></li>
+                    <li class="flex items-start gap-2"><span class="font-bold text-primary">4.</span><span>Ser constante para observar resultados.</span></li>
+                </ol>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-primary font-bold text-3xl">$60.00</span>
+                <a href="checkout.html?p=crema_johny_boy" class="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary-container transition-all active:scale-95">Comprar Johny Boy</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- BENEFITS -->
 <section class="bg-surface-container-low py-24 md:py-32" id="benefits">
 <div class="max-w-container-max mx-auto px-gutter">
-<div class="text-center mb-16 reveal active">
+<div class="text-center mb-16 reveal">
 <h2 class="font-headline-lg text-headline-lg text-primary mb-4">Ingredientes de Origen Natural</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
-                        Nuestra fórmula magistral combina los mejores extractos botánicos para una recuperación muscular profunda y efectiva.
-                    </p>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Nuestra fórmula magistral combina los mejores extractos botánicos para una recuperación muscular profunda y efectiva.</p>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-<!-- Árnica -->
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal active">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary">
-<span class="material-symbols-outlined text-3xl">spa</span>
-</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">spa</span></div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Árnica</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">
-                            Conocida por sus potentes propiedades antiinflamatorias, ayuda a reducir el dolor y la hinchazón de moretones y golpes.
-                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">Conocida por sus potentes propiedades antiinflamatorias, ayuda a reducir el dolor y la hinchazón de moretones y golpes.</p>
 </div>
-<!-- Mentol & Eucalipto -->
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-150 active">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary">
-<span class="material-symbols-outlined text-3xl">ac_unit</span>
-</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-100">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">ac_unit</span></div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Mentol y Eucalipto</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">
-                            Proporcionan una sensación refrescante instantánea que alivia la tensión muscular y mejora la circulación en la zona.
-                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">Proporcionan una sensación refrescante instantánea que alivia la tensión muscular y mejora la circulación en la zona.</p>
 </div>
-<!-- Gaultheria -->
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-300 active">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary">
-<span class="material-symbols-outlined text-3xl">eco</span>
-</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-200">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">eco</span></div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Gaultheria</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">
-                            Un analgésico natural que penetra profundamente en los tejidos para relajar los músculos después de una actividad física intensa.
-                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">Un analgésico natural que penetra profundamente en los tejidos para relajar los músculos después de una actividad física intensa.</p>
 </div>
-<!-- Clavo -->
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-150 active">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary">
-<span class="material-symbols-outlined text-3xl">bolt</span>
-</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-100">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">bolt</span></div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Clavo</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">
-                            Conocido por su alto contenido de eugenol, actúa como un potente anestésico y antiséptico natural que ayuda a adormecer el dolor localizado y a aliviar molestias de forma rápida.
-                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">Conocido por su alto contenido de eugenol, actúa como un potente anestésico y antiséptico natural que ayuda a adormecer el dolor localizado.</p>
 </div>
-<!-- Ajo -->
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-300 active">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary">
-<span class="material-symbols-outlined text-3xl">shield_moon</span>
-</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-200">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">shield_moon</span></div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Ajo</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">
-                            Un poderoso aliado con propiedades antibióticas y antioxidantes. Favorece la microcirculación sanguínea, estimulando la recuperación celular y protegiendo los tejidos.
-                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">Un poderoso aliado con propiedades antibióticas y antioxidantes. Favorece la microcirculación sanguínea y protege los tejidos.</p>
 </div>
-<!-- Alcanfor -->
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal active">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary">
-<span class="material-symbols-outlined text-3xl">thermostat</span>
-</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">thermostat</span></div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-3">Alcanfor</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">
-                            Ofrece una acción de doble efecto térmico que desinflama y calma. Al absorberse rápidamente en la piel, disipa la pesadez muscular y brinda una reconfortante sensación de alivio.
-                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">Ofrece una acción de doble efecto térmico que desinflama y calma. Disipa la pesadez muscular y brinda una reconfortante sensación de alivio.</p>
 </div>
 </div>
 </div>
 </section>
-<!-- Social Proof Section -->
+
+<!-- TESTIMONIALS -->
 <section class="py-24 md:py-32 px-gutter max-w-container-max mx-auto" id="testimonials">
-<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 reveal active">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 reveal">
 <div class="max-w-2xl">
 <h2 class="font-headline-lg text-headline-lg text-primary mb-4">Lo que dicen nuestros usuarios</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant">
-                        Miles de deportistas y familias confían en El Viejito John para su bienestar diario.
-                    </p>
-</div>
-<div class="flex gap-2">
-<button class="w-12 h-12 rounded-full border border-outline flex items-center justify-center hover:bg-primary-fixed transition-colors">
-<span class="material-symbols-outlined">arrow_back</span>
-</button>
-<button class="w-12 h-12 rounded-full border border-outline flex items-center justify-center hover:bg-primary-fixed transition-colors">
-<span class="material-symbols-outlined">arrow_forward</span>
-</button>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Miles de deportistas y familias confían en El Viejito John para su bienestar diario.</p>
 </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-<div class="bg-surface-container-low p-8 rounded-2xl reveal active">
+<div class="bg-surface-container-low p-8 rounded-2xl reveal">
 <div class="flex text-balm-red mb-4">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -268,18 +540,13 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 </div>
-<p class="font-body-lg text-body-lg text-on-surface italic mb-6">
-                        "Como corredor de maratones, siempre busco algo natural. Este gel es increíble para mis piernas después de entrenar."
-                    </p>
+<p class="font-body-lg text-body-lg text-on-surface italic mb-6">"Como corredor de maratones, siempre busco algo natural. Este gel es increíble para mis piernas después de entrenar."</p>
 <div class="flex items-center gap-4">
 <div class="w-12 h-12 rounded-full bg-secondary-fixed"></div>
-<div>
-<p class="font-headline-md text-body-md font-bold">Carlos Mendoza<!--="font-headline-md text-body-md font-bold"-->
-</p><p class="font-label-sm text-label-sm text-on-surface-variant">Atleta Amateur</p>
-<p></p></div>
+<div><p class="font-bold">Carlos Mendoza</p><p class="text-sm text-on-surface-variant">Atleta Amateur</p></div>
 </div>
 </div>
-<div class="bg-surface-container-low p-8 rounded-2xl reveal delay-150 active">
+<div class="bg-surface-container-low p-8 rounded-2xl reveal delay-100">
 <div class="flex text-balm-red mb-4">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -287,18 +554,13 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 </div>
-<p class="font-body-lg text-body-lg text-on-surface italic mb-6">
-                        "Lo compré para mis dolores lumbares y el alivio es casi inmediato. Me encanta el aroma a eucalipto que tiene."
-                    </p>
+<p class="font-body-lg text-body-lg text-on-surface italic mb-6">"Lo compré para mis dolores lumbares y el alivio es casi inmediato. Me encanta el aroma a eucalipto que tiene."</p>
 <div class="flex items-center gap-4">
 <div class="w-12 h-12 rounded-full bg-primary-fixed"></div>
-<div>
-<p class="font-headline-md text-body-md font-bold">Elena Rodriguez</p>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Profesora de Yoga</p>
+<div><p class="font-bold">Elena Rodriguez</p><p class="text-sm text-on-surface-variant">Profesora de Yoga</p></div>
 </div>
 </div>
-</div>
-<div class="bg-surface-container-low p-8 rounded-2xl reveal delay-300 active">
+<div class="bg-surface-container-low p-8 rounded-2xl reveal delay-200">
 <div class="flex text-balm-red mb-4">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -306,105 +568,59 @@
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star_half</span>
 </div>
-<p class="font-body-lg text-body-lg text-on-surface italic mb-6">
-                        "Un producto esencial en casa. Lo usamos todos, desde los niños tras jugar fútbol hasta nosotros después del trabajo."
-                    </p>
+<p class="font-body-lg text-body-lg text-on-surface italic mb-6">"Un producto esencial en casa. Lo usamos todos, desde los niños tras jugar fútbol hasta nosotros después del trabajo."</p>
 <div class="flex items-center gap-4">
 <div class="w-12 h-12 rounded-full bg-tertiary-fixed"></div>
-<div>
-<p class="font-headline-md text-body-md font-bold">Roberto Silva</p>
-<p class="font-label-sm text-label-sm text-on-surface-variant">Padre de Familia</p>
-</div>
+<div><p class="font-bold">Roberto Silva</p><p class="text-sm text-on-surface-variant">Padre de Familia</p></div>
 </div>
 </div>
 </div>
 </section>
-<!-- About Us Section -->
+
+<!-- ABOUT -->
 <section class="bg-surface-cream py-24 md:py-32 overflow-hidden" id="about">
 <div class="max-w-container-max mx-auto px-gutter">
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-<div class="order-2 lg:order-1 reveal active">
-<div class="relative w-full aspect-square rounded-3xl shadow-xl overflow-hidden group">
-    <!-- Images -->
-    <div id="carousel-images" class="flex transition-transform duration-700 ease-in-out h-full w-full">
-        <img src="https://images.unsplash.com/photo-1538805060514-97d9cc17730c?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover flex-shrink-0" alt="Deportista aliviando tensión muscular">
-        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover flex-shrink-0" alt="Persona sintiendo alivio en las articulaciones">
-        <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover flex-shrink-0" alt="Estiramiento y bienestar muscular">
-    </div>
-    
-    <!-- Product Overlay Badge -->
-    <div class="absolute bottom-6 right-6 z-20 flex items-center gap-3 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/50 transform hover:scale-105 transition-transform pointer-events-auto">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYOG8ME0qOYBEyzVxd3u4hJNlFV5P5oKxakxUgaLXq6mjpmcpFG4yMjP2FtpKRxMMXme_GZS2misNZiWBxiARAnsJdEwjAAC85PfMPlgzW-tb0ckh8lNAbWe3jO94S4CQB6jk6-NCBnyETuPWgZIb5ztHb-D7brSRAJmLCc64CjzKMOyhxHQ7_cO-0dRONc3nTmez_MVqhiJteCKUT2U8m3hfe46yTxNkQEkrdQwhe2d4NSqTUDnGiuqdMwdORCsAiCzO_anQt1S4" alt="Gel Balsámico Viejito John" class="w-16 h-16 object-contain drop-shadow-md">
-        <div class="hidden sm:block pr-2">
-            <p class="text-sm font-bold text-primary leading-tight">Gel Balsámico</p>
-            <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wide">El Viejito John</p>
-        </div>
-    </div>
-
-    <!-- Overlay Controls -->
-    <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/30 backdrop-blur-md rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/50" aria-label="Anterior">
-        <span class="material-symbols-outlined">chevron_left</span>
-    </button>
-    <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/30 backdrop-blur-md rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/50" aria-label="Siguiente">
-        <span class="material-symbols-outlined">chevron_right</span>
-    </button>
-    <!-- Indicators -->
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-        <div class="w-2.5 h-2.5 rounded-full bg-white transition-all carousel-dot cursor-pointer"></div>
-        <div class="w-2.5 h-2.5 rounded-full bg-white/50 transition-all carousel-dot cursor-pointer"></div>
-        <div class="w-2.5 h-2.5 rounded-full bg-white/50 transition-all carousel-dot cursor-pointer"></div>
-    </div>
+<div class="order-2 lg:order-1 reveal">
+<div class="relative w-full aspect-square rounded-3xl shadow-xl overflow-hidden">
+<img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover" alt="Bienestar natural">
+<div class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/50">
+<img src="gel_balsamico_original.png" alt="Gel" class="w-16 h-16 object-contain" onerror="this.style.display='none'">
 </div>
 </div>
-<div class="order-1 lg:order-2 reveal active">
+</div>
+<div class="order-1 lg:order-2 reveal">
 <h2 class="font-headline-lg text-headline-lg text-primary mb-6">Nuestra Historia: La Sabiduría de Viejito John</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-6">
-                            Nacido de décadas de conocimiento herbolario tradicional, El Viejito John comenzó como un remedio casero buscado por toda la comunidad por su efectividad inigualable.
-                        </p>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">
-                            Hoy, mantenemos esa misma esencia artesanal pero bajo los más altos estándares de calidad farmacéutica, asegurando que cada envase contenga el mismo alivio que ha pasado de generación en generación.
-                        </p>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6">Nacido de décadas de conocimiento herbolario tradicional, El Viejito John comenzó como un remedio casero buscado por toda la comunidad por su efectividad inigualable.</p>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">Hoy, mantenemos esa misma esencia artesanal pero bajo los más altos estándares de calidad, asegurando que cada envase contenga el mismo alivio que ha pasado de generación en generación.</p>
 <ul class="space-y-4 mb-10">
-<li class="flex items-center gap-3">
-<span class="material-symbols-outlined text-leaf-vibrant">check_circle</span>
-<span class="font-body-md text-body-md">Ingredientes 100% Botánicos Seleccionados</span>
-</li>
-<li class="flex items-center gap-3">
-<span class="material-symbols-outlined text-leaf-vibrant">check_circle</span>
-<span class="font-body-md text-body-md">Libre de Parabenos y Químicos Agresivos</span>
-</li>
-<li class="flex items-center gap-3">
-<span class="material-symbols-outlined text-leaf-vibrant">check_circle</span>
-<span class="font-body-md text-body-md">No testado en animales</span>
-</li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-leaf-vibrant">check_circle</span><span class="font-body-md text-body-md">Ingredientes 100% Botánicos Seleccionados</span></li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-leaf-vibrant">check_circle</span><span class="font-body-md text-body-md">Libre de Parabenos y Químicos Agresivos</span></li>
+<li class="flex items-center gap-3"><span class="material-symbols-outlined text-leaf-vibrant">check_circle</span><span class="font-body-md text-body-md">No testado en animales</span></li>
 </ul>
 </div>
 </div>
 </div>
 </section>
-<!-- CTA Banner -->
+
+<!-- CTA -->
 <section class="py-24 px-gutter">
-<div class="max-w-container-max mx-auto bg-primary rounded-[2rem] p-12 md:p-20 text-center relative overflow-hidden reveal active">
+<div class="max-w-container-max mx-auto bg-primary rounded-[2rem] p-12 md:p-20 text-center relative overflow-hidden reveal">
 <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
 <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
 <h2 class="font-display-lg text-display-lg text-on-primary mb-6 relative z-10">¿Listo para recuperar tu movimiento?</h2>
-<p class="font-body-lg text-body-lg text-on-primary/80 mb-10 max-w-2xl mx-auto relative z-10">
-                    Únete a miles de personas que han redescubierto la libertad de moverse sin dolor gracias a la fuerza de la naturaleza.
-                </p>
-<a href="checkout.html?p=gel_balsamico_700g" class="bg-surface-cream text-primary px-12 py-5 rounded-full font-headline-md text-body-md hover:scale-105 transition-all relative z-10 active:scale-95 shadow-xl inline-block text-center">
-                    Adquirir mi Gel Ahora
-                </a>
+<p class="font-body-lg text-body-lg text-on-primary/80 mb-10 max-w-2xl mx-auto relative z-10">Únete a miles de personas que han redescubierto la libertad de moverse sin dolor gracias a la fuerza de la naturaleza.</p>
+<a href="checkout.html?p=gel_balsamico" class="bg-surface-cream text-primary px-12 py-5 rounded-full font-bold hover:scale-105 transition-all relative z-10 active:scale-95 shadow-xl inline-block text-center">Adquirir mi Gel Ahora</a>
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-surface-container-highest dark:bg-surface-container-lowest w-full py-margin-desktop border-t border-outline-variant">
+
+<!-- FOOTER -->
+<footer class="bg-surface-container-highest w-full py-12 border-t border-outline-variant">
 <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-gutter max-w-container-max mx-auto">
 <div>
-<div class="font-headline-md text-headline-md font-bold text-primary mb-6">El Viejito John</div>
-<p class="text-on-surface-variant font-body-md text-body-md mb-6 max-w-xs">
-                    El bálsamo tradicional que cuida de tus músculos y articulaciones con lo mejor de la tierra.
-                </p>
+<div class="font-bold text-xl text-primary mb-4">El Viejito John</div>
+<p class="text-on-surface-variant text-sm mb-6 max-w-xs">El bálsamo tradicional que cuida de tus músculos y articulaciones con lo mejor de la tierra.</p>
 <div class="flex gap-4">
 <a class="text-primary hover:opacity-70" href="#"><span class="material-symbols-outlined">public</span></a>
 <a class="text-primary hover:opacity-70" href="#"><span class="material-symbols-outlined">share</span></a>
@@ -413,104 +629,103 @@
 </div>
 <div class="grid grid-cols-2 gap-8 md:col-span-2">
 <div>
-<h4 class="font-headline-md text-body-md font-bold mb-4">Quick Links</h4>
+<h4 class="font-bold text-primary mb-4">Enlaces</h4>
 <ul class="space-y-3">
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Products</a></li>
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Benefits</a></li>
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Testimonials</a></li>
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">About Us</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="products.html">Productos</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#benefits">Beneficios</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#testimonials">Testimonios</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#about">Nosotros</a></li>
 </ul>
 </div>
 <div>
-<h4 class="font-headline-md text-body-md font-bold mb-4">Support</h4>
+<h4 class="font-bold text-primary mb-4">Soporte</h4>
 <ul class="space-y-3">
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Privacy Policy</a></li>
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Terms of Service</a></li>
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Contact Us</a></li>
-<li class=""><a class="text-on-surface-variant hover:text-primary font-body-md text-body-md transition-all" href="#">Shipping Info</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#">Política de Privacidad</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#">Términos de Servicio</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#">Contacto</a></li>
+<li><a class="text-on-surface-variant hover:text-primary text-sm transition-all" href="#">Envíos</a></li>
 </ul>
 </div>
 </div>
 </div>
 <div class="max-w-container-max mx-auto px-gutter mt-12 pt-8 border-t border-outline-variant/30 text-center">
-<p class="text-on-surface-variant font-body-md text-body-md">© 2024 El Gel Balsámico del Viejito John. All rights reserved.</p>
+<p class="text-on-surface-variant text-sm">© 2024 El Gel Balsámico del Viejito John. Todos los derechos reservados.</p>
 </div>
 </footer>
+
 <script>
-        // Scroll reveal animation logic
-        function reveal() {
-            const reveals = document.querySelectorAll(".reveal");
-            for (let i = 0; i < reveals.length; i++) {
-                const windowHeight = window.innerHeight;
-                const elementTop = reveals[i].getBoundingClientRect().top;
-                const elementVisible = 150;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
-                }
-            }
+// ===== SCROLL REVEAL =====
+function reveal() {
+    document.querySelectorAll(".reveal").forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight - 100) {
+            el.classList.add("active");
         }
+    });
+}
+window.addEventListener("scroll", reveal);
+reveal();
 
-        window.addEventListener("scroll", reveal);
-        // Trigger once on load
-        reveal();
+// ===== HERO CAROUSEL =====
+(function() {
+    const track = document.getElementById('hero-track');
+    const prevBtn = document.getElementById('hero-prev');
+    const nextBtn = document.getElementById('hero-next');
+    const dots = document.querySelectorAll('.hero-dot');
+    let currentSlide = 0;
+    const totalSlides = 4;
+    let autoSlide;
 
-        // Simple smooth scroll for nav links
-        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
+    function updateCarousel() {
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        dots.forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+    }
 
-        // Carousel Logic
-        const carouselImages = document.getElementById('carousel-images');
-        const prevBtn = document.getElementById('prev-slide');
-        const nextBtn = document.getElementById('next-slide');
-        const dots = document.querySelectorAll('.carousel-dot');
-        let currentSlide = 0;
-        const totalSlides = 3;
+    function next() { currentSlide = (currentSlide + 1) % totalSlides; updateCarousel(); }
+    function prev() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateCarousel(); }
 
-        function updateCarousel() {
-            if (carouselImages) {
-                carouselImages.style.transform = `translateX(-${currentSlide * 100}%)`;
-                dots.forEach((dot, index) => {
-                    if(index === currentSlide) {
-                        dot.classList.replace('bg-white/50', 'bg-white');
-                    } else {
-                        dot.classList.replace('bg-white', 'bg-white/50');
-                    }
-                });
-            }
+    nextBtn.addEventListener('click', () => { next(); resetAuto(); });
+    prevBtn.addEventListener('click', () => { prev(); resetAuto(); });
+    dots.forEach((dot, i) => dot.addEventListener('click', () => { currentSlide = i; updateCarousel(); resetAuto(); }));
+
+    function resetAuto() { clearInterval(autoSlide); autoSlide = setInterval(next, 6000); }
+    autoSlide = setInterval(next, 6000);
+})();
+
+// ===== COUNTDOWN TIMER =====
+(function() {
+    const banner = document.getElementById('countdown-banner');
+    const msgEl = document.getElementById('countdown-message');
+    const dEl = document.getElementById('cd-days');
+    const hEl = document.getElementById('cd-hours');
+    const mEl = document.getElementById('cd-minutes');
+    const sEl = document.getElementById('cd-seconds');
+
+    const timerData = JSON.parse(localStorage.getItem('vj_oferta_timer') || '{}');
+    if (!timerData.active || !timerData.endDate) return;
+
+    const endDate = new Date(timerData.endDate);
+    msgEl.textContent = timerData.message || '¡Oferta especial por tiempo limitado!';
+    banner.classList.remove('hidden');
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = endDate - now;
+        if (diff <= 0) {
+            banner.classList.add('hidden');
+            return;
         }
-
-        if (nextBtn && prevBtn) {
-            nextBtn.addEventListener('click', () => {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                updateCarousel();
-            });
-
-            prevBtn.addEventListener('click', () => {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                updateCarousel();
-            });
-
-            // Dots clickable
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    currentSlide = index;
-                    updateCarousel();
-                });
-            });
-
-            // Auto slide
-            setInterval(() => {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                updateCarousel();
-            }, 5000);
-        }
-    </script>
-
-
-</body></html>
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        dEl.textContent = String(days).padStart(2, '0');
+        hEl.textContent = String(hours).padStart(2, '0');
+        mEl.textContent = String(minutes).padStart(2, '0');
+        sEl.textContent = String(seconds).padStart(2, '0');
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+})();
+</script>
+</body>
+</html>
