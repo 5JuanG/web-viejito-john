@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "web-viejito-john-20260720-01",
     "public": "extracted_files",
     "ignore": [
       "firebase.json",

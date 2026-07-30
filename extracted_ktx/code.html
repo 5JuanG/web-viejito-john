@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Finalizar Compra - Keratex Pomada | El Viejito John</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#9dd090",
+                    "surface-cream": "#FDFBF7",
+                    "primary": "#154212",
+                    "tertiary": "#602900",
+                    "on-surface-variant": "#42493e",
+                    "on-primary": "#ffffff",
+                    "inverse-surface": "#31302d",
+                    "tertiary-fixed": "#ffdbc9",
+                    "on-error": "#ffffff",
+                    "text-main": "#1C1C1C",
+                    "on-secondary-fixed-variant": "#59422c",
+                    "on-secondary": "#ffffff",
+                    "balm-red": "#B23B25",
+                    "surface-tint": "#3b6934",
+                    "on-primary-fixed": "#002201",
+                    "inverse-on-surface": "#f3f0eb",
+                    "surface-container": "#f0ede9",
+                    "primary-fixed-dim": "#a1d494",
+                    "outline-variant": "#c2c9bb",
+                    "background": "#fcf9f4",
+                    "on-tertiary-fixed": "#321200",
+                    "tertiary-fixed-dim": "#ffb68c",
+                    "secondary-fixed-dim": "#e1c1a4",
+                    "surface-container-low": "#f6f3ee",
+                    "on-surface": "#1c1c19",
+                    "on-tertiary-container": "#ffb183",
+                    "leaf-vibrant": "#47842E",
+                    "on-secondary-container": "#796048",
+                    "surface-container-high": "#ebe8e3",
+                    "on-background": "#1c1c19",
+                    "error": "#ba1a1a",
+                    "primary-container": "#2d5a27",
+                    "on-primary-fixed-variant": "#23501e",
+                    "on-tertiary-fixed-variant": "#753401",
+                    "surface-variant": "#e5e2dd",
+                    "primary-fixed": "#bcf0ae",
+                    "surface": "#fcf9f4",
+                    "secondary-container": "#fedcbe",
+                    "secondary": "#725a42",
+                    "on-secondary-fixed": "#291806",
+                    "surface-dim": "#dcdad5",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#fedcbe",
+                    "inverse-primary": "#a1d494",
+                    "surface-container-highest": "#e5e2dd",
+                    "outline": "#72796e",
+                    "surface-bright": "#fcf9f4",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#813d0a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "48px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "container-max": "1280px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scroll-hide::-webkit-scrollbar { display: none; }
+        .checkout-container { max-width: 1200px; margin: 0 auto; }
+        .form-input { 
+            @apply w-full bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased">
+<!-- Header / Brand Anchor -->
+<header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary">
+                El Viejito John
+            </div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Pago Seguro</span>
+</div>
+</div>
+</header>
+<main class="py-margin-desktop px-gutter">
+<div class="max-w-container-max mx-auto">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-8">Finalizar Compra</h1>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+<!-- Left Column: Checkout Form -->
+<div class="lg:col-span-7 space-y-12">
+<!-- Section: Contact & Shipping -->
+<section class="space-y-6">
+<div class="flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">1</span>
+<h2 class="font-headline-md text-headline-md">Información de Envío</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="md:col-span-2">
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Correo Electrónico</label>
+<input class="form-input" placeholder="ejemplo@correo.com" type="email"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Nombre(s)</label>
+<input class="form-input" type="text"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Apellidos</label>
+<input class="form-input" type="text"/>
+</div>
+<div class="md:col-span-2">
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Dirección Completa</label>
+<input class="form-input" placeholder="Calle, número, colonia" type="text"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Ciudad</label>
+<input class="form-input" type="text"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Código Postal</label>
+<input class="form-input" type="text"/>
+</div>
+</div>
+</section>
+<!-- Section: Payment -->
+<section class="space-y-6">
+<div class="flex items-center gap-3">
+<span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">2</span>
+<h2 class="font-headline-md text-headline-md">Método de Pago</h2>
+</div>
+<div class="border border-primary rounded-xl p-6 bg-surface-container-low">
+<div class="flex justify-between items-center mb-6">
+<span class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined">credit_card</span>
+                                    Tarjeta de Crédito / Débito
+                                </span>
+<div class="flex gap-2">
+<div class="w-8 h-5 bg-white border border-outline-variant rounded flex items-center justify-center text-[8px] font-bold">VISA</div>
+<div class="w-8 h-5 bg-white border border-outline-variant rounded flex items-center justify-center text-[8px] font-bold">MC</div>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Número de Tarjeta</label>
+<input class="form-input bg-white" placeholder="0000 0000 0000 0000" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">Vencimiento (MM/AA)</label>
+<input class="form-input bg-white" placeholder="MM/AA" type="text"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm mb-2 text-on-surface-variant">CVV</label>
+<input class="form-input bg-white" placeholder="123" type="text"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Signals (Bento-lite) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="p-4 bg-surface-container-high rounded-lg flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">eco</span>
+<span class="font-bold text-sm">Ingredientes 100% Naturales</span>
+</div>
+<div class="p-4 bg-surface-container-high rounded-lg flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">encrypted</span>
+<span class="font-bold text-sm">Transacción Encriptada</span>
+</div>
+<div class="p-4 bg-surface-container-high rounded-lg flex flex-col items-center text-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+<span class="font-bold text-sm">Satisfacción Garantizada</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Order Summary -->
+<aside class="lg:col-span-5 lg:sticky lg:top-28">
+<div class="bg-surface-container p-8 rounded-2xl shadow-sm border border-outline-variant/20">
+<h3 class="font-headline-md text-headline-md mb-6">Resumen del Pedido</h3>
+<!-- Product Item -->
+<div class="flex gap-6 pb-6 border-b border-outline-variant">
+<div class="w-24 h-32 bg-white rounded-lg p-2 flex items-center justify-center overflow-hidden border border-outline-variant/10">
+<img alt="Keratex Pomada 40g" class="h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOBYWqiIBt5TvSBS2hFXBLLvlzdlavHYuoF2lpcpiEcJIi6em2MgYnPkZqs4r_8CF22nW-mjwvHuZDkIrD03IHG-U3kZTQd9hedFF2TUerJHD_iQElLw3_dG-DhTTnn9AhZl_pT4fZGE2JniBXBFRrjX0BhKScDT3ZeCZMrAGPZi3ujOy7bo5MpWjhmdHKIa_vEZyco-l04Gw0YfrvaQ86SU0VSNc-qZG3TzoraD-enymw-J1Aw7yfvZ6EZ6hX_EVZvO6sEIlY4hM"/>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-lg">Keratex Pomada (40g)</h4>
+<p class="text-on-surface-variant text-sm mt-1 leading-relaxed">
+                                    Cuidado cosmético para la apariencia saludable de la piel con tendencia a hongos, callos y verrugas.
+                                </p>
+<div class="mt-4 flex justify-between items-end">
+<span class="text-sm font-label-sm text-on-surface-variant">Cantidad: 1</span>
+<span class="font-bold text-primary">$19.99</span>
+</div>
+</div>
+</div>
+<!-- Price Breakdown -->
+<div class="py-6 space-y-4 text-on-surface-variant">
+<div class="flex justify-between">
+<span>Subtotal</span>
+<span>$19.99</span>
+</div>
+<div class="flex justify-between">
+<span>Envío</span>
+<span class="text-primary font-bold">GRATIS</span>
+</div>
+<div class="flex justify-between">
+<span>Impuestos</span>
+<span>$0.00</span>
+</div>
+</div>
+<!-- Total -->
+<div class="pt-6 border-t border-outline-variant flex justify-between items-center mb-8">
+<span class="font-headline-md text-headline-md">Total</span>
+<span class="font-headline-md text-headline-md text-primary">$19.99</span>
+</div>
+<!-- CTA Button -->
+<button class="w-full bg-primary text-on-primary py-5 rounded-full font-bold text-lg hover:bg-primary-container transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95">
+                            Completar Pago
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<!-- Health Disclaimer -->
+<div class="mt-6 p-4 bg-surface-cream rounded-lg border border-outline-variant/30">
+<p class="text-[11px] leading-relaxed text-on-surface-variant text-center italic">
+                                Este producto está formulado con ingredientes naturales para mejorar la apariencia estética de la piel en áreas con callosidades y verrugas. No sustituye tratamiento médico. Información conforme a guías de cuidado cosmético.
+                            </p>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<!-- Footer from Shared Components -->
+<footer class="bg-surface-container-highest w-full py-margin-desktop border-t border-outline-variant mt-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter px-gutter max-w-container-max mx-auto">
+<div class="space-y-4">
+<div class="font-headline-md text-headline-md font-bold text-primary">El Viejito John</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    © 2024 El Gel Balsámico del Viejito John. All rights reserved.
+                </p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Contact Us</a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Shipping Info</a>
+</div>
+<div class="flex md:justify-end items-start gap-4">
+<span class="material-symbols-outlined text-primary-container text-4xl">local_shipping</span>
+<span class="material-symbols-outlined text-primary-container text-4xl">verified</span>
+</div>
+</div>
+</footer>
+<script>
+        // Simple Interaction logic for form focus
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('label')?.classList.add('text-primary');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('label')?.classList.remove('text-primary');
+            });
+        });
+    </script>
+</body></html>
