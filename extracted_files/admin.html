@@ -57,6 +57,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
+<base target="_blank">
 </head>
 <body class="bg-surface font-sans text-gray-800 antialiased flex h-screen overflow-hidden" x-data="erpSystem()" x-cloak>
 
@@ -92,8 +93,8 @@
         </nav>
         <div class="p-4 border-t border-white/10">
             <div class="bg-white/10 rounded-xl p-3 text-xs">
-                <p class="text-green-300 font-bold mb-1">Firebase Online</p>
-                <p class="text-white/60">Datos sincronizados en la nube</p>
+                <p class="text-green-300 font-bold mb-1" x-text="db ? 'Firebase Online' : 'Modo Offline'"></p>
+                <p class="text-white/60" x-text="db ? 'Datos sincronizados en la nube' : 'Datos guardados localmente'"></p>
             </div>
         </div>
     </aside>
@@ -116,7 +117,7 @@
                 <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">VJ</div>
                 <div class="hidden sm:block">
                     <p class="text-sm font-bold text-gray-800">Administrador</p>
-                    <p class="text-xs text-green-600 font-bold">Firebase Online</p>
+                    <p class="text-xs font-bold" :class="db ? 'text-green-600' : 'text-amber-600'" x-text="db ? 'Firebase Online' : 'Modo Offline (localStorage)'"></p>
                 </div>
             </div>
         </header>
@@ -207,7 +208,7 @@
             </div>
 
             <!-- ===== INSUMOS (MATERIA PRIMA) ===== -->
-            <div x-show="currentTab === 'insumos'" x-transition style="display:none;">
+            <div x-show="currentTab === 'insumos'" x-transition>
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <h3 class="text-xl font-bold">Inventario de Insumos</h3>
                     <div class="flex flex-wrap gap-3 w-full lg:w-auto">
@@ -377,7 +378,7 @@
             </div>
 
             <!-- ===== FORMULAS ===== -->
-            <div x-show="currentTab === 'formulas'" x-transition style="display:none;">
+            <div x-show="currentTab === 'formulas'" x-transition>
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <h3 class="text-xl font-bold">Fórmulas y Productos Finales</h3>
                     <div class="flex flex-wrap gap-3 w-full lg:w-auto">
@@ -484,7 +485,7 @@
             </div>
 
             <!-- ===== FABRICACIÓN (COSTO UNITARIO) ===== -->
-            <div x-show="currentTab === 'fabricacion'" x-transition style="display:none;">
+            <div x-show="currentTab === 'fabricacion'" x-transition>
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <div>
                         <h3 class="text-xl font-bold">Costo de Fabricación Unitario</h3>
@@ -667,7 +668,7 @@
             </div>
 
             <!-- ===== ESCENARIOS Y ANÁLISIS ===== -->
-            <div x-show="currentTab === 'escenarios'" x-transition style="display:none;">
+            <div x-show="currentTab === 'escenarios'" x-transition>
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <div>
                         <h3 class="text-xl font-bold">Escenarios y Análisis de Sensibilidad</h3>
@@ -775,7 +776,7 @@
             </div>
 
             <!-- ===== VENTAS (POS) ===== -->
-            <div x-show="currentTab === 'sales'" x-transition style="display:none;">
+            <div x-show="currentTab === 'sales'" x-transition>
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-bold">Registro de Ventas</h3>
                 </div>
@@ -838,7 +839,7 @@
             </div>
 
             <!-- ===== AUDITORÍA ===== -->
-            <div x-show="currentTab === 'auditoria'" x-transition style="display:none;">
+            <div x-show="currentTab === 'auditoria'" x-transition>
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-bold">Trazabilidad y Auditoría</h3>
                     <div class="flex gap-3">
@@ -939,19 +940,87 @@
 
             // ===== INIT =====
             async init() {
-                this.db = firebase.firestore();
+                // Detectar si Firebase está disponible
+                this.db = null;
+                try {
+                    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                        this.db = firebase.firestore();
+                    }
+                } catch(e) {
+                    console.warn('Firebase no disponible:', e);
+                }
+
                 this.isLoading = true;
-                await Promise.all([
-                    this.loadCollection('inventory', 'vj_insumos'),
-                    this.loadCollection('products', 'vj_formulas'),
-                    this.loadCollection('sales', 'vj_ventas'),
-                    this.loadCollection('auditLogs', 'vj_auditoria', 100)
-                ]);
+
+                // Intentar cargar desde Firebase, si falla usar localStorage
+                if (this.db) {
+                    try {
+                        await Promise.all([
+                            this.loadCollection('inventory', 'vj_insumos'),
+                            this.loadCollection('products', 'vj_formulas'),
+                            this.loadCollection('sales', 'vj_ventas'),
+                            this.loadCollection('auditLogs', 'vj_auditoria', 100)
+                        ]);
+                    } catch(e) {
+                        console.warn('Error cargando desde Firebase, usando localStorage:', e);
+                        this.loadFromLocalStorage();
+                    }
+                } else {
+                    this.loadFromLocalStorage();
+                }
+
+                // Si no hay datos, cargar demo
+                if (this.inventory.length === 0 && this.products.length === 0) {
+                    this.loadDemoData();
+                }
+
                 this.isLoading = false;
                 this.$nextTick(() => this.initDashboardCharts());
             },
 
+            loadFromLocalStorage() {
+                try {
+                    const inv = localStorage.getItem('vj_insumos_local');
+                    const prods = localStorage.getItem('vj_formulas_local');
+                    const sales = localStorage.getItem('vj_ventas_local');
+                    const audit = localStorage.getItem('vj_auditoria_local');
+                    if (inv) this.inventory = JSON.parse(inv);
+                    if (prods) this.products = JSON.parse(prods);
+                    if (sales) this.sales = JSON.parse(sales);
+                    if (audit) this.auditLogs = JSON.parse(audit);
+                } catch(e) { console.warn('Error leyendo localStorage:', e); }
+            },
+
+            saveToLocalStorage() {
+                try {
+                    localStorage.setItem('vj_insumos_local', JSON.stringify(this.inventory));
+                    localStorage.setItem('vj_formulas_local', JSON.stringify(this.products));
+                    localStorage.setItem('vj_ventas_local', JSON.stringify(this.sales));
+                    localStorage.setItem('vj_auditoria_local', JSON.stringify(this.auditLogs));
+                } catch(e) { console.warn('Error guardando localStorage:', e); }
+            },
+
+            loadDemoData() {
+                this.inventory = [
+                    { id: 'demo1', name: 'Extracto de Eucalipto', tipo: 'liquido', unit: 'ml', cost: 500, qty: 1000, proveedor: 'Proveedor A', rendimiento: null, createdAt: {toDate:()=>new Date()} },
+                    { id: 'demo2', name: 'Árnica en polvo', tipo: 'solido', unit: 'gr', cost: 300, qty: 500, proveedor: 'Proveedor B', rendimiento: null, createdAt: {toDate:()=>new Date()} },
+                    { id: 'demo3', name: 'Mentol cristal', tipo: 'solido', unit: 'gr', cost: 200, qty: 250, proveedor: 'Proveedor C', rendimiento: null, createdAt: {toDate:()=>new Date()} },
+                    { id: 'demo4', name: 'Envase 60ml', tipo: 'envase', unit: 'pz', cost: 150, qty: 100, proveedor: 'Envases MX', rendimiento: null, createdAt: {toDate:()=>new Date()} },
+                    { id: 'demo5', name: 'Etiqueta tabloide', tipo: 'etiqueta', unit: 'plantilla', cost: 50, qty: 10, proveedor: 'Impresos SA', rendimiento: 100, createdAt: {toDate:()=>new Date()} }
+                ];
+                this.products = [
+                    { id: 'p1', name: 'Gel Balsámico 60ml', retailPrice: 24.99, wholesalePrice: 18.00, ingredients: [
+                        {insumoId: 'demo1', qty: 30}, {insumoId: 'demo2', qty: 5}, {insumoId: 'demo3', qty: 2}, {insumoId: 'demo4', qty: 1}, {insumoId: 'demo5', qty: 0.01}
+                    ], createdAt: {toDate:()=>new Date()} }
+                ];
+                this.saveToLocalStorage();
+            },
+
             async loadCollection(prop, collectionName, limitCount = null) {
+                if (!this.db) {
+                    this[prop] = [];
+                    return;
+                }
                 try {
                     let q = this.db.collection(collectionName).orderBy('createdAt', 'desc');
                     if (limitCount) q = q.limit(limitCount);
@@ -1033,11 +1102,16 @@
                 if (idx === -1) return;
                 this.inventory[idx].qty += parseFloat(extraQty);
                 this.inventory[idx].cost += parseFloat(extraCost);
-                await this.db.collection('vj_insumos').doc(item.id).update({
-                    qty: this.inventory[idx].qty,
-                    cost: this.inventory[idx].cost,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                if (this.db) {
+                    try {
+                        await this.db.collection('vj_insumos').doc(item.id).update({
+                            qty: this.inventory[idx].qty,
+                            cost: this.inventory[idx].cost,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } catch(e) {}
+                }
+                this.saveToLocalStorage();
                 this.logAudit('insumo', `Reabastecido: ${item.name} (+${extraQty} ${item.unit}, +$${extraCost})`);
                 this.toast('Stock actualizado');
             },
@@ -1050,25 +1124,39 @@
                     qty: parseFloat(this.insumoForm.qty) || 0,
                     proveedor: this.insumoForm.proveedor || '',
                     rendimiento: this.insumoForm.tipo === 'etiqueta' ? (parseInt(this.insumoForm.rendimiento) || 1) : null,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: new Date()
                 };
                 if (this.editingInsumoId) {
-                    await this.db.collection('vj_insumos').doc(this.editingInsumoId).update(data);
+                    if (this.db) {
+                        try { await this.db.collection('vj_insumos').doc(this.editingInsumoId).update({...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}); } catch(e) {}
+                    }
                     this.inventory[this.editingInsumoIndex] = { ...this.inventory[this.editingInsumoIndex], ...data };
                     this.logAudit('insumo', `Insumo editado: ${data.name}`);
                 } else {
-                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    const ref = await this.db.collection('vj_insumos').add(data);
-                    this.inventory.unshift({ id: ref.id, ...data });
+                    data.createdAt = new Date();
+                    const newId = this.db ? 'local_' + Date.now() : 'local_' + Date.now();
+                    if (this.db) {
+                        try { 
+                            const ref = await this.db.collection('vj_insumos').add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                            data.id = ref.id;
+                        } catch(e) { data.id = newId; }
+                    } else {
+                        data.id = newId;
+                    }
+                    this.inventory.unshift(data);
                     this.logAudit('insumo', `Nuevo insumo creado: ${data.name}`);
                 }
+                this.saveToLocalStorage();
                 this.closeInsumoForm();
                 this.toast('Insumo guardado');
             },
             async deleteInsumo(id) {
                 if (!confirm('¿Borrar este insumo?')) return;
-                await this.db.collection('vj_insumos').doc(id).delete();
+                if (this.db) {
+                    try { await this.db.collection('vj_insumos').doc(id).delete(); } catch(e) {}
+                }
                 this.inventory = this.inventory.filter(i => i.id !== id);
+                this.saveToLocalStorage();
                 this.logAudit('insumo', `Insumo eliminado: ${id}`);
                 this.toast('Insumo eliminado');
             },
@@ -1109,12 +1197,13 @@
                 this.formulaForm = JSON.parse(JSON.stringify(prod));
                 this.showFormulaForm = true;
             },
-            viewFormula(prod) { alert(`Receta de ${prod.name}:
-
-` + prod.ingredients.map(ing => { const i = this.getInsumoById(ing.insumoId); return `- ${ing.qty} ${i.unit} de ${i.name} ($${this.formatMoney(this.calculateIngredientCost(ing))})`; }).join('
-') + `
-
-Costo total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`); },
+            viewFormula(prod) {
+                const lineas = prod.ingredients.map(ing => {
+                    const i = this.getInsumoById(ing.insumoId);
+                    return `- ${ing.qty} ${i.unit} de ${i.name} ($${this.formatMoney(this.calculateIngredientCost(ing))})`;
+                }).join('\n');
+                alert(`Receta de ${prod.name}:\n\n${lineas}\n\nCosto total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`);
+            },
             async saveFormula() {
                 if (!this.formulaForm.name || !this.formulaForm.retailPrice || this.formulaForm.ingredients.length === 0) {
                     alert('Completa nombre, precio y al menos un insumo.'); return;
@@ -1124,25 +1213,39 @@ Costo total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`)
                     retailPrice: parseFloat(this.formulaForm.retailPrice) || 0,
                     wholesalePrice: parseFloat(this.formulaForm.wholesalePrice) || 0,
                     ingredients: this.formulaForm.ingredients,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: new Date()
                 };
                 if (this.editingFormulaId) {
-                    await this.db.collection('vj_formulas').doc(this.editingFormulaId).update(data);
+                    if (this.db) {
+                        try { await this.db.collection('vj_formulas').doc(this.editingFormulaId).update({...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp()}); } catch(e) {}
+                    }
                     this.products[this.editingFormulaIndex] = { ...this.products[this.editingFormulaIndex], ...data };
                     this.logAudit('formula', `Fórmula editada: ${data.name}`);
                 } else {
-                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    const ref = await this.db.collection('vj_formulas').add(data);
-                    this.products.unshift({ id: ref.id, ...data });
+                    data.createdAt = new Date();
+                    const newId = 'local_prod_' + Date.now();
+                    if (this.db) {
+                        try {
+                            const ref = await this.db.collection('vj_formulas').add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                            data.id = ref.id;
+                        } catch(e) { data.id = newId; }
+                    } else {
+                        data.id = newId;
+                    }
+                    this.products.unshift(data);
                     this.logAudit('formula', `Nueva fórmula: ${data.name}`);
                 }
+                this.saveToLocalStorage();
                 this.closeFormulaForm();
                 this.toast('Fórmula guardada');
             },
             async deleteFormula(id) {
                 if (!confirm('¿Borrar esta fórmula?')) return;
-                await this.db.collection('vj_formulas').doc(id).delete();
+                if (this.db) {
+                    try { await this.db.collection('vj_formulas').doc(id).delete(); } catch(e) {}
+                }
                 this.products = this.products.filter(p => p.id !== id);
+                this.saveToLocalStorage();
                 this.logAudit('formula', `Fórmula eliminada: ${id}`);
                 this.toast('Fórmula eliminada');
             },
@@ -1195,10 +1298,15 @@ Costo total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`)
             async guardarConfigFabricacion() {
                 if (!this.fabSelectedProductId) { alert('Selecciona un producto primero'); return; }
                 this.fabSavedConfigs[this.fabSelectedProductId] = { ...this.fabConfig };
-                await this.db.collection('vj_fab_configs').doc(this.fabSelectedProductId).set({
-                    config: this.fabConfig,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                if (this.db) {
+                    try {
+                        await this.db.collection('vj_fab_configs').doc(this.fabSelectedProductId).set({
+                            config: this.fabConfig,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } catch(e) {}
+                }
+                this.saveToLocalStorage();
                 this.logAudit('fabricacion', `Config. de fabricación guardada para: ${this.getProductById(this.fabSelectedProductId).name}`);
                 this.toast('Configuración guardada');
             },
@@ -1271,17 +1379,26 @@ Costo total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`)
                     const inv = this.inventory.find(i => i.id === ing.insumoId);
                     if (inv) {
                         inv.qty -= (ing.qty * qty);
-                        await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        if (this.db) {
+                            try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
+                        }
                     }
                 }
                 const saleData = {
                     productId: prod.id, productName: prod.name, qty, type: this.newSale.type,
                     revenue, cost: this.calculateFormulaCost(prod.ingredients) * qty,
-                    date: firebase.firestore.FieldValue.serverTimestamp(),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    date: new Date(), createdAt: new Date()
                 };
-                const ref = await this.db.collection('vj_ventas').add(saleData);
-                this.sales.unshift({ id: ref.id, ...saleData, date: new Date() });
+                if (this.db) {
+                    try {
+                        const ref = await this.db.collection('vj_ventas').add({...saleData, date: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                        saleData.id = ref.id;
+                    } catch(e) { saleData.id = 'sale_' + Date.now(); }
+                } else {
+                    saleData.id = 'sale_' + Date.now();
+                }
+                this.sales.unshift(saleData);
+                this.saveToLocalStorage();
                 this.newSale = { productId: '', qty: 1, type: 'retail' };
                 this.logAudit('venta', `Venta registrada: ${prod.name} x${qty} ($${this.formatMoney(revenue)})`);
                 this.toast('Venta registrada');
@@ -1330,9 +1447,17 @@ Costo total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`)
                 return map[t] || 'bg-gray-100 text-gray-700';
             },
             async logAudit(tipo, mensaje, detalles = null) {
-                const data = { tipo, mensaje, detalles, fecha: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-                await this.db.collection('vj_auditoria').add(data);
-                this.auditLogs.unshift({ id: Date.now().toString(), ...data, fecha: new Date() });
+                const data = { tipo, mensaje, detalles, fecha: new Date(), createdAt: new Date() };
+                if (this.db) {
+                    try {
+                        const ref = await this.db.collection('vj_auditoria').add({...data, fecha: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                        data.id = ref.id;
+                    } catch(e) { data.id = Date.now().toString(); }
+                } else {
+                    data.id = Date.now().toString();
+                }
+                this.auditLogs.unshift(data);
+                this.saveToLocalStorage();
             },
             async cargarAuditoria() {
                 this.isLoading = true;
