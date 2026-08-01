@@ -642,7 +642,39 @@
 
         // --- Sincronizar precios con Admin (Firebase / localStorage) ---
         document.addEventListener('DOMContentLoaded', async () => {
-            const fmt = n => '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const fmt = n => '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            const renderTierPrices = (card, prodData) => {
+                const existing = card.querySelector('.tier-prices');
+                if (existing) existing.remove();
+
+                const container = document.createElement('div');
+                container.className = 'tier-prices mt-3 pt-3 border-t border-outline-variant/30';
+
+                const rows = [
+                    { label: 'Medio mayoreo', value: prodData.medioMayoreo ?? prodData.publico ?? prodData.precio ?? 0 },
+                    { label: 'Ventas cambaceo', value: prodData.cambaceo ?? prodData.publico ?? prodData.precio ?? 0 },
+                    { label: 'Distribuidores', value: prodData.distribuidores ?? prodData.publico ?? prodData.precio ?? 0 }
+                ];
+
+                container.innerHTML = `
+                    <div class="space-y-1 text-[11px] sm:text-xs">
+                        ${rows.map(row => `
+                            <div class="flex items-center justify-between gap-2 text-on-surface-variant">
+                                <span class="font-semibold">${row.label}</span>
+                                <span class="font-bold text-primary">${fmt(row.value)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                const buyLink = card.querySelector('a[href*="?p="]');
+                if (buyLink) {
+                    buyLink.insertAdjacentElement('beforebegin', container);
+                } else {
+                    card.appendChild(container);
+                }
+            };
             
             let menudeo = JSON.parse(localStorage.getItem('vj_precios_menudeo')) || [];
             let mayoreo = JSON.parse(localStorage.getItem('vj_precios_mayoreo')) || [];
@@ -683,6 +715,7 @@
                 const menudeoSpan = card.querySelector('span.bg-primary\\/10');
                 if (menudeoSpan) {
                     menudeoSpan.textContent = fmt(finalPrice);
+                    renderTierPrices(card, prodData);
                     return;
                 }
 
@@ -703,6 +736,7 @@
                     } else if (spans.length === 1) {
                         spans[0].textContent = fmt(finalPrice);
                     }
+                    renderTierPrices(card, prodData);
                 }
             });
         });

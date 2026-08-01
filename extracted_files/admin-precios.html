@@ -124,6 +124,11 @@
                                 <th class="px-6 py-3 font-medium">Precio Normal ($)</th>
                                 <th class="px-6 py-3 font-medium">¿Oferta Activa?</th>
                                 <th class="px-6 py-3 font-medium">Precio Oferta ($)</th>
+                                <th class="px-6 py-3 font-medium">Público ($)</th>
+                                <th class="px-6 py-3 font-medium">Mayoreo ($)</th>
+                                <th class="px-6 py-3 font-medium">Medio Mayoreo ($)</th>
+                                <th class="px-6 py-3 font-medium">Distribuidores ($)</th>
+                                <th class="px-6 py-3 font-medium">Cambaceo ($)</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100">
@@ -155,6 +160,41 @@
                                                 class="pl-7 w-32 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.publico"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.mayoreo"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.medioMayoreo"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.distribuidores"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.cambaceo"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
@@ -182,6 +222,11 @@
                                 <th class="px-6 py-3 font-medium">Precio Normal ($)</th>
                                 <th class="px-6 py-3 font-medium">¿Oferta Activa?</th>
                                 <th class="px-6 py-3 font-medium">Precio Oferta ($)</th>
+                                <th class="px-6 py-3 font-medium">Público ($)</th>
+                                <th class="px-6 py-3 font-medium">Mayoreo ($)</th>
+                                <th class="px-6 py-3 font-medium">Medio Mayoreo ($)</th>
+                                <th class="px-6 py-3 font-medium">Distribuidores ($)</th>
+                                <th class="px-6 py-3 font-medium">Cambaceo ($)</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100">
@@ -211,6 +256,41 @@
                                                 :disabled="!prod.ofertaActiva"
                                                 :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'"
                                                 class="pl-7 w-36 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.publico"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.mayoreo"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.medioMayoreo"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.distribuidores"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                            <input type="number" step="0.01" min="0" x-model.number="prod.cambaceo"
+                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
                                         </div>
                                     </td>
                                 </tr>
@@ -419,6 +499,11 @@
                 guardarPrecios(tipo) {
                     const lista = tipo === 'menudeo' ? this.preciosMenudeo : this.preciosMayoreo;
                     for (const prod of lista) {
+                        prod.publico = Number(prod.publico ?? prod.precio ?? 0);
+                        prod.mayoreo = Number(prod.mayoreo ?? prod.precio ?? 0);
+                        prod.medioMayoreo = Number(prod.medioMayoreo ?? prod.publico ?? prod.precio ?? 0);
+                        prod.distribuidores = Number(prod.distribuidores ?? prod.publico ?? prod.precio ?? 0);
+                        prod.cambaceo = Number(prod.cambaceo ?? prod.publico ?? prod.precio ?? 0);
                         if (isNaN(prod.precio) || prod.precio < 0) {
                             alert(`Error: El precio de "${prod.nombre}" no es válido.`);
                             return;
@@ -433,6 +518,7 @@
                     } else {
                         localStorage.setItem('vj_precios_mayoreo', JSON.stringify(this.preciosMayoreo));
                     }
+                    localStorage.setItem('vj_precios_tiered', JSON.stringify([...this.preciosMenudeo, ...this.preciosMayoreo]));
                     this.toastMessage = tipo === 'menudeo' ? '¡Precios de menudeo guardados!' : '¡Precios de mayoreo guardados!';
                     this.showToast = true;
                     setTimeout(() => { this.showToast = false; }, 3000);

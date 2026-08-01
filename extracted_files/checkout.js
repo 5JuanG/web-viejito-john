@@ -54,24 +54,76 @@ const CATALOGO_MAYOREO = [
 const fmt = n => '$' + Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 function mergeLocalStorage() {
+    const applyTieredOverrides = (items, catalog) => {
+        if (!Array.isArray(items)) return;
+        items.forEach(item => {
+            const product = catalog.find(x => x.id === item.id);
+            if (!product) return;
+            product.precio = item.precio ?? product.precio;
+            product.precioNormal = item.precioNormal ?? item.precio ?? product.precioNormal ?? product.precio;
+            product.publico = item.publico ?? item.precio ?? product.publico ?? product.precio ?? product.precioNormal;
+            product.mayoreo = item.mayoreo ?? item.precio ?? product.mayoreo ?? product.precioNormal ?? product.precio;
+            product.medioMayoreo = item.medioMayoreo ?? item.mayoreo ?? product.medioMayoreo ?? product.mayoreo ?? product.publico ?? product.precio ?? product.precioNormal;
+            product.distribuidores = item.distribuidores ?? item.mayoreo ?? product.distribuidores ?? product.mayoreo ?? product.publico ?? product.precio ?? product.precioNormal;
+            product.cambaceo = item.cambaceo ?? item.publico ?? product.cambaceo ?? product.publico ?? product.precio ?? product.precioNormal;
+            product.ofertaActiva = item.ofertaActiva ?? product.ofertaActiva;
+            product.precioOferta = item.precioOferta ?? product.precioOferta;
+        });
+    };
+
     try {
         const storedMenudeo = JSON.parse(localStorage.getItem('vj_precios_menudeo'));
         if (storedMenudeo && Array.isArray(storedMenudeo)) {
-            storedMenudeo.forEach(s => {
-                const p = CATALOGO_MENUDEO_VJ.find(x => x.id === s.id) || CATALOGO_MENUDEO_KERATEX.find(x => x.id === s.id);
-                if (p) { p.precio = s.precio; p.ofertaActiva = s.ofertaActiva; p.precioOferta = s.precioOferta; }
-            });
+            applyTieredOverrides(storedMenudeo, [...CATALOGO_MENUDEO_VJ, ...CATALOGO_MENUDEO_KERATEX]);
         }
     } catch(e) {}
+
     try {
         const storedMayoreo = JSON.parse(localStorage.getItem('vj_precios_mayoreo'));
         if (storedMayoreo && Array.isArray(storedMayoreo)) {
-            storedMayoreo.forEach(s => {
-                const p = CATALOGO_MAYOREO.find(x => x.id === s.id);
-                if (p) { p.precioNormal = s.precio; p.ofertaActiva = s.ofertaActiva; p.precioOferta = s.precioOferta; }
-            });
+            applyTieredOverrides(storedMayoreo, CATALOGO_MAYOREO);
         }
     } catch(e) {}
+
+    try {
+        const storedTiered = JSON.parse(localStorage.getItem('vj_precios_tiered'));
+        if (storedTiered && Array.isArray(storedTiered)) {
+            applyTieredOverrides(storedTiered, [...CATALOGO_MENUDEO_VJ, ...CATALOGO_MENUDEO_KERATEX, ...CATALOGO_MAYOREO]);
+        }
+    } catch(e) {}
+}
+
+function getPriceForTier(product, tier) {
+    const normalizedTier = (tier || 'publico').toLowerCase();
+    const key = {
+        publico: 'publico',
+        retail: 'publico',
+        mayoreo: 'mayoreo',
+        wholesale: 'mayoreo',
+        medioMayoreo: 'medioMayoreo',
+        midWholesale: 'medioMayoreo',
+        distribuidores: 'distribuidores',
+        distributor: 'distribuidores',
+        cambaceo: 'cambaceo'
+    }[normalizedTier] || normalizedTier;
+    const fallbackBase = product.ofertaActiva ? (product.precioOferta ?? product.precio ?? product.precioNormal ?? 0) : (product.precio ?? product.precioNormal ?? 0);
+    const price = product[key] ?? product[key.toLowerCase()] ?? (key === 'mayoreo' ? product.precioNormal : undefined) ?? fallbackBase;
+    return Number(price || 0);
+}
+
+function getPriceTierLabel(tier) {
+    const labels = {
+        publico: 'Público',
+        retail: 'Público',
+        mayoreo: 'Mayoreo',
+        wholesale: 'Mayoreo',
+        medioMayoreo: 'Medio mayoreo',
+        midWholesale: 'Medio mayoreo',
+        distribuidores: 'Distribuidores',
+        distributor: 'Distribuidores',
+        cambaceo: 'Cambaceo'
+    };
+    return labels[tier] || tier || 'Público';
 }
 
 function findProduct(pid) {
@@ -91,6 +143,7 @@ let mercadoPagoLink = MERCADO_PAGO_LINK_DEFAULT;
 function renderProduct() {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get('p') || params.get('producto') || 'gel_balsamico_700g';
+    const tier = params.get('tier') || params.get('t') || 'publico';
 
     mergeLocalStorage();
     currentProduct = findProduct(pid);
@@ -101,9 +154,7 @@ function renderProduct() {
     }
 
     const isMayoreo = currentProduct.tipo === 'mayoreo';
-    const precioFinal = isMayoreo
-        ? (currentProduct.ofertaActiva ? currentProduct.precioOferta : currentProduct.precioNormal)
-        : (currentProduct.ofertaActiva ? currentProduct.precioOferta : currentProduct.precio);
+    const precioFinal = getPriceForTier(currentProduct, tier);
     const total = precioFinal + (currentProduct.costoEnvio || 0);
     mercadoPagoLink = currentProduct.linkMercadoPago || MERCADO_PAGO_LINK_DEFAULT;
 
@@ -111,6 +162,8 @@ function renderProduct() {
     document.getElementById('summary-title').textContent = isMayoreo ? 'Pedido de Mayoreo' : 'Resumen del Pedido';
     document.getElementById('co-product-name').textContent = currentProduct.nombre;
     document.getElementById('co-product-desc').textContent = currentProduct.descripcion;
+    const tierEl = document.getElementById('co-price-tier');
+    if (tierEl) tierEl.textContent = `Precio ${getPriceTierLabel(tier)}`;
 
     const hasCarousel = currentProduct.imagenFrente && currentProduct.imagenLado;
     const simpleContainer = document.getElementById('product-img-simple');

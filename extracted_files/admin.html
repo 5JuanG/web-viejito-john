@@ -87,6 +87,9 @@
             <a href="#" @click.prevent="currentTab = 'sales'" :class="currentTab === 'sales' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">point_of_sale</span> <span class="font-medium">Ventas (POS)</span>
             </a>
+            <a href="#" @click.prevent="currentTab = 'cambaceo'" :class="currentTab === 'cambaceo' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">groups</span> <span class="font-medium">Cambaceo</span>
+            </a>
             <a href="#" @click.prevent="currentTab = 'auditoria'" :class="currentTab === 'auditoria' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">history</span> <span class="font-medium">Auditoría</span>
             </a>
@@ -124,7 +127,7 @@
 
         <!-- MOBILE MENU -->
         <div x-show="mobileMenuOpen" class="md:hidden bg-primary text-white p-4 space-y-2" @click.away="mobileMenuOpen = false">
-            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'auditoria',l:'Auditoría',i:'history'}]">
+            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'auditoria',l:'Auditoría',i:'history'}]">
                 <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
                     <span class="material-symbols-outlined" x-text="item.i"></span> <span x-text="item.l"></span>
                 </a>
@@ -792,22 +795,56 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Código / Barras</label>
+                            <div class="flex gap-2">
+                                <input type="text" x-model="newSale.barcode" placeholder="Escanea o escribe" class="w-full rounded-lg border-gray-300 text-sm">
+                                <button type="button" @click="startBarcodeScanner()" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm font-bold">📷</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Precio</label>
+                            <select x-model="newSale.priceTier" class="w-full rounded-lg border-gray-300 text-sm">
+                                <option value="publico">Público</option>
+                                <option value="mayoreo">Mayoreo</option>
+                                <option value="medioMayoreo">Medio mayoreo</option>
+                                <option value="distribuidores">Distribuidores</option>
+                                <option value="cambaceo">Cambaceo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Cliente / Distribuidor / Vendedor</label>
+                            <select x-model="newSale.entityId" class="w-full rounded-lg border-gray-300 text-sm">
+                                <option value="">Sin asignar</option>
+                                <template x-for="entity in cambaceoEntities" :key="entity.id">
+                                    <option :value="entity.id" x-text="entity.name + ' (' + entity.type + ')'" ></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1">Cantidad</label>
                             <input type="number" min="1" x-model="newSale.qty" required class="w-full rounded-lg border-gray-300 text-sm">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Tipo</label>
-                            <select x-model="newSale.type" class="w-full rounded-lg border-gray-300 text-sm">
-                                <option value="retail">Menudeo</option>
-                                <option value="wholesale">Mayoreo</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-4 flex justify-end">
-                            <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light flex items-center gap-2 text-sm">
-                                <span class="material-symbols-outlined">shopping_cart_checkout</span> Registrar Venta
-                            </button>
+                        <div class="md:col-span-4 flex flex-wrap items-center justify-between gap-3">
+                            <label class="flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" x-model="newSale.generateReceipt" class="rounded border-gray-300 text-primary">
+                                Generar comprobante
+                            </label>
+                            <div class="flex gap-2">
+                                <button type="button" @click="findProductByBarcode(newSale.barcode)" class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700">Buscar por código</button>
+                                <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary-light flex items-center gap-2 text-sm">
+                                    <span class="material-symbols-outlined">shopping_cart_checkout</span> Registrar Venta
+                                </button>
+                            </div>
                         </div>
                     </form>
+                    <div x-show="isScanningBarcode" class="mt-4 rounded-xl border border-gray-200 p-4 bg-gray-50">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-bold text-gray-700">Escáner de barras</h4>
+                            <button type="button" @click="stopBarcodeScanner()" class="text-xs font-semibold text-gray-500">Cerrar</button>
+                        </div>
+                        <video id="sale-barcode-video" autoplay playsinline muted class="w-full max-h-72 rounded-lg bg-black"></video>
+                        <p class="text-xs text-gray-500 mt-2">Usa la cámara del teléfono para leer el código y registrar la venta al instante.</p>
+                    </div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-6 py-3 bg-gray-50 border-b border-gray-100"><h4 class="font-bold text-gray-700 text-sm">Historial de Ventas</h4></div>
@@ -828,13 +865,201 @@
                                     <td class="px-4 py-3 font-medium text-gray-800" x-text="sale.productName"></td>
                                     <td class="px-4 py-3 font-bold" x-text="sale.qty"></td>
                                     <td class="px-4 py-3">
-                                        <span x-text="sale.type === 'retail' ? 'Menudeo' : 'Mayoreo'" :class="sale.type === 'retail' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="px-2 py-0.5 rounded text-xs font-bold"></span>
+                                        <span x-text="getPriceTierLabel(sale.priceTier || sale.type)" :class="(sale.priceTier || sale.type) === 'publico' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="px-2 py-0.5 rounded text-xs font-bold"></span>
                                     </td>
                                     <td class="px-4 py-3 text-right font-bold text-green-700">$<span x-text="formatMoney(sale.revenue)"></span></td>
                                 </tr>
                             </template>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- ===== CAMBACEO ===== -->
+            <div x-show="currentTab === 'cambaceo'" x-transition>
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold">Control de clientes, distribuidores y vendedores</h3>
+                        <p class="text-sm text-gray-500">Asigna reglas de precio por volumen y visualiza el rendimiento diario y semanal por vendedor.</p>
+                    </div>
+                    <button @click="openCambaceoForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nuevo registro</button>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Clientes</p>
+                        <p class="text-2xl font-black text-gray-800 mt-2" x-text="cambaceoEntities.filter(e => e.type === 'cliente').length"></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Distribuidores</p>
+                        <p class="text-2xl font-black text-gray-800 mt-2" x-text="cambaceoEntities.filter(e => e.type === 'distribuidor').length"></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Vendedores cambaceo</p>
+                        <p class="text-2xl font-black text-gray-800 mt-2" x-text="cambaceoEntities.filter(e => e.type === 'vendedor').length"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                            <h4 class="font-bold text-gray-700">Registro de contactos</h4>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Nombre</label>
+                                    <input type="text" x-model="cambaceoForm.name" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Tipo</label>
+                                    <select x-model="cambaceoForm.type" class="w-full rounded-lg border-gray-300 text-sm">
+                                        <option value="cliente">Cliente</option>
+                                        <option value="distribuidor">Distribuidor</option>
+                                        <option value="vendedor">Vendedor cambaceo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Teléfono</label>
+                                    <input type="text" x-model="cambaceoForm.phone" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Correo</label>
+                                    <input type="email" x-model="cambaceoForm.email" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Monto mínimo de compra</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.minPurchaseAmount" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Tier de precio asignado</label>
+                                    <select x-model="cambaceoForm.priceTier" class="w-full rounded-lg border-gray-300 text-sm">
+                                        <option value="publico">Público</option>
+                                        <option value="mayoreo">Mayoreo</option>
+                                        <option value="medioMayoreo">Medio mayoreo</option>
+                                        <option value="distribuidores">Distribuidores</option>
+                                        <option value="cambaceo">Cambaceo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Comisión (%)</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.commissionRate" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Salario base</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.salary" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Notas</label>
+                                <textarea x-model="cambaceoForm.notes" rows="3" class="w-full rounded-lg border-gray-300 text-sm"></textarea>
+                            </div>
+                            <div class="flex justify-end gap-3">
+                                <button type="button" @click="resetCambaceoForm()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700">Cancelar</button>
+                                <button type="button" @click="saveCambaceoEntity()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                            <h4 class="font-bold text-gray-700">Listado y reglas</h4>
+                        </div>
+                        <div class="max-h-[500px] overflow-y-auto">
+                            <template x-for="entity in cambaceoEntities" :key="entity.id">
+                                <div class="p-4 border-b border-gray-100 flex flex-col gap-2">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="font-bold text-gray-800" x-text="entity.name"></p>
+                                            <p class="text-xs text-gray-500" x-text="entity.type"></p>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button @click="openCambaceoForm(entity)" class="text-sm text-primary font-semibold">Editar</button>
+                                            <button @click="deleteCambaceoEntity(entity.id)" class="text-sm text-red-500 font-semibold">Borrar</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-600 space-y-1">
+                                        <p>Compra mínima: $<span x-text="formatMoney(entity.minPurchaseAmount || 0)"></span></p>
+                                        <p>Tier: <span x-text="entity.priceTier"></span></p>
+                                        <p>Comisión: <span x-text="entity.commissionRate || 0"></span>%</p>
+                                        <p>Salario: $<span x-text="formatMoney(entity.salary || 0)"></span></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-gray-700">Dashboard de vendedores de cambaceo</h4>
+                            <p class="text-sm text-gray-500">Mide ventas, depósitos y pagos por día y por semana.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="cambaceoPeriod = 'day'" :class="cambaceoPeriod === 'day' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'" class="px-3 py-2 rounded-lg text-sm font-semibold">Por día</button>
+                            <button @click="cambaceoPeriod = 'week'" :class="cambaceoPeriod === 'week' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'" class="px-3 py-2 rounded-lg text-sm font-semibold">Por semana</button>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <template x-for="seller in getCambaceoDashboardRows()" :key="seller.id">
+                            <div class="border border-gray-200 rounded-2xl p-4">
+                                <div class="flex flex-col lg:flex-row justify-between gap-3 mb-3">
+                                    <div>
+                                        <p class="font-bold text-gray-800" x-text="seller.name"></p>
+                                        <p class="text-sm text-gray-500">Salario base: $<span x-text="formatMoney(seller.salary || 0)"></span> · Comisión: <span x-text="seller.commissionRate || 0"></span>%</p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div class="bg-gray-50 p-3 rounded-xl">
+                                            <p class="text-gray-500">Ventas</p>
+                                            <p class="font-black text-gray-800" x-text="seller.salesCount"></p>
+                                        </div>
+                                        <div class="bg-gray-50 p-3 rounded-xl">
+                                            <p class="text-gray-500">Pago total</p>
+                                            <p class="font-black text-primary" x-text="'$' + formatMoney(seller.totalToPay)"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                                    <div class="bg-green-50 p-3 rounded-xl">
+                                        <p class="text-xs uppercase text-green-700 font-semibold">Venta total</p>
+                                        <p class="text-lg font-black text-green-700" x-text="'$' + formatMoney(seller.revenue)"></p>
+                                    </div>
+                                    <div class="bg-amber-50 p-3 rounded-xl">
+                                        <p class="text-xs uppercase text-amber-700 font-semibold">Comisión</p>
+                                        <p class="text-lg font-black text-amber-700" x-text="'$' + formatMoney(seller.commissionAmount)"></p>
+                                    </div>
+                                    <div class="bg-blue-50 p-3 rounded-xl">
+                                        <p class="text-xs uppercase text-blue-700 font-semibold">Depósito/por pagar</p>
+                                        <p class="text-lg font-black text-blue-700" x-text="'$' + formatMoney(seller.totalToPay)"></p>
+                                    </div>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="text-left text-gray-500 border-b border-gray-100">
+                                                <th class="py-2">Producto</th>
+                                                <th class="py-2">Cant.</th>
+                                                <th class="py-2">Venta</th>
+                                                <th class="py-2">Comisión</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="item in seller.productBreakdown" :key="item.productId">
+                                                <tr class="border-b border-gray-100">
+                                                    <td class="py-2" x-text="item.productName"></td>
+                                                    <td class="py-2" x-text="item.qty"></td>
+                                                    <td class="py-2" x-text="'$' + formatMoney(item.revenue)"></td>
+                                                    <td class="py-2" x-text="'$' + formatMoney(item.commissionAmount)"></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="getCambaceoDashboardRows().length === 0" class="text-center text-gray-400 py-8">No hay vendedores de cambaceo registrados todavía.</div>
+                    </div>
                 </div>
             </div>
 
@@ -932,7 +1157,15 @@
 
             // Ventas
             sales: [],
-            newSale: { productId: '', qty: 1, type: 'retail' },
+            newSale: { productId: '', qty: 1, priceTier: 'publico', barcode: '', generateReceipt: false, entityId: '' },
+            isScanningBarcode: false,
+            scannerStream: null,
+            barcodeDetector: null,
+
+            // Cambaceo
+            cambaceoEntities: [],
+            cambaceoForm: { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, notes: '' },
+            cambaceoPeriod: 'week',
 
             // Auditoría
             auditLogs: [],
@@ -984,10 +1217,12 @@
                     const prods = localStorage.getItem('vj_formulas_local');
                     const sales = localStorage.getItem('vj_ventas_local');
                     const audit = localStorage.getItem('vj_auditoria_local');
+                    const cambaceo = localStorage.getItem('vj_cambaceo_local');
                     if (inv) this.inventory = JSON.parse(inv);
                     if (prods) this.products = JSON.parse(prods);
                     if (sales) this.sales = JSON.parse(sales);
                     if (audit) this.auditLogs = JSON.parse(audit);
+                    if (cambaceo) this.cambaceoEntities = JSON.parse(cambaceo);
                 } catch(e) { console.warn('Error leyendo localStorage:', e); }
             },
 
@@ -997,6 +1232,7 @@
                     localStorage.setItem('vj_formulas_local', JSON.stringify(this.products));
                     localStorage.setItem('vj_ventas_local', JSON.stringify(this.sales));
                     localStorage.setItem('vj_auditoria_local', JSON.stringify(this.auditLogs));
+                    localStorage.setItem('vj_cambaceo_local', JSON.stringify(this.cambaceoEntities));
                 } catch(e) { console.warn('Error guardando localStorage:', e); }
             },
 
@@ -1012,6 +1248,9 @@
                     { id: 'p1', name: 'Gel Balsámico 60ml', retailPrice: 24.99, wholesalePrice: 18.00, ingredients: [
                         {insumoId: 'demo1', qty: 30}, {insumoId: 'demo2', qty: 5}, {insumoId: 'demo3', qty: 2}, {insumoId: 'demo4', qty: 1}, {insumoId: 'demo5', qty: 0.01}
                     ], createdAt: {toDate:()=>new Date()} }
+                ];
+                this.cambaceoEntities = [
+                    { id: 'cam_demo_1', name: 'Luis Torres', type: 'vendedor', phone: '55 1234 5678', email: 'luis@example.com', minPurchaseAmount: 2000, priceTier: 'medioMayoreo', commissionRate: 5, salary: 2500, notes: 'Vendedor líder' }
                 ];
                 this.saveToLocalStorage();
             },
@@ -1034,7 +1273,7 @@
 
             // ===== HELPERS =====
             getTabTitle() {
-                const t = { dashboard:'Resumen de Negocio', insumos:'Gestión de Materia Prima', formulas:'Fórmulas y Costos', fabricacion:'Costo de Fabricación', escenarios:'Escenarios y Análisis', sales:'Punto de Venta', auditoria:'Auditoría y Trazabilidad' };
+                const t = { dashboard:'Resumen de Negocio', insumos:'Gestión de Materia Prima', formulas:'Fórmulas y Costos', fabricacion:'Costo de Fabricación', escenarios:'Escenarios y Análisis', sales:'Punto de Venta', cambaceo:'Control Cambaceo', auditoria:'Auditoría y Trazabilidad' };
                 return t[this.currentTab] || 'Panel';
             },
             formatMoney(n) { return n ? parseFloat(n).toFixed(2) : '0.00'; },
@@ -1042,7 +1281,229 @@
             formatDate(d) { if(!d) return '-'; const date = d.toDate ? d.toDate() : new Date(d); return date.toLocaleString('es-MX', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}); },
             getTipoLabel(t) { const map = { liquido:'Líquido', solido:'Sólido', longitud:'Longitud', etiqueta:'Etiqueta', envase:'Envase', empaque:'Empaque', otro:'Otro' }; return map[t] || t; },
             getInsumoById(id) { return this.inventory.find(i => i.id === id) || {}; },
-            getProductById(id) { return this.products.find(p => p.id === id) || {}; },
+            getProductById(id) { const product = this.products.find(p => p.id === id) || {}; return this.normalizeProduct(product); },
+            getCambaceoEntityById(id) { return this.cambaceoEntities.find(e => e.id === id) || null; },
+            normalizeProduct(product = {}) {
+                const basePrice = Number(product.retailPrice || product.publico || product.price || 0);
+                const normalized = { ...product };
+                normalized.priceTiers = {
+                    publico: Number(normalized.publico ?? normalized.publicPrice ?? normalized.retailPrice ?? normalized.price ?? basePrice),
+                    mayoreo: Number(normalized.mayoreo ?? normalized.wholesalePrice ?? normalized.price ?? basePrice),
+                    medioMayoreo: Number(normalized.medioMayoreo ?? normalized.mayoreo ?? normalized.publico ?? normalized.retailPrice ?? basePrice),
+                    distribuidores: Number(normalized.distribuidores ?? normalized.mayoreo ?? normalized.publico ?? normalized.retailPrice ?? basePrice),
+                    cambaceo: Number(normalized.cambaceo ?? normalized.publico ?? normalized.retailPrice ?? basePrice)
+                };
+                normalized.barcode = normalized.barcode || `SKU-${normalized.id || normalized.name || 'producto'}`;
+                return normalized;
+            },
+            getPriceForTier(product, tier = this.newSale.priceTier) {
+                const normalized = this.normalizeProduct(product || {});
+                const key = {
+                    publico: 'publico',
+                    retail: 'publico',
+                    mayoreo: 'mayoreo',
+                    wholesale: 'mayoreo',
+                    medioMayoreo: 'medioMayoreo',
+                    midWholesale: 'medioMayoreo',
+                    distribuidores: 'distribuidores',
+                    distributor: 'distribuidores',
+                    cambaceo: 'cambaceo'
+                }[tier] || tier;
+                const price = normalized.priceTiers?.[key] ?? normalized[key] ?? normalized.retailPrice ?? normalized.wholesalePrice ?? 0;
+                return Number(price || 0);
+            },
+            getPriceTierLabel(tier) {
+                const labels = {
+                    publico: 'Público',
+                    retail: 'Público',
+                    mayoreo: 'Mayoreo',
+                    wholesale: 'Mayoreo',
+                    medioMayoreo: 'Medio mayoreo',
+                    midWholesale: 'Medio mayoreo',
+                    distribuidores: 'Distribuidores',
+                    distributor: 'Distribuidores',
+                    cambaceo: 'Cambaceo'
+                };
+                return labels[tier] || tier || 'Público';
+            },
+            findProductByBarcode(code) {
+                const barcode = (code || this.newSale.barcode || '').toString().trim();
+                if (!barcode) {
+                    this.toast('Escribe o escanea un código para buscar el producto');
+                    return null;
+                }
+                const match = this.products.find(prod => {
+                    const normalized = this.normalizeProduct(prod);
+                    return String(normalized.barcode || '').toLowerCase() === barcode.toLowerCase()
+                        || String(normalized.id || '').toLowerCase() === barcode.toLowerCase()
+                        || String(normalized.name || '').toLowerCase() === barcode.toLowerCase();
+                });
+                if (match) {
+                    this.newSale.productId = match.id;
+                    this.newSale.barcode = match.barcode || barcode;
+                    this.toast(`Producto seleccionado: ${match.name}`);
+                    return match;
+                }
+                this.toast('No se encontró un producto con ese código');
+                return null;
+            },
+            async startBarcodeScanner() {
+                if (!('BarcodeDetector' in window)) {
+                    this.toast('Tu navegador no soporta escaneo por cámara');
+                    return;
+                }
+                if (!navigator.mediaDevices?.getUserMedia) {
+                    this.toast('La cámara no está disponible en este navegador');
+                    return;
+                }
+                this.isScanningBarcode = true;
+                try {
+                    this.scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    const video = document.getElementById('sale-barcode-video');
+                    if (video) {
+                        video.srcObject = this.scannerStream;
+                        await video.play();
+                    }
+                    this.barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'qr_code', 'code_39', 'upc_a', 'upc_e'] });
+                    this.scanBarcodeFrame();
+                } catch (error) {
+                    this.isScanningBarcode = false;
+                    this.scannerStream = null;
+                    this.toast('No se pudo abrir la cámara');
+                    console.error(error);
+                }
+            },
+            async scanBarcodeFrame() {
+                if (!this.isScanningBarcode) return;
+                const video = document.getElementById('sale-barcode-video');
+                if (!video || !this.barcodeDetector) {
+                    requestAnimationFrame(() => this.scanBarcodeFrame());
+                    return;
+                }
+                try {
+                    const barcodes = await this.barcodeDetector.detect(video);
+                    if (barcodes && barcodes.length > 0) {
+                        const code = barcodes[0].rawValue;
+                        this.newSale.barcode = code;
+                        this.findProductByBarcode(code);
+                        this.stopBarcodeScanner();
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Error detectando código de barras', error);
+                }
+                requestAnimationFrame(() => this.scanBarcodeFrame());
+            },
+            stopBarcodeScanner() {
+                this.isScanningBarcode = false;
+                this.scannerStream?.getTracks().forEach(track => track.stop());
+                this.scannerStream = null;
+            },
+            printReceipt(saleData, product) {
+                const receiptHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Recibo</title><style>body{font-family:Arial,sans-serif;padding:16px}h1{font-size:18px;margin-bottom:8px}p{margin:4px 0;font-size:13px}.line{border-top:1px dashed #444;margin:10px 0}</style></head><body><h1>VJ.Lab - Recibo</h1><p><strong>Producto:</strong> ${product.name}</p><p><strong>Cantidad:</strong> ${saleData.qty}</p><p><strong>Precio:</strong> $${this.formatMoney(saleData.price || 0)}</p><p><strong>Tier:</strong> ${this.getPriceTierLabel(saleData.priceTier || this.newSale.priceTier)}</p><p><strong>Total:</strong> $${this.formatMoney(saleData.revenue || 0)}</p><div class="line"></div><p>${new Date(saleData.date).toLocaleString('es-MX')}</p></body></html>`;
+                const win = window.open('', '_blank', 'width=380,height=600');
+                if (!win) return;
+                win.document.write(receiptHtml);
+                win.document.close();
+                win.focus();
+                setTimeout(() => win.print(), 250);
+            },
+            openCambaceoForm(entity = null) {
+                if (entity) {
+                    this.cambaceoForm = { ...entity };
+                } else {
+                    this.resetCambaceoForm();
+                }
+            },
+            resetCambaceoForm() {
+                this.cambaceoForm = { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, notes: '' };
+            },
+            saveCambaceoEntity() {
+                if (!this.cambaceoForm.name) {
+                    this.toast('Ingresa el nombre del contacto');
+                    return;
+                }
+                const payload = {
+                    ...this.cambaceoForm,
+                    id: this.cambaceoForm.id || 'cambaceo_' + Date.now(),
+                    minPurchaseAmount: Number(this.cambaceoForm.minPurchaseAmount || 0),
+                    commissionRate: Number(this.cambaceoForm.commissionRate || 0),
+                    salary: Number(this.cambaceoForm.salary || 0)
+                };
+                const existingIndex = this.cambaceoEntities.findIndex(e => e.id === payload.id);
+                if (existingIndex >= 0) {
+                    this.cambaceoEntities[existingIndex] = payload;
+                } else {
+                    this.cambaceoEntities.unshift(payload);
+                }
+                this.saveToLocalStorage();
+                this.resetCambaceoForm();
+                this.toast('Registro guardado');
+            },
+            deleteCambaceoEntity(id) {
+                if (!confirm('¿Eliminar este registro?')) return;
+                this.cambaceoEntities = this.cambaceoEntities.filter(e => e.id !== id);
+                this.saveToLocalStorage();
+                this.toast('Registro eliminado');
+            },
+            getEffectiveCambaceoTier(entity, saleAmount) {
+                if (!entity) return 'publico';
+                const minAmount = Number(entity.minPurchaseAmount || 0);
+                if (minAmount > 0 && saleAmount >= minAmount) {
+                    return entity.priceTier || 'publico';
+                }
+                return 'publico';
+            },
+            getCambaceoSalesForPeriod(seller) {
+                const sales = this.sales.filter(s => s.entityId === seller.id);
+                if (!sales.length) return [];
+                const now = new Date();
+                if (this.cambaceoPeriod === 'day') {
+                    const today = now.toDateString();
+                    return sales.filter(sale => {
+                        const date = sale.date ? (sale.date.toDate ? sale.date.toDate() : new Date(sale.date)) : now;
+                        return date.toDateString() === today;
+                    });
+                }
+                const weekStart = new Date(now);
+                const day = weekStart.getDay();
+                const diff = day === 0 ? -6 : 1 - day;
+                weekStart.setDate(now.getDate() + diff);
+                weekStart.setHours(0, 0, 0, 0);
+                return sales.filter(sale => {
+                    const date = sale.date ? (sale.date.toDate ? sale.date.toDate() : new Date(sale.date)) : now;
+                    return date >= weekStart;
+                });
+            },
+            getCambaceoDashboardRows() {
+                return this.cambaceoEntities.filter(e => e.type === 'vendedor').map(seller => {
+                    const sellerSales = this.getCambaceoSalesForPeriod(seller);
+                    const productBreakdown = sellerSales.reduce((acc, sale) => {
+                        const product = this.getProductById(sale.productId);
+                        const productKey = sale.productId;
+                        if (!acc[productKey]) {
+                            acc[productKey] = { productId: sale.productId, productName: product.name || sale.productName, qty: 0, revenue: 0, commissionAmount: 0 };
+                        }
+                        acc[productKey].qty += sale.qty || 0;
+                        acc[productKey].revenue += sale.revenue || 0;
+                        acc[productKey].commissionAmount += sale.commissionAmount || 0;
+                        return acc;
+                    }, {});
+                    const revenue = sellerSales.reduce((sum, sale) => sum + (sale.revenue || 0), 0);
+                    const commissionAmount = sellerSales.reduce((sum, sale) => sum + (sale.commissionAmount || 0), 0);
+                    const salary = Number(seller.salary || 0);
+                    const totalToPay = salary + commissionAmount;
+                    const salesCount = sellerSales.length;
+                    return {
+                        ...seller,
+                        salesCount,
+                        revenue,
+                        commissionAmount,
+                        totalToPay,
+                        productBreakdown: Object.values(productBreakdown)
+                    };
+                });
+            },
             toast(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => this.showToast = false, 3000); },
 
             // ===== UNIT COST =====
@@ -1372,8 +1833,15 @@
                 if (!this.newSale.productId || this.newSale.qty < 1) return;
                 const prod = this.getProductById(this.newSale.productId);
                 const qty = parseInt(this.newSale.qty);
-                const price = this.newSale.type === 'retail' ? prod.retailPrice : (prod.wholesalePrice || prod.retailPrice);
+                const baseTier = this.newSale.priceTier || 'publico';
+                const basePrice = this.getPriceForTier(prod, baseTier);
+                const entity = this.getCambaceoEntityById(this.newSale.entityId);
+                const saleAmount = basePrice * qty;
+                const tier = entity ? this.getEffectiveCambaceoTier(entity, saleAmount) : baseTier;
+                const price = this.getPriceForTier(prod, tier);
                 const revenue = parseFloat(price) * qty;
+                const commissionAmount = entity ? (revenue * (Number(entity.commissionRate || 0) / 100)) : 0;
+                const depositAmount = revenue - commissionAmount;
                 // Descontar inventario
                 for (const ing of prod.ingredients || []) {
                     const inv = this.inventory.find(i => i.id === ing.insumoId);
@@ -1385,8 +1853,11 @@
                     }
                 }
                 const saleData = {
-                    productId: prod.id, productName: prod.name, qty, type: this.newSale.type,
-                    revenue, cost: this.calculateFormulaCost(prod.ingredients) * qty,
+                    productId: prod.id, productName: prod.name, qty, type: tier,
+                    priceTier: tier, price, revenue, cost: this.calculateFormulaCost(prod.ingredients) * qty,
+                    barcode: this.newSale.barcode || prod.barcode || '',
+                    entityId: entity ? entity.id : '', entityName: entity ? entity.name : '', entityType: entity ? entity.type : '',
+                    commissionAmount, depositAmount, salaryBase: entity ? Number(entity.salary || 0) : 0,
                     date: new Date(), createdAt: new Date()
                 };
                 if (this.db) {
@@ -1399,8 +1870,11 @@
                 }
                 this.sales.unshift(saleData);
                 this.saveToLocalStorage();
-                this.newSale = { productId: '', qty: 1, type: 'retail' };
-                this.logAudit('venta', `Venta registrada: ${prod.name} x${qty} ($${this.formatMoney(revenue)})`);
+                this.newSale = { productId: '', qty: 1, priceTier: 'publico', barcode: '', generateReceipt: false, entityId: '' };
+                this.logAudit('venta', `Venta registrada: ${prod.name} x${qty} (${this.getPriceTierLabel(tier)}) - $${this.formatMoney(revenue)})`);
+                if (this.newSale.generateReceipt) {
+                    this.printReceipt(saleData, prod);
+                }
                 this.toast('Venta registrada');
                 this.updateDashboardCharts();
             },
