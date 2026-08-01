@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>El Gel Balsámico del Viejito John | Alivio Natural</title>
+<link rel="icon" href="logo.png" type="image/png">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -87,7 +91,9 @@ html { scroll-behavior: smooth; }
 <!-- NAV -->
 <nav class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
 <div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
-    <div class="font-headline-lg text-headline-lg font-bold text-primary">El Viejito John</div>
+    <a href="index.html" class="inline-flex items-center">
+        <img src="logo.png" alt="Logo de la empresa" class="h-10 md:h-12 w-auto object-contain" style="background: transparent; mix-blend-mode: multiply;" />
+    </a>
     <div class="hidden md:flex items-center gap-8">
         <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="products.html">Productos</a>
         <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#benefits">Beneficios</a>
@@ -181,10 +187,6 @@ html { scroll-behavior: smooth; }
             <div class="relative">
                 <div class="absolute -inset-4 bg-primary/5 rounded-3xl"></div>
                 <img src="gel_balsamico_original.png" alt="Gel Balsámico del Viejito John" class="relative w-full max-w-md mx-auto object-contain drop-shadow-2xl" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=600&auto=format&fit=crop'">
-                <div class="absolute -bottom-4 -right-4 bg-primary text-white px-6 py-3 rounded-2xl shadow-xl">
-                    <p class="font-bold text-lg">Desde $24.99</p>
-                    <p class="text-xs opacity-80">Presentación 60g</p>
-                </div>
             </div>
         </div>
         <div class="reveal">
@@ -664,9 +666,63 @@ function reveal() {
 window.addEventListener("scroll", reveal);
 reveal();
 
+// ===== SINCRONIZAR PRECIOS DEL ADMIN =====
+(async function() {
+    const fmt = n => '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    let menudeo = JSON.parse(localStorage.getItem('vj_precios_menudeo') || '[]');
+    let mayoreo = JSON.parse(localStorage.getItem('vj_precios_mayoreo') || '[]');
+    let tiered = JSON.parse(localStorage.getItem('vj_precios_tiered') || '[]');
+    let allProducts = [...menudeo, ...mayoreo, ...tiered];
+
+    if (window.loadCollection) {
+        try {
+            const [fbMenudeo, fbMayoreo] = await Promise.all([
+                loadCollection('preciosMenudeo'),
+                loadCollection('preciosMayoreo')
+            ]);
+            if ((fbMenudeo && fbMenudeo.length) || (fbMayoreo && fbMayoreo.length)) {
+                menudeo = fbMenudeo || [];
+                mayoreo = fbMayoreo || [];
+                allProducts = [...menudeo, ...mayoreo, ...(tiered || [])];
+            }
+        } catch (error) {
+            console.warn('No se pudieron cargar precios desde Firestore para la página principal.', error);
+        }
+    }
+
+    document.querySelectorAll('a[href*="?p="]').forEach(link => {
+        const pid = new URLSearchParams(link.href.split('?')[1]).get('p');
+        if (!pid) return;
+
+        const prodData = allProducts.find(product => product.id === pid);
+        if (!prodData) return;
+
+        const finalPrice = prodData.ofertaActiva ? prodData.precioOferta : prodData.precio;
+        const formatted = fmt(finalPrice);
+
+        // Find the price span safely
+        let target = null;
+        if (link.previousElementSibling && link.previousElementSibling.tagName === 'SPAN') {
+            target = link.previousElementSibling;
+        } else if (link.parentElement) {
+            target = Array.from(link.parentElement.querySelectorAll('span, p, div')).find(el => 
+                el !== link && (el.textContent.trim().startsWith('$') || el.textContent.trim().startsWith('Desde $'))
+            );
+        }
+
+        if (target) {
+            if (target.textContent.includes('Desde')) {
+                target.textContent = `Desde ${formatted}`;
+            } else {
+                target.textContent = formatted;
+            }
+        }
+    });
+})();
+
 // ===== HERO CAROUSEL =====
 (function() {
-    const track = document.getElementById('hero-track');
     const prevBtn = document.getElementById('hero-prev');
     const nextBtn = document.getElementById('hero-next');
     const dots = document.querySelectorAll('.hero-dot');
