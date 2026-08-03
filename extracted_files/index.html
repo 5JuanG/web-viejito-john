@@ -57,6 +57,10 @@
 .hero-slide img { width: 100%; height: 100%; object-fit: cover; }
 .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(21,66,18,0.85) 0%, rgba(21,66,18,0.4) 60%, transparent 100%); }
 .hero-content { position: absolute; inset: 0; display: flex; align-items: center; z-index: 10; }
+@media (max-width: 768px) {
+    .hero-content { align-items: flex-start; padding-top: 70px; }
+    #hero-prev, #hero-next { top: auto; bottom: 90px; }
+}
 .hero-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.3s; }
 .hero-dot.active { background: #fff; width: 32px; border-radius: 6px; }
 .countdown-box { background: linear-gradient(135deg, #154212 0%, #2d5a27 100%); }
@@ -90,19 +94,37 @@ html { scroll-behavior: smooth; }
 
 <!-- NAV -->
 <nav class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
-<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
-    <a href="index.html" class="inline-flex items-center">
-        <img src="logo.png" alt="Logo de la empresa" class="h-10 md:h-12 w-auto object-contain" style="background: transparent; mix-blend-mode: multiply;" />
-    </a>
-    <div class="hidden md:flex items-center gap-8">
-        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="products.html">Productos</a>
-        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#benefits">Beneficios</a>
-        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#linea-alivio">Líneas</a>
-        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#testimonials">Testimonios</a>
-        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#about">Nosotros</a>
+    <div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+        <div class="flex items-center gap-4">
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-btn" class="md:hidden p-2 text-on-surface hover:bg-surface-container-low rounded-full">
+                <span class="material-symbols-outlined" id="menu-icon">menu</span>
+            </button>
+            <a href="index.html" class="inline-flex items-center">
+                <img src="logo.png" alt="Logo de la empresa" class="h-10 md:h-12 w-auto object-contain" style="background: transparent; mix-blend-mode: multiply;" />
+            </a>
+        </div>
+        <div class="hidden md:flex items-center gap-8">
+            <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="products.html">Productos</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#benefits">Beneficios</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#linea-alivio">Líneas</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#testimonials">Testimonios</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#about">Nosotros</a>
+        </div>
+         <a href="products.html" class="bg-primary text-on-primary px-4 py-2 md:px-6 md:py-2.5 rounded-full font-bold text-xs md:text-sm hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95">Catálogo</a>
     </div>
-    <a href="checkout.html?p=gel_balsamico" class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-bold text-sm hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95">Comprar</a>
-</div>
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobile-menu" class="hidden md:hidden bg-surface border-b border-outline-variant/30">
+        <div class="flex flex-col px-6 py-4 space-y-4">
+            <a href="products.html" class="font-bold text-primary text-lg">Catálogo Completo</a>
+            <hr class="border-outline-variant/30">
+            <a href="products.html" class="text-on-surface-variant hover:text-primary font-body-md">Productos</a>
+            <a href="#benefits" class="text-on-surface-variant hover:text-primary font-body-md">Beneficios</a>
+            <a href="#linea-alivio" class="text-on-surface-variant hover:text-primary font-body-md">Líneas</a>
+            <a href="#testimonials" class="text-on-surface-variant hover:text-primary font-body-md">Testimonios</a>
+            <a href="#about" class="text-on-surface-variant hover:text-primary font-body-md">Nosotros</a>
+        </div>
+    </div>
 </nav>
 
 <main>
@@ -213,6 +235,48 @@ html { scroll-behavior: smooth; }
             </div>
         </div>
     </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="bg-surface-container-low py-24 md:py-32" id="benefits">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="text-center mb-16 reveal">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">Ingredientes de Origen Natural</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Nuestra fórmula magistral combina los mejores extractos botánicos para una recuperación muscular profunda y efectiva.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">spa</span></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Árnica</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Conocida por sus potentes propiedades antiinflamatorias, ayuda a reducir el dolor y la hinchazón de moretones y golpes.</p>
+</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-100">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">ac_unit</span></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Mentol y Eucalipto</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Proporcionan una sensación refrescante instantánea que alivia la tensión muscular y mejora la circulación en la zona.</p>
+</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-200">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">eco</span></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Gaultheria</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Un analgésico natural que penetra profundamente en los tejidos para relajar los músculos después de una actividad física intensa.</p>
+</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-100">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">bolt</span></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Clavo</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Conocido por su alto contenido de eugenol, actúa como un potente anestésico y antiséptico natural que ayuda a adormecer el dolor localizado.</p>
+</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-200">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">shield_moon</span></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Ajo</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Un poderoso aliado con propiedades antibióticas y antioxidantes. Favorece la microcirculación sanguínea y protege los tejidos.</p>
+</div>
+<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal">
+<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">thermostat</span></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Alcanfor</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Ofrece una acción de doble efecto térmico que desinflama y calma. Disipa la pesadez muscular y brinda una reconfortante sensación de alivio.</p>
+</div>
+</div>
+</div>
 </section>
 
 <!-- LÍNEA ALIVIO MUSCULAR -->
@@ -482,48 +546,6 @@ html { scroll-behavior: smooth; }
     </div>
 </section>
 
-<!-- BENEFITS -->
-<section class="bg-surface-container-low py-24 md:py-32" id="benefits">
-<div class="max-w-container-max mx-auto px-gutter">
-<div class="text-center mb-16 reveal">
-<h2 class="font-headline-lg text-headline-lg text-primary mb-4">Ingredientes de Origen Natural</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Nuestra fórmula magistral combina los mejores extractos botánicos para una recuperación muscular profunda y efectiva.</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">spa</span></div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Árnica</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Conocida por sus potentes propiedades antiinflamatorias, ayuda a reducir el dolor y la hinchazón de moretones y golpes.</p>
-</div>
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-100">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">ac_unit</span></div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Mentol y Eucalipto</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Proporcionan una sensación refrescante instantánea que alivia la tensión muscular y mejora la circulación en la zona.</p>
-</div>
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-200">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">eco</span></div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Gaultheria</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Un analgésico natural que penetra profundamente en los tejidos para relajar los músculos después de una actividad física intensa.</p>
-</div>
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-100">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">bolt</span></div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Clavo</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Conocido por su alto contenido de eugenol, actúa como un potente anestésico y antiséptico natural que ayuda a adormecer el dolor localizado.</p>
-</div>
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal delay-200">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">shield_moon</span></div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Ajo</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Un poderoso aliado con propiedades antibióticas y antioxidantes. Favorece la microcirculación sanguínea y protege los tejidos.</p>
-</div>
-<div class="bg-surface-cream p-8 rounded-xl border border-outline-variant/30 hover:border-primary/50 transition-colors reveal">
-<div class="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center mb-6 text-primary"><span class="material-symbols-outlined text-3xl">thermostat</span></div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-3">Alcanfor</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Ofrece una acción de doble efecto térmico que desinflama y calma. Disipa la pesadez muscular y brinda una reconfortante sensación de alivio.</p>
-</div>
-</div>
-</div>
-</section>
-
 <!-- TESTIMONIALS -->
 <section class="py-24 md:py-32 px-gutter max-w-container-max mx-auto" id="testimonials">
 <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 reveal">
@@ -723,6 +745,7 @@ reveal();
 
 // ===== HERO CAROUSEL =====
 (function() {
+    const track = document.getElementById('hero-track');
     const prevBtn = document.getElementById('hero-prev');
     const nextBtn = document.getElementById('hero-next');
     const dots = document.querySelectorAll('.hero-dot');
@@ -731,6 +754,7 @@ reveal();
     let autoSlide;
 
     function updateCarousel() {
+        if (!track) return;
         track.style.transform = `translateX(-${currentSlide * 100}%)`;
         dots.forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
     }
@@ -780,6 +804,26 @@ reveal();
     }
     updateCountdown();
     setInterval(updateCountdown, 1000);
+})();
+
+// Mobile Menu Toggle
+(function() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+
+    if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => {
+            const isHidden = mobileMenu.classList.contains('hidden');
+            if (isHidden) {
+                mobileMenu.classList.remove('hidden');
+                menuIcon.textContent = 'close';
+            } else {
+                mobileMenu.classList.add('hidden');
+                menuIcon.textContent = 'menu';
+            }
+        });
+    }
 })();
 </script>
 </body>

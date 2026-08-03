@@ -3,8 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración | El Viejito John</title>
-    <link rel="icon" href="logo.png" type="image/png">
+    <title>Panel Administrativo ERP | El Viejito John</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -91,6 +90,9 @@
             <a href="#" @click.prevent="currentTab = 'cambaceo'" :class="currentTab === 'cambaceo' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">groups</span> <span class="font-medium">Cambaceo</span>
             </a>
+            <a href="#" @click.prevent="currentTab = 'mayoristas'" :class="currentTab === 'mayoristas' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">storefront</span> <span class="font-medium">Directorio Mayoristas</span>
+            </a>
             <a href="#" @click.prevent="currentTab = 'auditoria'" :class="currentTab === 'auditoria' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">history</span> <span class="font-medium">Auditoría</span>
             </a>
@@ -128,7 +130,7 @@
 
         <!-- MOBILE MENU -->
         <div x-show="mobileMenuOpen" class="md:hidden bg-primary text-white p-4 space-y-2" @click.away="mobileMenuOpen = false">
-            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'auditoria',l:'Auditoría',i:'history'}]">
+            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'mayoristas',l:'Mayoristas',i:'storefront'},{k:'auditoria',l:'Auditoría',i:'history'}]">
                 <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
                     <span class="material-symbols-outlined" x-text="item.i"></span> <span x-text="item.l"></span>
                 </a>
@@ -329,55 +331,44 @@
                     </form>
                 </div>
 
-                <!-- Tabla Insumos -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
-                                <th class="px-4 py-3 font-medium">Insumo</th>
-                                <th class="px-4 py-3 font-medium">Tipo</th>
-                                <th class="px-4 py-3 font-medium">Stock</th>
-                                <th class="px-4 py-3 font-medium">Costo Unitario</th>
-                                <th class="px-4 py-3 font-medium">Proveedor</th>
-                                <th class="px-4 py-3 font-medium text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-gray-100">
-                            <template x-for="(item, index) in filteredInventory" :key="item.id">
-                                <tr class="hover:bg-gray-50" :class="item.qty <= 0 ? 'bg-red-50' : ''">
-                                    <td class="px-4 py-3">
-                                        <div class="font-bold text-gray-800" x-text="item.name"></div>
-                                        <div x-show="item.tipo === 'etiqueta' && item.rendimiento" class="text-xs text-amber-600 font-medium">
-                                            <span x-text="item.rendimiento"></span> etiquetas/plantilla
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="unit-badge" x-text="getTipoLabel(item.tipo)"></span>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span x-text="formatNumber(item.qty)" :class="item.qty <= 0 ? 'text-red-600 font-bold' : ''"></span>
-                                        <span x-text="item.unit" class="text-gray-500 text-xs"></span>
-                                        <span x-show="item.qty <= 0" class="ml-1 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">AGOTADO</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-green-600 font-medium text-sm">
-                                        $<span x-text="formatMoney(getUnitCost(item))"></span>
-                                        <span class="text-gray-400 text-xs">/<span x-text="item.unit"></span></span>
-                                    </td>
-                                    <td class="px-4 py-3 text-gray-500 text-sm" x-text="item.proveedor || '-'"></td>
-                                    <td class="px-4 py-3 text-right">
-                                        <div class="flex justify-end gap-1">
-                                            <button @click="editInsumo(item)" title="Editar" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-1.5 rounded">edit</button>
-                                            <button @click="restockInsumo(item)" title="Reabastecer" class="text-blue-600 hover:text-blue-800 material-symbols-outlined text-sm bg-blue-50 p-1.5 rounded">add_shopping_cart</button>
-                                            <button @click="deleteInsumo(item.id)" title="Borrar" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm bg-red-50 p-1.5 rounded">delete</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                            <tr x-show="filteredInventory.length === 0">
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-400">No se encontraron insumos.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Cards Insumos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="item in filteredInventory" :key="item.id">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col" :class="item.qty <= 0 ? 'border-red-200 bg-red-50/30' : ''">
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <div>
+                                    <h4 class="font-bold text-gray-800" x-text="item.name"></h4>
+                                    <div x-show="item.tipo === 'etiqueta' && item.rendimiento" class="text-xs text-amber-600 font-medium">
+                                        <span x-text="item.rendimiento"></span> etiquetas/plantilla
+                                    </div>
+                                </div>
+                                <span class="unit-badge flex-shrink-0" x-text="getTipoLabel(item.tipo)"></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                                <div class="bg-gray-50 rounded-xl p-3">
+                                    <p class="text-xs text-gray-500">Stock</p>
+                                    <p class="font-bold text-gray-800" :class="item.qty <= 0 ? 'text-red-600' : ''">
+                                        <span x-text="formatNumber(item.qty)"></span> <span x-text="item.unit" class="text-xs text-gray-400"></span>
+                                    </p>
+                                    <span x-show="item.qty <= 0" class="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">AGOTADO</span>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-3">
+                                    <p class="text-xs text-gray-500">Costo Unitario</p>
+                                    <p class="font-bold text-green-700">$<span x-text="formatMoney(getUnitCost(item))"></span></p>
+                                    <p class="text-xs text-gray-400">/<span x-text="item.unit"></span></p>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 mb-4">
+                                <span class="font-semibold">Proveedor:</span> <span x-text="item.proveedor || '-'"></span>
+                            </div>
+                            <div class="flex justify-end gap-2 mt-auto">
+                                <button @click="editInsumo(item)" title="Editar" class="text-gray-500 hover:text-gray-800 material-symbols-outlined text-sm bg-gray-100 p-2 rounded-lg hover:bg-gray-200 transition-colors">edit</button>
+                                <button @click="restockInsumo(item)" title="Reabastecer" class="text-blue-600 hover:text-blue-800 material-symbols-outlined text-sm bg-blue-50 p-2 rounded-lg hover:bg-blue-100 transition-colors">add_shopping_cart</button>
+                                <button @click="deleteInsumo(item.id)" title="Borrar" class="text-red-500 hover:text-red-700 material-symbols-outlined text-sm bg-red-50 p-2 rounded-lg hover:bg-red-100 transition-colors">delete</button>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="filteredInventory.length === 0" class="col-span-full text-center text-gray-400 py-8">No se encontraron insumos.</div>
                 </div>
             </div>
 
@@ -795,10 +786,10 @@
                                 </template>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Código / Barras</label>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Buscar por Código de Barras</label>
                             <div class="flex gap-2">
-                                <input type="text" x-model="newSale.barcode" placeholder="Escanea o escribe" class="w-full rounded-lg border-gray-300 text-sm">
+                                <input type="text" x-model="barcodeSearch" placeholder="Escanea o escribe el código..." @input="onBarcodeSearchInput()" class="w-full rounded-lg border-gray-300 text-sm font-mono">
                                 <button type="button" @click="startBarcodeScanner()" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm font-bold">📷</button>
                             </div>
                         </div>
@@ -811,6 +802,17 @@
                                 <option value="distribuidores">Distribuidores</option>
                                 <option value="cambaceo">Cambaceo</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
+                            <select x-model="newSale.paymentMethod" class="w-full rounded-lg border-gray-300 text-sm">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                            </select>
+                        </div>
+                        <div x-show="newSale.paymentMethod === 'tarjeta'">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Últimos 4 dígitos / Folio Terminal</label>
+                            <input type="text" x-model="newSale.cardReference" placeholder="Ej. 1234 o folio 7890" class="w-full rounded-lg border-gray-300 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1">Cliente / Distribuidor / Vendedor</label>
@@ -856,6 +858,8 @@
                                 <th class="px-4 py-3 font-medium">Producto</th>
                                 <th class="px-4 py-3 font-medium">Cant.</th>
                                 <th class="px-4 py-3 font-medium">Tipo</th>
+                                <th class="px-4 py-3 font-medium">Pago</th>
+                                <th class="px-4 py-3 font-medium">Referencia</th>
                                 <th class="px-4 py-3 font-medium text-right">Ingreso</th>
                             </tr>
                         </thead>
@@ -868,6 +872,10 @@
                                     <td class="px-4 py-3">
                                         <span x-text="getPriceTierLabel(sale.priceTier || sale.type)" :class="(sale.priceTier || sale.type) === 'publico' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'" class="px-2 py-0.5 rounded text-xs font-bold"></span>
                                     </td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-0.5 rounded text-xs font-bold" :class="sale.paymentMethod === 'tarjeta' ? 'bg-indigo-100 text-indigo-700' : 'bg-green-100 text-green-700'" x-text="sale.paymentMethod === 'tarjeta' ? 'Tarjeta' : 'Efectivo'"></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-gray-500" x-text="sale.cardReference || '-'"></td>
                                     <td class="px-4 py-3 text-right font-bold text-green-700">$<span x-text="formatMoney(sale.revenue)"></span></td>
                                 </tr>
                             </template>
@@ -1064,6 +1072,106 @@
                 </div>
             </div>
 
+            <!-- ===== DIRECTORIO MAYORISTAS ===== -->
+            <div x-show="currentTab === 'mayoristas'" x-transition>
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold">Directorio Mayoristas</h3>
+                        <p class="text-sm text-gray-500">Registra clientes mayoristas y asígnales una clave única para acceder a precios especiales.</p>
+                    </div>
+                    <button @click="openMayoristaForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nuevo Mayorista</button>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Mayoristas Activos</p>
+                        <p class="text-2xl font-black text-gray-800 mt-2" x-text="mayoristasList.filter(m => m.active !== false).length"></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Tipos de Tarifa</p>
+                        <p class="text-2xl font-black text-gray-800 mt-2">4</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Acceso WhatsApp</p>
+                        <p class="text-sm font-bold text-gray-800 mt-2">8113160143</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                            <h4 class="font-bold text-gray-700" x-text="editingMayoristaId ? 'Editar Mayorista' : 'Registrar Mayorista'"></h4>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Nombre del Cliente / Empresa</label>
+                                <input type="text" x-model="mayoristaForm.name" placeholder="Ej. Farmacia San Juan" class="w-full rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Teléfono</label>
+                                    <input type="text" x-model="mayoristaForm.phone" placeholder="8110000000" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Correo</label>
+                                    <input type="email" x-model="mayoristaForm.email" placeholder="correo@ejemplo.com" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Tipo de Tarifa</label>
+                                <select x-model="mayoristaForm.type" class="w-full rounded-lg border-gray-300 text-sm">
+                                    <option value="mayoreo">Mayoreo</option>
+                                    <option value="medioMayoreo">Medio Mayoreo</option>
+                                    <option value="distribuidor">Distribuidor</option>
+                                    <option value="cambaceo">Cambaceo</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Clave de Acceso Única</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">key</span>
+                                    <input type="text" x-model="mayoristaForm.key" placeholder="Ej. CLAVE123" class="w-full pl-9 rounded-lg border-gray-300 text-sm font-mono">
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">El cliente usará esta clave para ver sus precios especiales en el catálogo.</p>
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button type="button" @click="resetMayoristaForm()" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg text-sm">Cancelar</button>
+                                <button type="button" @click="saveMayorista()" class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm" x-text="editingMayoristaId ? 'Guardar Cambios' : 'Registrar Mayorista'"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                            <h4 class="font-bold text-gray-700">Mayoristas Registrados</h4>
+                            <span class="text-xs text-gray-400" x-text="mayoristasList.length + ' registros'"></span>
+                        </div>
+                        <div class="max-h-[500px] overflow-y-auto">
+                            <template x-for="m in mayoristasList" :key="m.id">
+                                <div class="p-4 border-b border-gray-100 flex flex-col gap-2">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="font-bold text-gray-800" x-text="m.name"></p>
+                                            <p class="text-xs text-gray-500" x-text="m.phone || m.email || 'Sin contacto'"></p>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button @click="openMayoristaForm(m)" class="text-sm text-primary font-semibold">Editar</button>
+                                            <button @click="deleteMayorista(m.id)" class="text-sm text-red-500 font-semibold">Borrar</button>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                                        <span class="px-2 py-1 rounded-full font-bold" :class="m.type === 'mayoreo' ? 'bg-blue-100 text-blue-700' : (m.type === 'medioMayoreo' ? 'bg-green-100 text-green-700' : (m.type === 'distribuidor' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'))" x-text="m.type"></span>
+                                        <span class="text-gray-500">Clave: <span class="font-mono font-bold text-gray-700" x-text="m.key"></span></span>
+                                        <span class="px-2 py-1 rounded-full text-xs font-bold" :class="m.active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" x-text="m.active !== false ? 'Activo' : 'Inactivo'"></span>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="mayoristasList.length === 0" class="text-center text-gray-400 py-8">No hay mayoristas registrados.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ===== AUDITORÍA ===== -->
             <div x-show="currentTab === 'auditoria'" x-transition>
                 <div class="flex justify-between items-center mb-6">
@@ -1158,7 +1266,8 @@
 
             // Ventas
             sales: [],
-            newSale: { productId: '', qty: 1, priceTier: 'publico', barcode: '', generateReceipt: false, entityId: '' },
+            newSale: { productId: '', qty: 1, priceTier: 'publico', barcode: '', generateReceipt: false, entityId: '', paymentMethod: 'efectivo', cardReference: '' },
+            barcodeSearch: '',
             isScanningBarcode: false,
             scannerStream: null,
             barcodeDetector: null,
@@ -1167,6 +1276,11 @@
             cambaceoEntities: [],
             cambaceoForm: { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, notes: '' },
             cambaceoPeriod: 'week',
+
+            // Mayoristas
+            mayoristasList: JSON.parse(localStorage.getItem('vj_mayoristas') || '[]'),
+            editingMayoristaId: null,
+            mayoristaForm: { id: '', name: '', phone: '', email: '', type: 'mayoreo', key: '', active: true },
 
             // Auditoría
             auditLogs: [],
@@ -1348,6 +1462,22 @@
                 this.toast('No se encontró un producto con ese código');
                 return null;
             },
+            onBarcodeSearchInput() {
+                const code = (this.barcodeSearch || '').toString().trim();
+                if (!code) return;
+                if (code.length < 3) return;
+                const match = this.products.find(prod => {
+                    const normalized = this.normalizeProduct(prod);
+                    return String(normalized.barcode || '').toLowerCase() === code.toLowerCase()
+                        || String(prod.id || '').toLowerCase() === code.toLowerCase()
+                        || String(prod.name || '').toLowerCase().includes(code.toLowerCase());
+                });
+                if (match) {
+                    this.newSale.productId = match.id;
+                    this.newSale.barcode = match.barcode || code;
+                    this.toast(`Producto encontrado: ${match.name}`);
+                }
+            },
             async startBarcodeScanner() {
                 if (!('BarcodeDetector' in window)) {
                     this.toast('Tu navegador no soporta escaneo por cámara');
@@ -1506,6 +1636,58 @@
                 });
             },
             toast(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => this.showToast = false, 3000); },
+
+            // ===== MAYORISTAS =====
+            openMayoristaForm(m = null) {
+                if (m) {
+                    this.editingMayoristaId = m.id;
+                    this.mayoristaForm = { ...m };
+                } else {
+                    this.resetMayoristaForm();
+                }
+            },
+            resetMayoristaForm() {
+                this.editingMayoristaId = null;
+                this.mayoristaForm = { id: '', name: '', phone: '', email: '', type: 'mayoreo', key: '', active: true };
+            },
+            saveMayorista() {
+                if (!this.mayoristaForm.name || !this.mayoristaForm.key) {
+                    this.toast('Nombre y clave son obligatorios');
+                    return;
+                }
+                const payload = {
+                    ...this.mayoristaForm,
+                    id: this.mayoristaForm.id || 'may_' + Date.now(),
+                    active: this.mayoristaForm.active !== false
+                };
+                const existingIndex = this.mayoristasList.findIndex(m => m.id === payload.id);
+                if (existingIndex >= 0) {
+                    this.mayoristasList[existingIndex] = payload;
+                } else {
+                    this.mayoristasList.unshift(payload);
+                }
+                this.saveMayoristasToStorage();
+                this.resetMayoristaForm();
+                this.toast('Mayorista guardado');
+                this.logAudit('precio', `Mayorista ${existingIndex >= 0 ? 'editado' : 'registrado'}: ${payload.name} (${payload.type})`);
+            },
+            deleteMayorista(id) {
+                if (!confirm('¿Eliminar este mayorista?')) return;
+                this.mayoristasList = this.mayoristasList.filter(m => m.id !== id);
+                this.saveMayoristasToStorage();
+                this.toast('Mayorista eliminado');
+            },
+            saveMayoristasToStorage() {
+                localStorage.setItem('vj_mayoristas', JSON.stringify(this.mayoristasList));
+                if (this.db) {
+                    const batch = this.db.batch();
+                    this.mayoristasList.forEach(m => {
+                        const ref = this.db.collection('vj_mayoristas').doc(m.id);
+                        batch.set(ref, m, { merge: true });
+                    });
+                    batch.commit().catch(() => {});
+                }
+            },
 
             // ===== UNIT COST =====
             getUnitCost(item) {
@@ -1859,6 +2041,8 @@
                     barcode: this.newSale.barcode || prod.barcode || '',
                     entityId: entity ? entity.id : '', entityName: entity ? entity.name : '', entityType: entity ? entity.type : '',
                     commissionAmount, depositAmount, salaryBase: entity ? Number(entity.salary || 0) : 0,
+                    paymentMethod: this.newSale.paymentMethod || 'efectivo',
+                    cardReference: this.newSale.cardReference || '',
                     date: new Date(), createdAt: new Date()
                 };
                 if (this.db) {
@@ -1871,7 +2055,8 @@
                 }
                 this.sales.unshift(saleData);
                 this.saveToLocalStorage();
-                this.newSale = { productId: '', qty: 1, priceTier: 'publico', barcode: '', generateReceipt: false, entityId: '' };
+                this.newSale = { productId: '', qty: 1, priceTier: 'publico', barcode: '', generateReceipt: false, entityId: '', paymentMethod: 'efectivo', cardReference: '' };
+                this.barcodeSearch = '';
                 this.logAudit('venta', `Venta registrada: ${prod.name} x${qty} (${this.getPriceTierLabel(tier)}) - $${this.formatMoney(revenue)})`);
                 if (this.newSale.generateReceipt) {
                     this.printReceipt(saleData, prod);

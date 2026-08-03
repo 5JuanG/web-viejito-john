@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Precios | El Viejito John</title>
-    <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -106,7 +105,7 @@
             </div>
         </div>
 
-        <!-- MENUDEO TABLE -->
+        <!-- MENUDEO CARDS -->
         <div x-show="activeTab === 'menudeo'" class="max-w-7xl mx-auto px-6 py-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
@@ -117,94 +116,90 @@
                         <span class="material-symbols-outlined text-sm">save</span> Guardar Cambios
                     </button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-                                <th class="px-6 py-3 font-medium">Producto</th>
-                                <th class="px-6 py-3 font-medium">Precio Normal ($)</th>
-                                <th class="px-6 py-3 font-medium">¿Oferta Activa?</th>
-                                <th class="px-6 py-3 font-medium">Precio Oferta ($)</th>
-                                <th class="px-6 py-3 font-medium">Público ($)</th>
-                                <th class="px-6 py-3 font-medium">Mayoreo ($)</th>
-                                <th class="px-6 py-3 font-medium">Medio Mayoreo ($)</th>
-                                <th class="px-6 py-3 font-medium">Distribuidores ($)</th>
-                                <th class="px-6 py-3 font-medium">Cambaceo ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-gray-100">
-                            <template x-for="(prod, idx) in preciosMenudeo" :key="idx">
-                                <tr class="hover:bg-gray-50/80 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-gray-800" x-text="prod.nombre"></div>
-                                        <div class="text-xs text-gray-400" x-text="prod.descripcion"></div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.precio"
-                                                class="pl-7 w-32 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="prod.ofertaActiva" class="sr-only peer">
-                                            <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
-                                        </label>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta"
-                                                :disabled="!prod.ofertaActiva"
-                                                :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'"
-                                                class="pl-7 w-32 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.publico"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.mayoreo"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.medioMayoreo"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.distribuidores"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.cambaceo"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="(prod, idx) in preciosMenudeo" :key="idx">
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="font-bold text-gray-800 text-sm" x-text="prod.nombre"></div>
+                                    <div class="text-xs text-gray-400" x-text="prod.descripcion"></div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500">Código Barras</label>
+                                    <div class="flex gap-1">
+                                        <input type="text" x-model="prod.barcode" placeholder="Escanear o escribir" class="flex-1 px-2 py-1.5 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        <button @click="scanBarcodeAdmin(prod)" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors" title="Escanear código de barras">
+                                            <span class="material-symbols-outlined text-sm">qr_code_scanner</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Precio Normal ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.precio" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="prod.ofertaActiva" class="sr-only peer">
+                                    <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
+                                </label>
+                                <span class="text-xs text-gray-500">¿Oferta?</span>
+                                <div class="relative flex-1">
+                                    <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                    <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta" :disabled="!prod.ofertaActiva" :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500">Público ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.publico" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Mayoreo ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.mayoreo" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500">Medio Mayoreo ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.medioMayoreo" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Distribuidores ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.distribuidores" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Cambaceo ($)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                    <input type="number" step="0.01" min="0" x-model.number="prod.cambaceo" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
 
-        <!-- MAYOREO TABLE -->
+        <!-- MAYOREO CARDS -->
         <div x-show="activeTab === 'mayoreo'" class="max-w-7xl mx-auto px-6 py-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
@@ -215,89 +210,85 @@
                         <span class="material-symbols-outlined text-sm">save</span> Guardar Cambios
                     </button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-                                <th class="px-6 py-3 font-medium">Producto</th>
-                                <th class="px-6 py-3 font-medium">Precio Normal ($)</th>
-                                <th class="px-6 py-3 font-medium">¿Oferta Activa?</th>
-                                <th class="px-6 py-3 font-medium">Precio Oferta ($)</th>
-                                <th class="px-6 py-3 font-medium">Público ($)</th>
-                                <th class="px-6 py-3 font-medium">Mayoreo ($)</th>
-                                <th class="px-6 py-3 font-medium">Medio Mayoreo ($)</th>
-                                <th class="px-6 py-3 font-medium">Distribuidores ($)</th>
-                                <th class="px-6 py-3 font-medium">Cambaceo ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-gray-100">
-                            <template x-for="(prod, idx) in preciosMayoreo" :key="idx">
-                                <tr class="hover:bg-gray-50/80 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-gray-800" x-text="prod.nombre"></div>
-                                        <div class="text-xs text-gray-400" x-text="prod.descripcion"></div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.precio"
-                                                class="pl-7 w-36 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" x-model="prod.ofertaActiva" class="sr-only peer">
-                                            <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
-                                        </label>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta"
-                                                :disabled="!prod.ofertaActiva"
-                                                :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'"
-                                                class="pl-7 w-36 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.publico"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.mayoreo"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.medioMayoreo"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.distribuidores"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                            <input type="number" step="0.01" min="0" x-model.number="prod.cambaceo"
-                                                class="pl-7 w-28 rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="(prod, idx) in preciosMayoreo" :key="idx">
+                        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="font-bold text-gray-800 text-sm" x-text="prod.nombre"></div>
+                                    <div class="text-xs text-gray-400" x-text="prod.descripcion"></div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500">Código Barras</label>
+                                    <div class="flex gap-1">
+                                        <input type="text" x-model="prod.barcode" placeholder="Escanear o escribir" class="flex-1 px-2 py-1.5 rounded-lg border-gray-300 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        <button @click="scanBarcodeAdmin(prod)" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors" title="Escanear código de barras">
+                                            <span class="material-symbols-outlined text-sm">qr_code_scanner</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Precio Normal ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.precio" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" x-model="prod.ofertaActiva" class="sr-only peer">
+                                    <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent"></div>
+                                </label>
+                                <span class="text-xs text-gray-500">¿Oferta?</span>
+                                <div class="relative flex-1">
+                                    <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                    <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta" :disabled="!prod.ofertaActiva" :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500">Público ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.publico" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Mayoreo ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.mayoreo" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-gray-500">Medio Mayoreo ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.medioMayoreo" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Distribuidores ($)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                        <input type="number" step="0.01" min="0" x-model.number="prod.distribuidores" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Cambaceo ($)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
+                                    <input type="number" step="0.01" min="0" x-model.number="prod.cambaceo" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -446,38 +437,38 @@
 
                 // Data - Menudeo
                 preciosMenudeo: JSON.parse(localStorage.getItem('vj_precios_menudeo')) || [
-                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 24.99, ofertaActiva: false, precioOferta: 24.99 },
-                    { id: 'gel_varispa', nombre: 'Gel Vari-Spa (700 grs)', descripcion: 'Masaje terapéutico', precio: 350, ofertaActiva: false, precioOferta: 350 },
-                    { id: 'balsamo_viejito', nombre: 'Bálsamo del Viejito John', descripcion: 'Ungüento tradicional', precio: 95, ofertaActiva: false, precioOferta: 95 },
-                    { id: 'spray_viejito', nombre: 'Spray del Viejito John', descripcion: 'Alta concentración', precio: 120, ofertaActiva: false, precioOferta: 120 },
-                    { id: 'unguento_tubo', nombre: 'Ungüento del Viejito John (Tubo)', descripcion: 'Presentación tubo', precio: 75, ofertaActiva: false, precioOferta: 75 },
-                    { id: 'keratex_pomada', nombre: 'Keratex Pomada (8g)', descripcion: 'Cuidado pies y piel', precio: 60, ofertaActiva: false, precioOferta: 60 },
-                    { id: 'keratex_tubo', nombre: 'Tubo Keratex Pomada (Nueva Presentación)', descripcion: 'Aplicación en tubo', precio: 80, ofertaActiva: false, precioOferta: 80 },
-                    { id: 'keratex_gotas', nombre: 'Solución Gotas Keratex', descripcion: 'Gotas para uñas y piel', precio: 60, ofertaActiva: false, precioOferta: 60 },
-                    { id: 'fungiderm', nombre: 'Fungiderm Keratex Pomada (10g)', descripcion: 'Óxido de Zinc y Azufre', precio: 60, ofertaActiva: false, precioOferta: 60 },
-                    { id: 'talco_keratex', nombre: 'Talco Keratex (125g)', descripcion: 'Cuidado diario pies', precio: 95, ofertaActiva: false, precioOferta: 95 },
-                    { id: 'spray_keratex', nombre: 'Spray Keratex (60ml)', descripcion: 'Spray refrescante pies', precio: 95, ofertaActiva: false, precioOferta: 95 },
-                    { id: 'sulfato_cobre', nombre: 'Sulfato de Cobre (5 sobres)', descripcion: 'Limpieza profunda', precio: 35, ofertaActiva: false, precioOferta: 35 },
-                    { id: 'inhalador', nombre: 'Inhalador Viejito John', descripcion: 'Aroma eucalipto y mentol', precio: 45, ofertaActiva: false, precioOferta: 45 },
-                    { id: 'unguento_pulmonar', nombre: 'Ungüento Pulmonar (en Tubo)', descripcion: 'Bálsamo aromático', precio: 80, ofertaActiva: false, precioOferta: 80 },
-                    { id: 'crema_johny_boy', nombre: 'Crema Johny Boy (8g)', descripcion: 'Cuidado facial', precio: 60, ofertaActiva: false, precioOferta: 60 },
+                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 24.99, ofertaActiva: false, precioOferta: 24.99, publico: 24.99, mayoreo: 24.99, medioMayoreo: 24.99, distribuidores: 24.99, cambaceo: 24.99, barcode: '' },
+                    { id: 'gel_varispa', nombre: 'Gel Vari-Spa (700 grs)', descripcion: 'Masaje terapéutico', precio: 350, ofertaActiva: false, precioOferta: 350, publico: 350, mayoreo: 350, medioMayoreo: 350, distribuidores: 350, cambaceo: 350, barcode: '' },
+                    { id: 'balsamo_viejito', nombre: 'Bálsamo del Viejito John', descripcion: 'Ungüento tradicional', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
+                    { id: 'spray_viejito', nombre: 'Spray del Viejito John', descripcion: 'Alta concentración', precio: 120, ofertaActiva: false, precioOferta: 120, publico: 120, mayoreo: 120, medioMayoreo: 120, distribuidores: 120, cambaceo: 120, barcode: '' },
+                    { id: 'unguento_tubo', nombre: 'Ungüento del Viejito John (Tubo)', descripcion: 'Presentación tubo', precio: 75, ofertaActiva: false, precioOferta: 75, publico: 75, mayoreo: 75, medioMayoreo: 75, distribuidores: 75, cambaceo: 75, barcode: '' },
+                    { id: 'keratex_pomada', nombre: 'Keratex Pomada (8g)', descripcion: 'Cuidado pies y piel', precio: 60, ofertaActiva: false, precioOferta: 60, publico: 60, mayoreo: 60, medioMayoreo: 60, distribuidores: 60, cambaceo: 60, barcode: '' },
+                    { id: 'keratex_tubo', nombre: 'Tubo Keratex Pomada (Nueva Presentación)', descripcion: 'Aplicación en tubo', precio: 80, ofertaActiva: false, precioOferta: 80, publico: 80, mayoreo: 80, medioMayoreo: 80, distribuidores: 80, cambaceo: 80, barcode: '' },
+                    { id: 'keratex_gotas', nombre: 'Solución Gotas Keratex', descripcion: 'Gotas para uñas y piel', precio: 60, ofertaActiva: false, precioOferta: 60, publico: 60, mayoreo: 60, medioMayoreo: 60, distribuidores: 60, cambaceo: 60, barcode: '' },
+                    { id: 'fungiderm', nombre: 'Fungiderm Keratex Pomada (10g)', descripcion: 'Óxido de Zinc y Azufre', precio: 60, ofertaActiva: false, precioOferta: 60, publico: 60, mayoreo: 60, medioMayoreo: 60, distribuidores: 60, cambaceo: 60, barcode: '' },
+                    { id: 'talco_keratex', nombre: 'Talco Keratex (125g)', descripcion: 'Cuidado diario pies', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
+                    { id: 'spray_keratex', nombre: 'Spray Keratex (60ml)', descripcion: 'Spray refrescante pies', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
+                    { id: 'sulfato_cobre', nombre: 'Sulfato de Cobre (5 sobres)', descripcion: 'Limpieza profunda', precio: 35, ofertaActiva: false, precioOferta: 35, publico: 35, mayoreo: 35, medioMayoreo: 35, distribuidores: 35, cambaceo: 35, barcode: '' },
+                    { id: 'inhalador', nombre: 'Inhalador Viejito John', descripcion: 'Aroma eucalipto y mentol', precio: 45, ofertaActiva: false, precioOferta: 45, publico: 45, mayoreo: 45, medioMayoreo: 45, distribuidores: 45, cambaceo: 45, barcode: '' },
+                    { id: 'unguento_pulmonar', nombre: 'Ungüento Pulmonar (en Tubo)', descripcion: 'Bálsamo aromático', precio: 80, ofertaActiva: false, precioOferta: 80, publico: 80, mayoreo: 80, medioMayoreo: 80, distribuidores: 80, cambaceo: 80, barcode: '' },
+                    { id: 'crema_johny_boy', nombre: 'Crema Johny Boy (8g)', descripcion: 'Cuidado facial', precio: 60, ofertaActiva: false, precioOferta: 60, publico: 60, mayoreo: 60, medioMayoreo: 60, distribuidores: 60, cambaceo: 60, barcode: '' },
                 ],
 
                 // Data - Mayoreo
                 preciosMayoreo: JSON.parse(localStorage.getItem('vj_precios_mayoreo')) || [
-                    { id: 'keratex_pomada_200', nombre: 'Keratex Pomada (Caja de 200 pzas)', descripcion: '200 pzas 8g c/u', precio: 12000, ofertaActiva: true, precioOferta: 8000 },
-                    { id: 'keratex_gotas_100', nombre: 'Solución Gotas Keratex (Caja de 100 pzas)', descripcion: '100 pzas gotero', precio: 6000, ofertaActiva: true, precioOferta: 4000 },
-                    { id: 'gel_balsamico_12', nombre: 'Gel Balsámico 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 11400, ofertaActiva: true, precioOferta: 7200 },
-                    { id: 'spray_viejito_24', nombre: 'Spray Viejito John (Caja de 24 pzas)', descripcion: '24 atomizadores', precio: 2880, ofertaActiva: true, precioOferta: 2160 },
-                    { id: 'balsamo_viejito_24', nombre: 'Bálsamo Viejito John (Caja de 24 pzas)', descripcion: '24 tarros bálsamo', precio: 2280, ofertaActiva: true, precioOferta: 1680 },
-                    { id: 'crema_johny_boy_50', nombre: 'Crema Johny Boy (Caja de 50 pzas)', descripcion: '50 cremas 8g', precio: 3000, ofertaActiva: true, precioOferta: 2000 },
-                    { id: 'gel_varispa_12', nombre: 'Gel Vari-Spa 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 4200, ofertaActiva: true, precioOferta: 3000 },
-                    { id: 'keratex_tubo_50', nombre: 'Tubo Keratex Pomada (Caja de 50 pzas)', descripcion: '50 tubos', precio: 4000, ofertaActiva: true, precioOferta: 2800 },
-                    { id: 'inhalador_viejito_50', nombre: 'Inhalador Viejito John (Caja de 50 pzas)', descripcion: '50 inhaladores', precio: 2250, ofertaActiva: true, precioOferta: 1600 },
-                    { id: 'unguento_viejito_50', nombre: 'Ungüento Viejito John Tubo (Caja de 50 pzas)', descripcion: '50 tubos', precio: 3750, ofertaActiva: true, precioOferta: 2600 },
-                    { id: 'unguento_pulmonar_50', nombre: 'Ungüento Pulmonar Tubo (Caja de 50 pzas)', descripcion: '50 tubos', precio: 4000, ofertaActiva: true, precioOferta: 2800 },
-                    { id: 'talco_keratex_24', nombre: 'Talco Keratex 125g (Caja de 24 pzas)', descripcion: '24 envases', precio: 2280, ofertaActiva: true, precioOferta: 1680 },
-                    { id: 'fungiderm_keratex_50', nombre: 'Fungiderm Keratex (Caja de 50 pzas)', descripcion: '50 pomadas 10g', precio: 3000, ofertaActiva: true, precioOferta: 2200 },
+                    { id: 'keratex_pomada_200', nombre: 'Keratex Pomada (Caja de 200 pzas)', descripcion: '200 pzas 8g c/u', precio: 12000, ofertaActiva: true, precioOferta: 8000, publico: 12000, mayoreo: 12000, medioMayoreo: 12000, distribuidores: 12000, cambaceo: 12000, barcode: '' },
+                    { id: 'keratex_gotas_100', nombre: 'Solución Gotas Keratex (Caja de 100 pzas)', descripcion: '100 pzas gotero', precio: 6000, ofertaActiva: true, precioOferta: 4000, publico: 6000, mayoreo: 6000, medioMayoreo: 6000, distribuidores: 6000, cambaceo: 6000, barcode: '' },
+                    { id: 'gel_balsamico_12', nombre: 'Gel Balsámico 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 11400, ofertaActiva: true, precioOferta: 7200, publico: 11400, mayoreo: 11400, medioMayoreo: 11400, distribuidores: 11400, cambaceo: 11400, barcode: '' },
+                    { id: 'spray_viejito_24', nombre: 'Spray Viejito John (Caja de 24 pzas)', descripcion: '24 atomizadores', precio: 2880, ofertaActiva: true, precioOferta: 2160, publico: 2880, mayoreo: 2880, medioMayoreo: 2880, distribuidores: 2880, cambaceo: 2880, barcode: '' },
+                    { id: 'balsamo_viejito_24', nombre: 'Bálsamo Viejito John (Caja de 24 pzas)', descripcion: '24 tarros bálsamo', precio: 2280, ofertaActiva: true, precioOferta: 1680, publico: 2280, mayoreo: 2280, medioMayoreo: 2280, distribuidores: 2280, cambaceo: 2280, barcode: '' },
+                    { id: 'crema_johny_boy_50', nombre: 'Crema Johny Boy (Caja de 50 pzas)', descripcion: '50 cremas 8g', precio: 3000, ofertaActiva: true, precioOferta: 2000, publico: 3000, mayoreo: 3000, medioMayoreo: 3000, distribuidores: 3000, cambaceo: 3000, barcode: '' },
+                    { id: 'gel_varispa_12', nombre: 'Gel Vari-Spa 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 4200, ofertaActiva: true, precioOferta: 3000, publico: 4200, mayoreo: 4200, medioMayoreo: 4200, distribuidores: 4200, cambaceo: 4200, barcode: '' },
+                    { id: 'keratex_tubo_50', nombre: 'Tubo Keratex Pomada (Caja de 50 pzas)', descripcion: '50 tubos', precio: 4000, ofertaActiva: true, precioOferta: 2800, publico: 4000, mayoreo: 4000, medioMayoreo: 4000, distribuidores: 4000, cambaceo: 4000, barcode: '' },
+                    { id: 'inhalador_viejito_50', nombre: 'Inhalador Viejito John (Caja de 50 pzas)', descripcion: '50 inhaladores', precio: 2250, ofertaActiva: true, precioOferta: 1600, publico: 2250, mayoreo: 2250, medioMayoreo: 2250, distribuidores: 2250, cambaceo: 2250, barcode: '' },
+                    { id: 'unguento_viejito_50', nombre: 'Ungüento Viejito John Tubo (Caja de 50 pzas)', descripcion: '50 tubos', precio: 3750, ofertaActiva: true, precioOferta: 2600, publico: 3750, mayoreo: 3750, medioMayoreo: 3750, distribuidores: 3750, cambaceo: 3750, barcode: '' },
+                    { id: 'unguento_pulmonar_50', nombre: 'Ungüento Pulmonar Tubo (Caja de 50 pzas)', descripcion: '50 tubos', precio: 4000, ofertaActiva: true, precioOferta: 2800, publico: 4000, mayoreo: 4000, medioMayoreo: 4000, distribuidores: 4000, cambaceo: 4000, barcode: '' },
+                    { id: 'talco_keratex_24', nombre: 'Talco Keratex 125g (Caja de 24 pzas)', descripcion: '24 envases', precio: 2280, ofertaActiva: true, precioOferta: 1680, publico: 2280, mayoreo: 2280, medioMayoreo: 2280, distribuidores: 2280, cambaceo: 2280, barcode: '' },
+                    { id: 'fungiderm_keratex_50', nombre: 'Fungiderm Keratex (Caja de 50 pzas)', descripcion: '50 pomadas 10g', precio: 3000, ofertaActiva: true, precioOferta: 2200, publico: 3000, mayoreo: 3000, medioMayoreo: 3000, distribuidores: 3000, cambaceo: 3000, barcode: '' },
                 ],
 
                 init() {
@@ -539,6 +530,37 @@
                     this.toastMessage = '¡Configuración del cronómetro guardada!';
                     this.showToast = true;
                     setTimeout(() => { this.showToast = false; }, 3000);
+                },
+
+                async scanBarcodeAdmin(prod) {
+                    if (!('BarcodeDetector' in window)) {
+                        alert('Tu navegador no soporta BarcodeDetector. Usa Chrome o Edge.');
+                        return;
+                    }
+                    try {
+                        const barcodeDetector = new BarcodeDetector();
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.setAttribute('playsinline', '');
+                        await video.play();
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = video.videoWidth || 640;
+                        canvas.height = video.videoHeight || 480;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageBitmap = await createImageBitmap(canvas);
+                        const barcodes = await barcodeDetector.detect(imageBitmap);
+                        stream.getTracks().forEach(t => t.stop());
+                        if (barcodes.length > 0) {
+                            prod.barcode = barcodes[0].rawValue;
+                        } else {
+                            alert('No se detectó ningún código de barras. Intenta de nuevo.');
+                        }
+                    } catch (err) {
+                        console.error('Error scanning barcode:', err);
+                        alert('Error al escanear el código de barras: ' + err.message);
+                    }
                 }
             }))
         });
