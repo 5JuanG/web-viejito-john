@@ -345,9 +345,9 @@ function initForm() {
             `• Ciudad: ${ciudad}`,
             `• C.P.: ${cp}`,
             '─────────────────────',
-            '⚠️ Cliente fue enviado a Mercado Pago para completar el pago.',
+            '💳 Pago: por coordinar con el cliente.',
         ];
-        const msg = msgLines.join('%0A');
+        const msg = msgLines.map(encodeURIComponent).join('%0A');
         const waURL = `https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`;
 
         submitBtn.disabled = true;
@@ -356,11 +356,10 @@ function initForm() {
         submitText.textContent = 'Preparando pedido...';
 
         setTimeout(() => {
-            window.open(waURL, '_blank');
-            submitText.textContent = 'Redirigiendo a Mercado Pago...';
-            setTimeout(() => {
-                window.location.href = mercadoPagoLink;
-            }, 1500);
+            submitIcon.classList.remove('animate-spin');
+            submitIcon.textContent = 'check_circle';
+            submitText.textContent = '¡Pedido registrado! Abriendo WhatsApp...';
+            window.location.href = waURL;
         }, 800);
     });
 }

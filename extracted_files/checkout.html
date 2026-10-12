@@ -118,47 +118,13 @@
 </div>
 <h2 class="font-headline-md text-headline-md text-primary">Método de Pago</h2>
 </div>
-<div class="space-y-4">
-<div class="border-2 border-primary bg-surface-container-low p-4 rounded-xl cursor-pointer transition-all flex flex-col gap-4 payment-option" data-method="tarjeta">
-<div class="flex justify-between items-center">
-<div class="flex items-center gap-3">
-<input checked class="text-primary focus:ring-primary h-5 w-5" name="payment" type="radio" value="tarjeta"/>
-<span class="font-body-lg font-bold">Tarjeta de Crédito o Débito</span>
-</div>
-<div class="flex gap-2">
-<div class="w-10 h-6 bg-surface-variant rounded flex items-center justify-center text-[10px] font-bold">VISA</div>
-<div class="w-10 h-6 bg-surface-variant rounded flex items-center justify-center text-[10px] font-bold">MC</div>
-<div class="w-10 h-6 bg-surface-variant rounded flex items-center justify-center text-[10px] font-bold">AMEX</div>
+<div class="bg-surface-container-low border border-outline-variant/40 rounded-xl p-5 flex gap-4 items-start">
+<span class="material-symbols-outlined text-primary">chat</span>
+<div>
+<p class="font-body-lg font-bold">Pago coordinado por WhatsApp</p>
+<p class="text-on-surface-variant font-label-sm mt-1">Al confirmar, tu pedido queda registrado y se abre WhatsApp con el resumen. Nos pondremos en contacto contigo para acordar la forma de pago (transferencia, depósito o link de pago) y el envío. No necesitas capturar datos de tarjeta aquí.</p>
 </div>
 </div>
-<div id="cc-details" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
-<div class="md:col-span-4">
-<input class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="Número de Tarjeta" type="text"/>
-</div>
-<div class="md:col-span-2">
-<input class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="MM/AA" type="text"/>
-</div>
-<div class="md:col-span-2">
-<input class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="CVV" type="text"/>
-</div>
-</div>
-</div>
-<div class="border border-outline-variant p-4 rounded-xl cursor-pointer hover:bg-surface-container-low transition-all flex justify-between items-center payment-option" data-method="paypal">
-<div class="flex items-center gap-3">
-<input class="text-primary focus:ring-primary h-5 w-5" name="payment" type="radio" value="paypal"/>
-<span class="font-body-lg">PayPal</span>
-</div>
-<span class="material-symbols-outlined text-secondary">account_balance_wallet</span>
-</div>
-<div class="border border-outline-variant p-4 rounded-xl cursor-pointer hover:bg-surface-container-low transition-all flex justify-between items-center payment-option" data-method="oxxo">
-<div class="flex items-center gap-3">
-<input class="text-primary focus:ring-primary h-5 w-5" name="payment" type="radio" value="oxxo"/>
-<span class="font-body-lg">Pago en Efectivo (Oxxo Pay)</span>
-</div>
-<span class="font-label-sm bg-balm-red text-white px-2 py-1 rounded">OXXO</span>
-</div>
-</div>
-<p class="text-center text-on-surface-variant font-label-sm mt-4">Al confirmar, serás redirigido a la plataforma segura de <strong>Mercado Pago</strong> para finalizar tu transacción.</p>
 </section>
 </div>
 <div class="lg:col-span-5 space-y-gutter lg:sticky lg:top-28">
@@ -218,8 +184,8 @@
 <span class="font-headline-md text-headline-md" id="co-total"></span>
 </div>
 <button type="submit" id="submit-btn" class="w-full bg-primary text-white py-5 rounded-lg font-bold text-lg hover:bg-primary-container transition-all transform active:scale-[0.98] shadow-md flex items-center justify-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed mt-6">
-<span id="submit-icon" class="material-symbols-outlined">verified_user</span>
-    <span id="submit-text">Completar Compra Segura</span>
+<span id="submit-icon" class="material-symbols-outlined">send</span>
+    <span id="submit-text">Enviar pedido por WhatsApp</span>
 </button>
 <p class="text-center text-on-surface-variant font-label-sm mt-4">Precio incluye todos los impuestos y envío.</p>
 </section>
