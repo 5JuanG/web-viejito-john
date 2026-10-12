@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /checkout
+
+Sitemap: https://web-viejito-john-20260720-01.web.app/sitemap.xml

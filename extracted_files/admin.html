@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Panel Administrativo ERP | El Viejito John</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -54,9 +55,11 @@
         ::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
     </style>
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.25.0/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="admin-auth.js"></script>
 <base target="_blank">
 </head>
 <body class="bg-surface font-sans text-gray-800 antialiased flex h-screen overflow-hidden" x-data="erpSystem()" x-cloak>
@@ -1288,6 +1291,8 @@
 
             // ===== INIT =====
             async init() {
+                // Esperar el inicio de sesión del administrador antes de cargar datos
+                await window.vjAuthReady;
                 // Detectar si Firebase está disponible
                 this.db = null;
                 try {
