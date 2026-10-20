@@ -505,8 +505,8 @@
                 }
             };
 
-            let menudeo = safeParseJSON(localStorage.getItem('vj_precios_menudeo'), []);
-            let mayoreo = safeParseJSON(localStorage.getItem('vj_precios_mayoreo'), []);
+            let menudeo = [];
+            let mayoreo = [];
             let allProducts = [...menudeo, ...mayoreo];
 
             if (window.loadCollection) {

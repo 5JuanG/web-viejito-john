@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Solo la cuenta administradora (la misma de admin-auth.js)
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'viejitojohn@gmail.com';
+    }
+
+    // Pedidos: cualquier visitante puede crear uno desde el checkout,
+    // pero solo el administrador puede leerlos o modificarlos.
+    match /orders/{orderId} {
+      allow create: if request.resource.data.keys().hasAll(['producto', 'nombre', 'telefono', 'direccion'])
+        && request.resource.data.producto is string && request.resource.data.producto.size() < 200
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() < 200
+        && request.resource.data.telefono is string && request.resource.data.telefono.size() < 50
+        && request.resource.data.direccion is string && request.resource.data.direccion.size() < 500;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Precios y cronómetro de oferta: los ve cualquiera (inicio, catálogo, checkout),
+    // pero solo el administrador los cambia.
+    match /preciosMenudeo/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /preciosMayoreo/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /config/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Todo lo demás (inventario, fórmulas, ventas, mayoristas, auditoría, etc.): solo el administrador
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

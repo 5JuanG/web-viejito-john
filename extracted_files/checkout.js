@@ -5,8 +5,7 @@
 // ============================================================
 
 // ---------- CONFIGURACIÓN GLOBAL ----------
-const WHATSAPP_NUMERO = '5218113160143'; // ⚠️ CAMBIA ESTO por tu número real
-const MERCADO_PAGO_LINK_DEFAULT = 'https://mpago.la/1ALUHtu';
+const WHATSAPP_NUMERO = '5218113160143'; // Celular donde llegan los pedidos
 
 // ---------- CATÁLOGO MAESTRO ----------
 // Menudeo — Línea Viejito John
@@ -35,62 +34,62 @@ const CATALOGO_MENUDEO_KERATEX = [
 
 // Mayoreo
 const CATALOGO_MAYOREO = [
-    { id: 'keratex_pomada_200',   nombre: 'Keratex Pomada (Caja de 200 pzas)',              descripcion: 'Caja cerrada con 200 pomadas de 8g c/u',                precioNormal: 12000, ofertaActiva: true, precioOferta: 8000,  textoPromo: 'Mayoreo Especial', imagen: 'keratex_pomada_caja_200_original.webp',    linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'keratex_gotas_100',    nombre: 'Solución Gotas Keratex (Caja de 100 pzas)',      descripcion: 'Caja cerrada con 100 soluciones gotas',                precioNormal: 6000,  ofertaActiva: true, precioOferta: 4000,  textoPromo: 'Mayoreo Especial', imagen: 'keratex_gotas_caja_100_original.webp',     linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'gel_balsamico_12',     nombre: 'Gel Balsámico Viejito John (Caja de 12 pzas)',   descripcion: 'Caja cerrada con 12 tarros grandes de 700g c/u',       precioNormal: 11400, ofertaActiva: true, precioOferta: 7200,  textoPromo: 'Mayoreo Especial', imagen: 'gel_balsamico_original.webp',              linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'spray_viejito_24',     nombre: 'Spray del Viejito John (Caja de 24 pzas)',       descripcion: 'Caja cerrada con 24 atomizadores',                     precioNormal: 2880,  ofertaActiva: true, precioOferta: 2160,  textoPromo: 'Mayoreo Especial', imagen: 'spray_viejito_john_original.webp',       linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'balsamo_viejito_24',   nombre: 'Bálsamo del Viejito John (Caja de 24 pzas)',     descripcion: 'Caja cerrada con 24 tarros de bálsamo corporal',       precioNormal: 2280,  ofertaActiva: true, precioOferta: 1680,  textoPromo: 'Mayoreo Especial', imagen: 'balsamo_viejito_john_original.webp',     linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'crema_johny_boy_50',   nombre: 'Crema Johny Boy (Caja de 50 pzas)',              descripcion: 'Caja cerrada con 50 cremas de 8g c/u',                precioNormal: 3000,  ofertaActiva: true, precioOferta: 2000,  textoPromo: 'Mayoreo Especial', imagen: 'crema_johny_boy_original.webp',          linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'gel_varispa_12',       nombre: 'Gel Vari-Spa 700g (Caja de 12 pzas)',            descripcion: 'Caja cerrada con 12 tarros de 700g de gel de masaje',  precioNormal: 4200,  ofertaActiva: true, precioOferta: 3000,  textoPromo: 'Mayoreo Especial', imagen: 'gel_varispa_700g_original.webp',         linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'keratex_tubo_50',      nombre: 'Tubo Keratex Pomada (Caja de 50 pzas)',          descripcion: 'Caja cerrada con 50 tubos de pomada queratolítica',     precioNormal: 4000,  ofertaActiva: true, precioOferta: 2800,  textoPromo: 'Mayoreo Especial', imagen: 'keratex_pomada_tubo_nueva_original.webp', linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'inhalador_viejito_50', nombre: 'Inhalador Viejito John (Caja de 50 pzas)',       descripcion: 'Caja cerrada con 50 inhaladores aromáticos',           precioNormal: 2250,  ofertaActiva: true, precioOferta: 1600,  textoPromo: 'Mayoreo Especial', imagen: 'inhalador_viejito_john_original.webp',   linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'unguento_viejito_50',  nombre: 'Ungüento del Viejito John Tubo (Caja de 50 pzas)', descripcion: 'Caja cerrada con 50 tubos de ungüento de masaje',      precioNormal: 3750,  ofertaActiva: true, precioOferta: 2600,  textoPromo: 'Mayoreo Especial', imagen: 'unguento_viejito_john_tubo_original.png', linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'unguento_pulmonar_50', nombre: 'Ungüento Pulmonar en Tubo (Caja de 50 pzas)',    descripcion: 'Caja cerrada con 50 tubos de ungüento balsámico',      precioNormal: 4000,  ofertaActiva: true, precioOferta: 2800,  textoPromo: 'Mayoreo Especial', imagen: 'unguento_pulmonar_tubo_original.png',   linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'talco_keratex_24',     nombre: 'Talco Keratex 125g (Caja de 24 pzas)',           descripcion: 'Caja cerrada con 24 envases de talco desodorante',     precioNormal: 2280,  ofertaActiva: true, precioOferta: 1680,  textoPromo: 'Mayoreo Especial', imagen: 'talco_keratex_original.webp',            linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 },
-    { id: 'fungiderm_keratex_50', nombre: 'Fungiderm Keratex Pomada (Caja de 50 pzas)',     descripcion: 'Caja cerrada con 50 pomadas de 10g c/u',               precioNormal: 3000,  ofertaActiva: true, precioOferta: 2200,  textoPromo: 'Mayoreo Especial', imagen: 'fungiderm_original.webp',                linkMercadoPago: 'https://mpago.la/1ALUHtu', costoEnvio: 0 }
+    { id: 'keratex_pomada_200',   nombre: 'Keratex Pomada (Caja de 200 pzas)',              descripcion: 'Caja cerrada con 200 pomadas de 8g c/u',                precioNormal: 12000, ofertaActiva: true, precioOferta: 8000,  textoPromo: 'Mayoreo Especial', imagen: 'keratex_pomada_caja_200_original.webp',    costoEnvio: 0 },
+    { id: 'keratex_gotas_100',    nombre: 'Solución Gotas Keratex (Caja de 100 pzas)',      descripcion: 'Caja cerrada con 100 soluciones gotas',                precioNormal: 6000,  ofertaActiva: true, precioOferta: 4000,  textoPromo: 'Mayoreo Especial', imagen: 'keratex_gotas_caja_100_original.webp',     costoEnvio: 0 },
+    { id: 'gel_balsamico_12',     nombre: 'Gel Balsámico Viejito John (Caja de 12 pzas)',   descripcion: 'Caja cerrada con 12 tarros grandes de 700g c/u',       precioNormal: 11400, ofertaActiva: true, precioOferta: 7200,  textoPromo: 'Mayoreo Especial', imagen: 'gel_balsamico_original.webp',              costoEnvio: 0 },
+    { id: 'spray_viejito_24',     nombre: 'Spray del Viejito John (Caja de 24 pzas)',       descripcion: 'Caja cerrada con 24 atomizadores',                     precioNormal: 2880,  ofertaActiva: true, precioOferta: 2160,  textoPromo: 'Mayoreo Especial', imagen: 'spray_viejito_john_original.webp',       costoEnvio: 0 },
+    { id: 'balsamo_viejito_24',   nombre: 'Bálsamo del Viejito John (Caja de 24 pzas)',     descripcion: 'Caja cerrada con 24 tarros de bálsamo corporal',       precioNormal: 2280,  ofertaActiva: true, precioOferta: 1680,  textoPromo: 'Mayoreo Especial', imagen: 'balsamo_viejito_john_original.webp',     costoEnvio: 0 },
+    { id: 'crema_johny_boy_50',   nombre: 'Crema Johny Boy (Caja de 50 pzas)',              descripcion: 'Caja cerrada con 50 cremas de 8g c/u',                precioNormal: 3000,  ofertaActiva: true, precioOferta: 2000,  textoPromo: 'Mayoreo Especial', imagen: 'crema_johny_boy_original.webp',          costoEnvio: 0 },
+    { id: 'gel_varispa_12',       nombre: 'Gel Vari-Spa 700g (Caja de 12 pzas)',            descripcion: 'Caja cerrada con 12 tarros de 700g de gel de masaje',  precioNormal: 4200,  ofertaActiva: true, precioOferta: 3000,  textoPromo: 'Mayoreo Especial', imagen: 'gel_varispa_700g_original.webp',         costoEnvio: 0 },
+    { id: 'keratex_tubo_50',      nombre: 'Tubo Keratex Pomada (Caja de 50 pzas)',          descripcion: 'Caja cerrada con 50 tubos de pomada queratolítica',     precioNormal: 4000,  ofertaActiva: true, precioOferta: 2800,  textoPromo: 'Mayoreo Especial', imagen: 'keratex_pomada_tubo_nueva_original.webp', costoEnvio: 0 },
+    { id: 'inhalador_viejito_50', nombre: 'Inhalador Viejito John (Caja de 50 pzas)',       descripcion: 'Caja cerrada con 50 inhaladores aromáticos',           precioNormal: 2250,  ofertaActiva: true, precioOferta: 1600,  textoPromo: 'Mayoreo Especial', imagen: 'inhalador_viejito_john_original.webp',   costoEnvio: 0 },
+    { id: 'unguento_viejito_50',  nombre: 'Ungüento del Viejito John Tubo (Caja de 50 pzas)', descripcion: 'Caja cerrada con 50 tubos de ungüento de masaje',      precioNormal: 3750,  ofertaActiva: true, precioOferta: 2600,  textoPromo: 'Mayoreo Especial', imagen: 'unguento_viejito_john_tubo_original.png', costoEnvio: 0 },
+    { id: 'unguento_pulmonar_50', nombre: 'Ungüento Pulmonar en Tubo (Caja de 50 pzas)',    descripcion: 'Caja cerrada con 50 tubos de ungüento balsámico',      precioNormal: 4000,  ofertaActiva: true, precioOferta: 2800,  textoPromo: 'Mayoreo Especial', imagen: 'unguento_pulmonar_tubo_original.png',   costoEnvio: 0 },
+    { id: 'talco_keratex_24',     nombre: 'Talco Keratex 125g (Caja de 24 pzas)',           descripcion: 'Caja cerrada con 24 envases de talco desodorante',     precioNormal: 2280,  ofertaActiva: true, precioOferta: 1680,  textoPromo: 'Mayoreo Especial', imagen: 'talco_keratex_original.webp',            costoEnvio: 0 },
+    { id: 'fungiderm_keratex_50', nombre: 'Fungiderm Keratex Pomada (Caja de 50 pzas)',     descripcion: 'Caja cerrada con 50 pomadas de 10g c/u',               precioNormal: 3000,  ofertaActiva: true, precioOferta: 2200,  textoPromo: 'Mayoreo Especial', imagen: 'fungiderm_original.webp',                costoEnvio: 0 }
 ];
 
 // ---------- FUNCIONES AUXILIARES ----------
 const fmt = n => '$' + Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-function mergeLocalStorage() {
-    const applyTieredOverrides = (items, catalog) => {
-        if (!Array.isArray(items)) return;
-        items.forEach(item => {
-            const product = catalog.find(x => x.id === item.id);
-            if (!product) return;
-            product.precio = item.precio ?? product.precio;
-            product.precioNormal = item.precioNormal ?? item.precio ?? product.precioNormal ?? product.precio;
-            product.publico = item.publico ?? item.precio ?? product.publico ?? product.precio ?? product.precioNormal;
-            product.mayoreo = item.mayoreo ?? item.precio ?? product.mayoreo ?? product.precioNormal ?? product.precio;
-            product.medioMayoreo = item.medioMayoreo ?? item.mayoreo ?? product.medioMayoreo ?? product.mayoreo ?? product.publico ?? product.precio ?? product.precioNormal;
-            product.distribuidores = item.distribuidores ?? item.mayoreo ?? product.distribuidores ?? product.mayoreo ?? product.publico ?? product.precio ?? product.precioNormal;
-            product.cambaceo = item.cambaceo ?? item.publico ?? product.cambaceo ?? product.publico ?? product.precio ?? product.precioNormal;
-            product.ofertaActiva = item.ofertaActiva ?? product.ofertaActiva;
-            product.precioOferta = item.precioOferta ?? product.precioOferta;
+// Los precios los edita el panel de precios y se guardan en Firestore
+// (colecciones preciosMenudeo y preciosMayoreo). Si Firestore no responde,
+// se usan los precios del catálogo de arriba.
+function applyPriceOverrides(items, catalog) {
+    if (!Array.isArray(items)) return;
+    const num = v => (v === undefined || v === null || v === '' || isNaN(Number(v))) ? undefined : Number(v);
+    items.forEach(item => {
+        const product = catalog.find(x => x.id === item.id);
+        if (!product) return;
+        const precio = num(item.precio);
+        if (precio !== undefined) {
+            product.precio = precio;
+            product.precioNormal = precio;
+        }
+        if (typeof item.ofertaActiva === 'boolean') product.ofertaActiva = item.ofertaActiva;
+        const oferta = num(item.precioOferta);
+        if (oferta !== undefined) product.precioOferta = oferta;
+        ['publico', 'mayoreo', 'medioMayoreo', 'distribuidores', 'cambaceo'].forEach(k => {
+            const v = num(item[k]);
+            if (v !== undefined) product[k] = v;
         });
-    };
+    });
+}
 
+async function loadRemotePrices() {
+    if (typeof loadCollection !== 'function' || !(window.isFirebaseReady && window.isFirebaseReady())) return;
     try {
-        const storedMenudeo = JSON.parse(localStorage.getItem('vj_precios_menudeo'));
-        if (storedMenudeo && Array.isArray(storedMenudeo)) {
-            applyTieredOverrides(storedMenudeo, [...CATALOGO_MENUDEO_VJ, ...CATALOGO_MENUDEO_KERATEX]);
-        }
-    } catch(e) {}
-
-    try {
-        const storedMayoreo = JSON.parse(localStorage.getItem('vj_precios_mayoreo'));
-        if (storedMayoreo && Array.isArray(storedMayoreo)) {
-            applyTieredOverrides(storedMayoreo, CATALOGO_MAYOREO);
-        }
-    } catch(e) {}
-
-    try {
-        const storedTiered = JSON.parse(localStorage.getItem('vj_precios_tiered'));
-        if (storedTiered && Array.isArray(storedTiered)) {
-            applyTieredOverrides(storedTiered, [...CATALOGO_MENUDEO_VJ, ...CATALOGO_MENUDEO_KERATEX, ...CATALOGO_MAYOREO]);
-        }
-    } catch(e) {}
+        const timeout = new Promise(resolve => setTimeout(() => resolve(null), 4000));
+        const result = await Promise.race([
+            Promise.all([loadCollection('preciosMenudeo'), loadCollection('preciosMayoreo')]),
+            timeout
+        ]);
+        if (!result) return;
+        applyPriceOverrides(result[0], [...CATALOGO_MENUDEO_VJ, ...CATALOGO_MENUDEO_KERATEX]);
+        applyPriceOverrides(result[1], CATALOGO_MAYOREO);
+    } catch (e) {
+        console.warn('No se pudieron cargar los precios desde Firestore; se usan los del catálogo.', e);
+    }
 }
 
 function getPriceForTier(product, tier) {
@@ -100,15 +99,18 @@ function getPriceForTier(product, tier) {
         retail: 'publico',
         mayoreo: 'mayoreo',
         wholesale: 'mayoreo',
-        medioMayoreo: 'medioMayoreo',
-        midWholesale: 'medioMayoreo',
+        mediomayoreo: 'medioMayoreo',
+        midwholesale: 'medioMayoreo',
         distribuidores: 'distribuidores',
         distributor: 'distribuidores',
         cambaceo: 'cambaceo'
-    }[normalizedTier] || normalizedTier;
-    const fallbackBase = product.ofertaActiva ? (product.precioOferta ?? product.precio ?? product.precioNormal ?? 0) : (product.precio ?? product.precioNormal ?? 0);
-    const price = product[key] ?? product[key.toLowerCase()] ?? (key === 'mayoreo' ? product.precioNormal : undefined) ?? fallbackBase;
-    return Number(price || 0);
+    }[normalizedTier] || 'publico';
+    // Precio de lista (con oferta si está activa): es el mismo que muestran el inicio y el catálogo
+    const base = Number(product.ofertaActiva ? (product.precioOferta ?? product.precio ?? product.precioNormal ?? 0)
+                                             : (product.precio ?? product.precioNormal ?? 0));
+    if (key === 'publico') return base;
+    const tierPrice = product[key];
+    return Number(tierPrice !== undefined && tierPrice !== null ? tierPrice : base);
 }
 
 function getPriceTierLabel(tier) {
@@ -138,14 +140,13 @@ function findProduct(pid) {
 
 // ---------- RENDERIZADO ----------
 let currentProduct = null;
-let mercadoPagoLink = MERCADO_PAGO_LINK_DEFAULT;
 
-function renderProduct() {
+async function renderProduct() {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get('p') || params.get('producto') || 'gel_balsamico_700g';
     const tier = params.get('tier') || params.get('t') || 'publico';
 
-    mergeLocalStorage();
+    await loadRemotePrices();
     currentProduct = findProduct(pid);
 
     if (!currentProduct) {
@@ -156,9 +157,8 @@ function renderProduct() {
     const isMayoreo = currentProduct.tipo === 'mayoreo';
     const precioFinal = getPriceForTier(currentProduct, tier);
     const total = precioFinal + (currentProduct.costoEnvio || 0);
-    mercadoPagoLink = currentProduct.linkMercadoPago || MERCADO_PAGO_LINK_DEFAULT;
 
-    document.title = `Pago Seguro - ${currentProduct.nombre} | VJ.Lab`;
+    document.title = `Tu pedido - ${currentProduct.nombre} | VJ.Lab`;
     document.getElementById('summary-title').textContent = isMayoreo ? 'Pedido de Mayoreo' : 'Resumen del Pedido';
     document.getElementById('co-product-name').textContent = currentProduct.nombre;
     document.getElementById('co-product-desc').textContent = currentProduct.descripcion;
@@ -252,34 +252,6 @@ function initCarousel() {
     setInterval(() => { currentIndex = (currentIndex + 1) % 2; update(); }, 3000);
 }
 
-// ---------- MÉTODOS DE PAGO ----------
-function initPaymentMethods() {
-    const radios = document.querySelectorAll('input[name="payment"]');
-    const ccDetails = document.getElementById('cc-details');
-    const ccInputs = ccDetails ? ccDetails.querySelectorAll('input') : [];
-
-    radios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.querySelectorAll('.payment-option').forEach(el => {
-                el.classList.remove('border-primary', 'bg-surface-container-low', 'border-2');
-                el.classList.add('border-outline-variant', 'border');
-            });
-            const parent = e.target.closest('.payment-option');
-            if (parent) {
-                parent.classList.add('border-primary', 'bg-surface-container-low', 'border-2');
-                parent.classList.remove('border-outline-variant', 'border');
-            }
-            if (e.target.value === 'tarjeta') {
-                ccDetails?.classList.remove('hidden');
-                ccInputs.forEach(i => i.setAttribute('required', 'true'));
-            } else {
-                ccDetails?.classList.add('hidden');
-                ccInputs.forEach(i => i.removeAttribute('required'));
-            }
-        });
-    });
-}
-
 // ---------- FORM SUBMIT ----------
 function initForm() {
     const form = document.getElementById('checkout-form');
@@ -303,7 +275,16 @@ function initForm() {
         const totalEl   = document.getElementById('co-total');
         const total     = totalEl ? totalEl.textContent : '?';
 
+        const tierActual = new URLSearchParams(window.location.search).get('tier') || new URLSearchParams(window.location.search).get('t') || 'publico';
+        const precioUnitario = getPriceForTier(currentProduct, tierActual);
+        const envio = currentProduct.costoEnvio || 0;
         const orderData = {
+            productoId: currentProduct.id,
+            nivelPrecio: tierActual,
+            precioUnitario,
+            envio,
+            totalNumero: precioUnitario + envio,
+            estado: 'nuevo',
             producto: currentProduct.nombre,
             descripcion: currentProduct.descripcion,
             total,
@@ -380,7 +361,6 @@ function initFormFocus() {
 // ---------- INICIALIZACIÓN ----------
 document.addEventListener('DOMContentLoaded', () => {
     renderProduct();
-    initPaymentMethods();
     initForm();
     initFormFocus();
 });

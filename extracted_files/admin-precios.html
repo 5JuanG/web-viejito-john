@@ -41,39 +41,16 @@
             font-variant-numeric: tabular-nums;
         }
     </style>
+    <!-- Firebase -->
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="admin-auth.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-surface font-sans text-gray-800 antialiased min-h-screen" x-data="preciosAdmin()" x-cloak>
 
-    <!-- LOGIN SCREEN -->
-    <div x-show="!authenticated" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 max-w-md w-full overflow-hidden">
-            <div class="bg-primary p-8 text-center">
-                <span class="material-symbols-outlined text-5xl text-green-300 mb-3 block">admin_panel_settings</span>
-                <h1 class="text-2xl font-extrabold text-white">Panel de Precios</h1>
-                <p class="text-green-200/80 text-sm mt-1">El Viejito John — Acceso Restringido</p>
-            </div>
-            <form @submit.prevent="login" class="p-8 space-y-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Token de Acceso</label>
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400">key</span>
-                        <input type="password" x-model="tokenInput" required placeholder="Ingresa tu token secreto"
-                            class="w-full pl-10 pr-4 py-3 rounded-xl border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-sm">
-                    </div>
-                    <p x-show="loginError" class="text-red-500 text-xs mt-2 font-medium" x-transition>
-                        <span class="material-symbols-outlined text-xs align-middle mr-1">error</span>Token incorrecto. Intenta de nuevo.
-                    </p>
-                </div>
-                <button type="submit" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary-light transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined">login</span> Acceder
-                </button>
-                <p class="text-center text-xs text-gray-400">El token por defecto es: <code class="bg-gray-100 px-2 py-1 rounded font-mono text-primary font-bold">viejitojohn2024</code></p>
-            </form>
-        </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
     <div x-show="authenticated" x-transition class="min-h-screen">
         <!-- Header -->
         <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
@@ -83,8 +60,8 @@
                     <h1 class="text-lg font-extrabold text-gray-800">Administrador de Precios</h1>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span class="text-xs text-gray-400 hidden md:block">Los precios se guardan en este navegador (localStorage)</span>
-                    <button @click="authenticated = false; tokenInput = ''" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium">
+                    <span class="text-xs text-gray-400 hidden md:block">Los precios se guardan en la nube y los ven todos los clientes</span>
+                    <button @click="logout()" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium">
                         <span class="material-symbols-outlined text-sm">logout</span> Salir
                     </button>
                 </div>
@@ -341,7 +318,7 @@
                             <span class="material-symbols-outlined text-amber-500">info</span>
                             <div>
                                 <p class="text-sm text-amber-800 font-bold">¿Cómo funciona?</p>
-                                <p class="text-xs text-amber-700 mt-1">El cronómetro se guarda en localStorage y se muestra automáticamente en las páginas de inicio y catálogo. Cuando llegue a cero, desaparecerá solo.</p>
+                                <p class="text-xs text-amber-700 mt-1">El cronómetro se guarda en la nube y se muestra automáticamente en la página de inicio. Cuando llegue a cero, desaparecerá solo.</p>
                             </div>
                         </div>
                     </div>
@@ -405,7 +382,7 @@
                 <span class="material-symbols-outlined text-amber-500 mt-0.5">info</span>
                 <div>
                     <h4 class="font-bold text-amber-800 text-sm">¿Cómo funciona?</h4>
-                    <p class="text-amber-700 text-xs mt-1">Los precios se guardan en el <strong>localStorage</strong> de este navegador. Las páginas de checkout leerán estos precios automáticamente al cargar. Los cambios solo aplican en este navegador/dispositivo.</p>
+                    <p class="text-amber-700 text-xs mt-1">Los precios se guardan en la nube (Firestore). El inicio, el catálogo y el checkout los leen automáticamente; los cambios se ven en todos los dispositivos.</p>
                 </div>
             </div>
         </div>
@@ -422,9 +399,8 @@
             Alpine.data('preciosAdmin', () => ({
                 // Auth
                 authenticated: false,
-                tokenInput: '',
-                loginError: false,
-                SECRET_TOKEN: 'viejitojohn2024',
+                guardando: false,
+                db: null,
 
                 // UI
                 activeTab: 'menudeo',
@@ -437,8 +413,9 @@
                 timerMessage: '¡Oferta especial por tiempo limitado!',
 
                 // Data - Menudeo
-                preciosMenudeo: JSON.parse(localStorage.getItem('vj_precios_menudeo')) || [
-                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 24.99, ofertaActiva: false, precioOferta: 24.99, publico: 24.99, mayoreo: 24.99, medioMayoreo: 24.99, distribuidores: 24.99, cambaceo: 24.99, barcode: '' },
+                preciosMenudeo: [
+                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
+                    { id: 'gel_balsamico_700g', nombre: 'El Gel Balsámico del Viejito John (Tarro 700g)', descripcion: 'Tarro Original 700g', precio: 950, ofertaActiva: true, precioOferta: 750, publico: 950, mayoreo: 950, medioMayoreo: 950, distribuidores: 950, cambaceo: 950, barcode: '' },
                     { id: 'gel_varispa', nombre: 'Gel Vari-Spa (700 grs)', descripcion: 'Masaje terapéutico', precio: 350, ofertaActiva: false, precioOferta: 350, publico: 350, mayoreo: 350, medioMayoreo: 350, distribuidores: 350, cambaceo: 350, barcode: '' },
                     { id: 'balsamo_viejito', nombre: 'Bálsamo del Viejito John', descripcion: 'Ungüento tradicional', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
                     { id: 'spray_viejito', nombre: 'Spray del Viejito John', descripcion: 'Alta concentración', precio: 120, ofertaActiva: false, precioOferta: 120, publico: 120, mayoreo: 120, medioMayoreo: 120, distribuidores: 120, cambaceo: 120, barcode: '' },
@@ -456,7 +433,7 @@
                 ],
 
                 // Data - Mayoreo
-                preciosMayoreo: JSON.parse(localStorage.getItem('vj_precios_mayoreo')) || [
+                preciosMayoreo: [
                     { id: 'keratex_pomada_200', nombre: 'Keratex Pomada (Caja de 200 pzas)', descripcion: '200 pzas 8g c/u', precio: 12000, ofertaActiva: true, precioOferta: 8000, publico: 12000, mayoreo: 12000, medioMayoreo: 12000, distribuidores: 12000, cambaceo: 12000, barcode: '' },
                     { id: 'keratex_gotas_100', nombre: 'Solución Gotas Keratex (Caja de 100 pzas)', descripcion: '100 pzas gotero', precio: 6000, ofertaActiva: true, precioOferta: 4000, publico: 6000, mayoreo: 6000, medioMayoreo: 6000, distribuidores: 6000, cambaceo: 6000, barcode: '' },
                     { id: 'gel_balsamico_12', nombre: 'Gel Balsámico 700g (Caja de 12 pzas)', descripcion: '12 tarros 700g', precio: 11400, ofertaActiva: true, precioOferta: 7200, publico: 11400, mayoreo: 11400, medioMayoreo: 11400, distribuidores: 11400, cambaceo: 11400, barcode: '' },
@@ -472,24 +449,44 @@
                     { id: 'fungiderm_keratex_50', nombre: 'Fungiderm Keratex (Caja de 50 pzas)', descripcion: '50 pomadas 10g', precio: 3000, ofertaActiva: true, precioOferta: 2200, publico: 3000, mayoreo: 3000, medioMayoreo: 3000, distribuidores: 3000, cambaceo: 3000, barcode: '' },
                 ],
 
-                init() {
-                    // Cargar timer guardado
-                    const savedTimer = JSON.parse(localStorage.getItem('vj_oferta_timer') || '{}');
-                    if (savedTimer.active !== undefined) this.timerActive = savedTimer.active;
-                    if (savedTimer.endDate) this.timerEndDate = savedTimer.endDate.slice(0, 16);
-                    if (savedTimer.message) this.timerMessage = savedTimer.message;
-                },
-
-                login() {
-                    if (this.tokenInput === this.SECRET_TOKEN) {
-                        this.authenticated = true;
-                        this.loginError = false;
-                    } else {
-                        this.loginError = true;
+                async init() {
+                    // Espera el inicio de sesión del administrador (Firebase Authentication)
+                    await window.vjAuthReady;
+                    this.authenticated = true;
+                    this.db = (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) ? firebase.firestore() : null;
+                    if (!this.db) return;
+                    try {
+                        const [menudeo, mayoreo, cfg] = await Promise.all([
+                            this.db.collection('preciosMenudeo').get(),
+                            this.db.collection('preciosMayoreo').get(),
+                            this.db.collection('config').doc('ofertaTimer').get()
+                        ]);
+                        const mezclar = (lista, snap) => {
+                            snap.forEach(d => {
+                                const item = lista.find(p => p.id === d.id);
+                                if (item) Object.assign(item, d.data());
+                            });
+                        };
+                        mezclar(this.preciosMenudeo, menudeo);
+                        mezclar(this.preciosMayoreo, mayoreo);
+                        if (cfg.exists) {
+                            const t = cfg.data();
+                            this.timerActive = !!t.active;
+                            if (t.endDate) this.timerEndDate = String(t.endDate).slice(0, 16);
+                            if (t.message) this.timerMessage = t.message;
+                        }
+                    } catch (e) {
+                        console.warn('No se pudieron cargar los precios guardados.', e);
+                        alert('No se pudieron cargar los precios guardados. Se muestran los valores por defecto; no guardes hasta revisar tu conexión.');
                     }
                 },
 
-                guardarPrecios(tipo) {
+                logout() {
+                    try { firebase.auth().signOut(); } catch (e) {}
+                    window.location.reload();
+                },
+
+                async guardarPrecios(tipo) {
                     const lista = tipo === 'menudeo' ? this.preciosMenudeo : this.preciosMayoreo;
                     for (const prod of lista) {
                         prod.publico = Number(prod.publico ?? prod.precio ?? 0);
@@ -506,18 +503,27 @@
                             return;
                         }
                     }
-                    if (tipo === 'menudeo') {
-                        localStorage.setItem('vj_precios_menudeo', JSON.stringify(this.preciosMenudeo));
-                    } else {
-                        localStorage.setItem('vj_precios_mayoreo', JSON.stringify(this.preciosMayoreo));
+                    if (!this.db) { alert('No hay conexión con la base de datos. Intenta de nuevo.'); return; }
+                    this.guardando = true;
+                    try {
+                        const coleccion = tipo === 'menudeo' ? 'preciosMenudeo' : 'preciosMayoreo';
+                        const batch = this.db.batch();
+                        lista.forEach(prod => {
+                            const { barcode, ...datos } = prod;
+                            batch.set(this.db.collection(coleccion).doc(prod.id), { ...datos, actualizado: new Date().toISOString() }, { merge: true });
+                        });
+                        await batch.commit();
+                        this.toastMessage = tipo === 'menudeo' ? '¡Precios de menudeo guardados!' : '¡Precios de mayoreo guardados!';
+                    } catch (e) {
+                        console.error(e);
+                        this.toastMessage = 'No se pudo guardar. Revisa tu sesión y conexión.';
                     }
-                    localStorage.setItem('vj_precios_tiered', JSON.stringify([...this.preciosMenudeo, ...this.preciosMayoreo]));
-                    this.toastMessage = tipo === 'menudeo' ? '¡Precios de menudeo guardados!' : '¡Precios de mayoreo guardados!';
+                    this.guardando = false;
                     this.showToast = true;
                     setTimeout(() => { this.showToast = false; }, 3000);
                 },
 
-                guardarTimer() {
+                async guardarTimer() {
                     if (this.timerActive && !this.timerEndDate) {
                         alert('Error: Debes seleccionar una fecha de finalización para activar el cronómetro.');
                         return;
@@ -527,8 +533,13 @@
                         endDate: this.timerActive ? new Date(this.timerEndDate).toISOString() : null,
                         message: this.timerMessage || '¡Oferta especial por tiempo limitado!'
                     };
-                    localStorage.setItem('vj_oferta_timer', JSON.stringify(data));
-                    this.toastMessage = '¡Configuración del cronómetro guardada!';
+                    try {
+                        await this.db.collection('config').doc('ofertaTimer').set(data);
+                        this.toastMessage = '¡Configuración del cronómetro guardada!';
+                    } catch (e) {
+                        console.error(e);
+                        this.toastMessage = 'No se pudo guardar el cronómetro.';
+                    }
                     this.showToast = true;
                     setTimeout(() => { this.showToast = false; }, 3000);
                 },

@@ -707,10 +707,11 @@ reveal();
 (async function() {
     const fmt = n => '$' + Number(n || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    let menudeo = JSON.parse(localStorage.getItem('vj_precios_menudeo') || '[]');
-    let mayoreo = JSON.parse(localStorage.getItem('vj_precios_mayoreo') || '[]');
-    let tiered = JSON.parse(localStorage.getItem('vj_precios_tiered') || '[]');
-    let allProducts = [...menudeo, ...mayoreo, ...tiered];
+    // Los precios vienen de Firestore (los edita el panel de precios).
+    // Si no hay datos, se quedan los precios escritos en el HTML.
+    let menudeo = [];
+    let mayoreo = [];
+    let allProducts = [];
 
     if (window.loadCollection) {
         try {
@@ -721,7 +722,7 @@ reveal();
             if ((fbMenudeo && fbMenudeo.length) || (fbMayoreo && fbMayoreo.length)) {
                 menudeo = fbMenudeo || [];
                 mayoreo = fbMayoreo || [];
-                allProducts = [...menudeo, ...mayoreo, ...(tiered || [])];
+                allProducts = [...menudeo, ...mayoreo];
             }
         } catch (error) {
             console.warn('No se pudieron cargar precios desde Firestore para la página principal.', error);
@@ -786,7 +787,7 @@ reveal();
 })();
 
 // ===== COUNTDOWN TIMER =====
-(function() {
+(async function() {
     const banner = document.getElementById('countdown-banner');
     const msgEl = document.getElementById('countdown-message');
     const dEl = document.getElementById('cd-days');
@@ -794,7 +795,13 @@ reveal();
     const mEl = document.getElementById('cd-minutes');
     const sEl = document.getElementById('cd-seconds');
 
-    const timerData = JSON.parse(localStorage.getItem('vj_oferta_timer') || '{}');
+    let timerData = {};
+    try {
+        if (window.loadCollection) {
+            const cfg = await loadCollection('config');
+            timerData = (cfg || []).find(d => d.id === 'ofertaTimer') || {};
+        }
+    } catch (e) { console.warn('No se pudo cargar el cronómetro de oferta.', e); }
     if (!timerData.active || !timerData.endDate) return;
 
     const endDate = new Date(timerData.endDate);
