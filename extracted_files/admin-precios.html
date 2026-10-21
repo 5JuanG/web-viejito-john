@@ -137,7 +137,7 @@
                                     <label class="text-xs text-gray-500">Público ($)</label>
                                     <div class="relative">
                                         <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                        <input type="number" step="0.01" min="0" x-model.number="prod.publico" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        <input type="number" step="0.01" min="0" :value="prod.precio" readonly title="El precio público es el Precio Normal (o el de oferta si está activa)" class="bg-gray-100 text-gray-500 pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
                                     </div>
                                 </div>
                                 <div>
@@ -231,7 +231,7 @@
                                     <label class="text-xs text-gray-500">Público ($)</label>
                                     <div class="relative">
                                         <span class="absolute left-3 top-2.5 text-gray-400 font-bold text-sm">$</span>
-                                        <input type="number" step="0.01" min="0" x-model.number="prod.publico" class="pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                        <input type="number" step="0.01" min="0" :value="prod.precio" readonly title="El precio público es el Precio Normal (o el de oferta si está activa)" class="bg-gray-100 text-gray-500 pl-7 w-full rounded-lg border-gray-300 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary">
                                     </div>
                                 </div>
                                 <div>
@@ -414,8 +414,8 @@
 
                 // Data - Menudeo
                 preciosMenudeo: [
-                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
-                    { id: 'gel_balsamico_700g', nombre: 'El Gel Balsámico del Viejito John (Tarro 700g)', descripcion: 'Tarro Original 700g', precio: 950, ofertaActiva: true, precioOferta: 750, publico: 950, mayoreo: 950, medioMayoreo: 950, distribuidores: 950, cambaceo: 950, barcode: '' },
+                    { id: 'gel_balsamico', nombre: 'Gel Balsámico del Viejito John (90g)', descripcion: '90g — Alivio muscular', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
+                    { id: 'gel_balsamico_700g', nombre: 'Gel Balsámico del Viejito John (Tarro 700g)', descripcion: 'Tarro Original 700g', precio: 950, ofertaActiva: true, precioOferta: 750, publico: 950, mayoreo: 950, medioMayoreo: 950, distribuidores: 950, cambaceo: 950, barcode: '' },
                     { id: 'gel_varispa', nombre: 'Gel Vari-Spa (700 grs)', descripcion: 'Masaje terapéutico', precio: 350, ofertaActiva: false, precioOferta: 350, publico: 350, mayoreo: 350, medioMayoreo: 350, distribuidores: 350, cambaceo: 350, barcode: '' },
                     { id: 'balsamo_viejito', nombre: 'Bálsamo del Viejito John', descripcion: 'Ungüento tradicional', precio: 95, ofertaActiva: false, precioOferta: 95, publico: 95, mayoreo: 95, medioMayoreo: 95, distribuidores: 95, cambaceo: 95, barcode: '' },
                     { id: 'spray_viejito', nombre: 'Spray del Viejito John', descripcion: 'Alta concentración', precio: 120, ofertaActiva: false, precioOferta: 120, publico: 120, mayoreo: 120, medioMayoreo: 120, distribuidores: 120, cambaceo: 120, barcode: '' },
@@ -464,7 +464,13 @@
                         const mezclar = (lista, snap) => {
                             snap.forEach(d => {
                                 const item = lista.find(p => p.id === d.id);
-                                if (item) Object.assign(item, d.data());
+                                if (item) {
+                                    // Solo se toman los precios guardados; nombre y descripción vienen del panel
+                                    const g = d.data();
+                                    ['precio', 'ofertaActiva', 'precioOferta', 'publico', 'mayoreo', 'medioMayoreo', 'distribuidores', 'cambaceo'].forEach(k => {
+                                        if (g[k] !== undefined) item[k] = g[k];
+                                    });
+                                }
                             });
                         };
                         mezclar(this.preciosMenudeo, menudeo);
@@ -489,7 +495,7 @@
                 async guardarPrecios(tipo) {
                     const lista = tipo === 'menudeo' ? this.preciosMenudeo : this.preciosMayoreo;
                     for (const prod of lista) {
-                        prod.publico = Number(prod.publico ?? prod.precio ?? 0);
+                        prod.publico = Number(prod.precio);
                         prod.mayoreo = Number(prod.mayoreo ?? prod.precio ?? 0);
                         prod.medioMayoreo = Number(prod.medioMayoreo ?? prod.publico ?? prod.precio ?? 0);
                         prod.distribuidores = Number(prod.distribuidores ?? prod.publico ?? prod.precio ?? 0);

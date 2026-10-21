@@ -10,8 +10,8 @@ const WHATSAPP_NUMERO = '5218113160143'; // Celular donde llegan los pedidos
 // ---------- CATÁLOGO MAESTRO ----------
 // Menudeo — Línea Viejito John
 const CATALOGO_MENUDEO_VJ = [
-    { id: 'gel_balsamico',      nombre: 'Gel Balsámico del Viejito John', descripcion: '60g — Alivio muscular', precio: 95,  ofertaActiva: false, precioOferta: 95,  imagen: 'gel_balsamico_original.webp', categoria: 'viejito' },
-    { id: 'gel_balsamico_700g', nombre: 'El Gel Balsámico del Viejito John', descripcion: 'Tarro Original 700g', precio: 950, ofertaActiva: true,  precioOferta: 750, imagen: 'gel_balsamico_original.webp', categoria: 'viejito' },
+    { id: 'gel_balsamico',      nombre: 'Gel Balsámico del Viejito John (90g)', descripcion: '90g — Alivio muscular', precio: 95,  ofertaActiva: false, precioOferta: 95,  imagen: 'gel_balsamico_original.webp', categoria: 'viejito' },
+    { id: 'gel_balsamico_700g', nombre: 'Gel Balsámico del Viejito John (Tarro 700g)', descripcion: 'Tarro Original 700g', precio: 950, ofertaActiva: true,  precioOferta: 750, imagen: 'gel_balsamico_original.webp', categoria: 'viejito' },
     { id: 'gel_varispa',        nombre: 'Gel Vari-Spa (700 grs)',         descripcion: 'Masaje terapéutico',    precio: 350, ofertaActiva: false, precioOferta: 350, imagen: 'gel_varispa_700g_original.webp', categoria: 'viejito' },
     { id: 'balsamo_viejito',    nombre: 'Bálsamo del Viejito John',     descripcion: 'Ungüento tradicional',  precio: 95,  ofertaActiva: false, precioOferta: 95,  imagen: 'balsamo_viejito_john_original.webp', categoria: 'viejito' },
     { id: 'spray_viejito',      nombre: 'Spray del Viejito John',       descripcion: 'Alta concentración',    precio: 120, ofertaActiva: false, precioOferta: 120, imagen: 'spray_viejito_john_original.webp', categoria: 'viejito' },
