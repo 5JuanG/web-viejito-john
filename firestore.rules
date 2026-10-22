@@ -29,6 +29,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    // Catálogo de productos (nombre, imagen, video, precios): lo ve cualquiera, solo el administrador lo edita.
+    match /productos/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     match /config/{id} {
       allow read: if true;
       allow write: if isAdmin();
