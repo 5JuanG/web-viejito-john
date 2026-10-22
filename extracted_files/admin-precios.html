@@ -104,15 +104,15 @@
                     </div>
                 </div>
 
-                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4" @input="sucio = true" @change="sucio = true">
                     <template x-for="prod in listaActual" :key="prod._k">
-                        <div class="rounded-xl border shadow-sm p-4 space-y-3" :class="prod.activo === false ? 'border-gray-200 bg-gray-50 opacity-70' : 'border-gray-100 bg-white'">
+                        <div :id="'prod-' + prod._k" class="rounded-xl border shadow-sm p-4 space-y-3" :class="prod.activo === false ? 'border-gray-200 bg-gray-50 opacity-70' : 'border-gray-100 bg-white'">
                             <!-- Cabecera -->
                             <div class="flex items-start gap-3">
                                 <img :src="prod.imagen || 'producto.webp'" class="w-16 h-16 object-contain rounded-lg border border-gray-100 bg-white" onerror="this.src='producto.webp'">
                                 <div class="flex-1 min-w-0">
                                     <label class="text-xs text-gray-500">Nombre</label>
-                                    <input type="text" x-model="prod.nombre" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    <input type="text" x-model="prod.nombre" :id="'nom-' + prod._k" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm font-bold focus:ring-2 focus:ring-primary/30 focus:border-primary">
                                 </div>
                                 <div class="flex flex-col gap-1">
                                     <button @click="mover(prod, -1)" class="text-gray-400 hover:text-primary" title="Subir"><span class="material-symbols-outlined text-base">arrow_upward</span></button>
@@ -198,6 +198,7 @@
                                     <input type="number" step="0.01" min="0" x-model.number="prod.precioOferta" :disabled="!prod.ofertaActiva" :class="prod.ofertaActiva ? '' : 'bg-gray-100 opacity-50'" class="pl-7 w-full py-1.5 rounded-lg border-gray-300 text-sm">
                                 </div>
                             </div>
+                            <p x-show="prod.ofertaActiva" class="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">Con la oferta activa, el catálogo muestra el precio de oferta y tacha el precio normal. Para que se vea otro precio, cámbialo en “oferta” o desactívala.</p>
                             <div x-show="prod.tipo !== 'caja'" class="bg-gray-50 rounded-lg p-3">
                                 <div class="text-xs font-bold text-gray-500 mb-2">Precio por pieza según nivel (la cantidad mínima se define en “Niveles de mayoreo”)</div>
                                 <div class="grid grid-cols-2 gap-2">
@@ -363,6 +364,14 @@
         </div>
     </div>
 
+    <!-- Barra flotante: cambios sin guardar -->
+    <div x-show="authenticated && sucio && (activeTab === 'menudeo' || activeTab === 'cajas')" x-transition class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[998] bg-gray-900 text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-4">
+        <span class="text-sm">Tienes cambios <b>sin guardar</b>. No se verán en el catálogo hasta guardar.</span>
+        <button @click="guardarTodo()" :disabled="guardando" class="bg-accent text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-1 disabled:opacity-50">
+            <span class="material-symbols-outlined text-sm">save</span> <span x-text="guardando ? 'Guardando…' : 'Guardar todo'"></span>
+        </button>
+    </div>
+
     <div x-show="showToast" x-transition class="fixed top-6 right-6 z-[999] bg-accent text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm flex items-center gap-2 toast-enter">
         <span class="material-symbols-outlined">check_circle</span>
         <span x-text="toastMessage"></span>
@@ -376,7 +385,7 @@
             const num = v => (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
 
             Alpine.data('preciosAdmin', () => ({
-                authenticated: false, guardando: false, db: null, origen: '',
+                authenticated: false, guardando: false, db: null, origen: '', sucio: false,
                 activeTab: 'menudeo', showToast: false, toastMessage: '',
                 productos: [], eliminados: [],
                 niveles: JSON.parse(JSON.stringify(VJCatalogo.NIVELES_DEFAULT)),
@@ -385,7 +394,7 @@
                 get listaActual() { return this.productos.filter(p => this.activeTab === 'cajas' ? p.tipo === 'caja' : p.tipo !== 'caja'); },
                 get categorias() { return [...new Set(this.productos.filter(p => p.tipo !== 'caja' && p.categoria).map(p => p.categoria))]; },
 
-                toast(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => { this.showToast = false; }, 3500); },
+                toast(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => { this.showToast = false; }, 5000); },
 
                 async init() {
                     await window.vjAuthReady;
@@ -396,6 +405,8 @@
                         this.origen = r.origen;
                         this.niveles = r.niveles;
                         this.productos = r.productos.map(p => ({ ...BLANCO, ...p, _k: ++contador }));
+                        this.sucio = false;
+                        window.addEventListener('beforeunload', ev => { if (this.sucio) { ev.preventDefault(); ev.returnValue = ''; } });
                         if (this.db) {
                             const cfg = await this.db.collection('config').doc('ofertaTimer').get();
                             if (cfg.exists) {
@@ -414,14 +425,23 @@
                 logout() { try { firebase.auth().signOut(); } catch (e) {} window.location.reload(); },
 
                 agregar() {
-                    const max = this.productos.reduce((m, p) => Math.max(m, p.orden || 0), 0);
-                    this.productos.push({ ...BLANCO, tipo: this.activeTab === 'cajas' ? 'caja' : 'menudeo', categoria: this.categorias[0] || '', nombre: 'Producto nuevo', orden: max + 1, _nuevo: true, _k: ++contador });
+                    const nuevo = { ...BLANCO, tipo: this.activeTab === 'cajas' ? 'caja' : 'menudeo', categoria: this.categorias[0] || '', nombre: 'Producto nuevo', _nuevo: true, _k: ++contador };
+                    this.productos.unshift(nuevo);
+                    this.sucio = true;
+                    this.toast('Producto agregado arriba de la lista. Completa sus datos y presiona Guardar todo.');
+                    this.$nextTick(() => {
+                        const card = document.getElementById('prod-' + nuevo._k);
+                        if (card) card.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+                        const inp = document.getElementById('nom-' + nuevo._k);
+                        if (inp) { inp.focus(); inp.select(); }
+                    });
                 },
 
                 eliminar(prod) {
                     if (!confirm(`¿Eliminar "${prod.nombre}"? Dejará de verse en el catálogo y el pedido al guardar.`)) return;
                     if (!prod._nuevo && prod.id) this.eliminados.push({ id: prod.id, tipo: prod.tipo });
                     this.productos = this.productos.filter(p => p !== prod);
+                    this.sucio = true;
                 },
 
                 mover(prod, dir) {
@@ -432,6 +452,7 @@
                     const a = this.productos.indexOf(prod), b = this.productos.indexOf(otro);
                     [this.productos[a], this.productos[b]] = [this.productos[b], this.productos[a]];
                     this.productos = [...this.productos];
+                    this.sucio = true;
                 },
 
                 // Reduce la imagen y la guarda dentro del producto (sin Firebase Storage)
@@ -455,6 +476,7 @@
                         URL.revokeObjectURL(url);
                         if (data.length > 380000) { alert('La imagen es demasiado pesada aun reducida. Prueba con otra.'); return; }
                         prod[campo] = data;
+                        this.sucio = true;
                         ev.target.value = '';
                     };
                     img.onerror = () => alert('No se pudo leer esa imagen.');
@@ -500,10 +522,13 @@
                         await batch.commit();
                         this.eliminados = []; this.productos.forEach(p => { p._nuevo = false; });
                         this.origen = 'firestore';
-                        this.toast('¡Catálogo guardado!');
+                        let total = this.productos.length;
+                        try { total = (await this.db.collection('productos').get({ source: 'server' })).size; } catch (e) {}
+                        this.sucio = false;
+                        this.toast(`¡Guardado! Hay ${total} productos publicados en el catálogo.`);
                     } catch (e) {
                         console.error(e);
-                        this.toast('No se pudo guardar. Revisa tu sesión, las reglas de Firestore y el tamaño de las imágenes.');
+                        alert('No se pudo guardar.\n\nDetalle: ' + (e.code || '') + ' ' + (e.message || e) + '\n\nSi dice "permission-denied", cierra sesión y vuelve a entrar con tu correo de administrador.');
                     }
                     this.guardando = false;
                 },
