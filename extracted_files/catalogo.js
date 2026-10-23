@@ -26,9 +26,25 @@
             let origen = 'firestore';
             let niveles = JSON.parse(JSON.stringify(NIVELES_DEFAULT));
             const listo = typeof loadCollection === 'function' && window.isFirebaseReady && window.isFirebaseReady();
+            const diag = { listo: !!listo, firebase: typeof firebase !== 'undefined', motivo: '' };
+            window.VJ_DIAG = diag;
+            // Lee una colección y, si falla, guarda el motivo para poder verlo con ?diag=1
+            const leer = async nombre => {
+                try {
+                    const snap = await db.collection(nombre).get();
+                    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                } catch (e) {
+                    console.error('Error leyendo la colección ' + nombre + ':', e);
+                    diag.motivo = nombre + ': ' + (e.code || '') + ' ' + (e.message || e);
+                    return [];
+                }
+            };
+            if (!listo) diag.motivo = diag.firebase ? 'Firestore no inicio' : 'No cargo el SDK de Firebase (¿bloqueado?)';
             if (listo) {
                 try {
-                    const r = await conTimeout(Promise.all([loadCollection('productos'), loadCollection('config')]), 5000);
+                    const r = await conTimeout(Promise.all([leer('productos'), leer('config')]), 8000);
+                    if (!r) diag.motivo = 'Tiempo agotado leyendo productos (8 s)';
+                    else if (!r[0].length && !diag.motivo) diag.motivo = 'La colección productos llegó vacía';
                     if (r) {
                         if (r[0] && r[0].length) productos = r[0];
                         const cfg = (r[1] || []).find(d => d.id === 'niveles');
@@ -54,6 +70,7 @@
             }
             if (!todos) productos = productos.filter(p => p.activo !== false);
             productos.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+            diag.origen = origen; diag.total = productos.length;
             return { productos, niveles, origen };
         })();
         return _cache;

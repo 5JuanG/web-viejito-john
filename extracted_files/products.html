@@ -200,7 +200,7 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const { fmt, esc, precioFinal, precioNivel, textoMinimo, videoHTML, ICONOS } = VJCatalogo;
-            const { productos, niveles } = await VJCatalogo.cargar();
+            const { productos, niveles, origen } = await VJCatalogo.cargar();
             const mayorista = safeParseJSON(sessionStorage.getItem('vj_current_mayorista'), null);
             const menudeo = productos.filter(p => p.tipo !== 'caja');
             const cajas = productos.filter(p => p.tipo === 'caja');
@@ -250,6 +250,14 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${menudeo.filter(p => (p.categoria || 'Otros') === c).map(tarjeta).join('')}</div>
                 </section>`).join('') || '<p class="text-center text-on-surface-variant py-12">Próximamente.</p>';
+
+            // Diagnóstico: abrir products.html?diag=1 para ver de dónde salen los datos
+            if (/[?&]diag/.test(location.search)) {
+                const d = window.VJ_DIAG || {};
+                cont.insertAdjacentHTML('afterbegin', `<div class="p-4 rounded-xl text-sm font-mono" style="background:#fff3cd;color:#333">
+                    DIAGNÓSTICO — fuente: <b>${esc(origen)}</b> · productos: <b>${productos.length}</b> · Firestore listo: ${esc(d.listo)} · SDK cargado: ${esc(d.firebase)}<br>
+                    Motivo: ${esc(d.motivo || 'ninguno')}</div>`);
+            }
 
             // Cajas / mayoreo (solo con clave de mayorista)
             const seccion = document.getElementById('wholesale-catalog');
