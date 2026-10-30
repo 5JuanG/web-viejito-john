@@ -55,6 +55,12 @@
                         <div>
                             <h2 class="font-extrabold text-base" x-text="o.producto"></h2>
                             <p class="text-xs text-gray-400" x-text="fechaTexto(o.fecha)"></p>
+                            <ul x-show="o.items && o.items.length" class="mt-2 text-sm text-gray-700 space-y-0.5">
+                                <template x-for="it in (o.items || [])" :key="it.id">
+                                    <li><span class="font-bold" x-text="it.cantidad + ' ×'"></span> <span x-text="it.nombre"></span> <span class="text-gray-400" x-text="'— $' + Number(it.subtotal || 0).toLocaleString('es-MX')"></span></li>
+                                </template>
+                            </ul>
+                            <p x-show="o.items && o.items.length && Number(o.envio) > 0" class="text-xs text-gray-500 mt-1" x-text="'Envío: $' + Number(o.envio).toLocaleString('es-MX')"></p>
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-extrabold text-primary" x-text="o.total"></p>
@@ -166,6 +172,11 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        listaProductos(o) {
+            if (o.items && o.items.length) return '\n' + o.items.map(i => `• ${i.cantidad} × ${i.nombre}`).join('\n');
+            return o.producto;
+        },
+
         telWA(o) {
             let d = String(o.telefono || '').replace(/\D/g, '');
             if (d.length === 10) d = '52' + d;
@@ -181,7 +192,7 @@ document.addEventListener('alpine:init', () => {
         async enviarLink(o) {
             if (!o.linkPago || !/^https?:\/\//.test(o.linkPago)) { this.aviso('Primero pega el link de pago de Mercado Pago.'); return; }
             const nombre = String(o.nombre || '').split(' ')[0] || '';
-            const texto = `Hola ${nombre}, gracias por tu pedido en VJ.Lab 🙌\n\n📦 ${o.producto}\n💰 Total: ${o.total}\n\nPuedes pagar de forma segura con Mercado Pago en este link:\n${o.linkPago}\n\nCuando se acredite el pago preparamos tu envío y te mandamos la guía de rastreo.`;
+            const texto = `Hola ${nombre}, gracias por tu pedido en VJ.Lab 🙌\n\n📦 ${this.listaProductos(o)}\n💰 Total: ${o.total}\n\nPuedes pagar de forma segura con Mercado Pago en este link:\n${o.linkPago}\n\nCuando se acredite el pago preparamos tu envío y te mandamos la guía de rastreo.`;
             if (this.abrirWA(o, texto)) {
                 if (!o.estado || o.estado === 'nuevo') { o.estado = 'link_enviado'; await this.guardar(o, { estado: 'link_enviado' }); }
             }

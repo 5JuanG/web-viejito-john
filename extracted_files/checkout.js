@@ -76,8 +76,48 @@ async function findProduct(pid) {
 // ---------- RENDERIZADO ----------
 let currentProduct = null;
 
+let carritoCalc = null;
+
+async function renderCarrito() {
+    await loadRemotePrices();
+    const c = await VJCarrito.calcular();
+    const esc = VJCatalogo.esc;
+    const bloque = document.getElementById('product-img-simple').parentElement;
+    document.title = 'Tu pedido - Carrito | VJ.Lab';
+    document.getElementById('summary-title').textContent = 'Tu carrito';
+
+    if (!c.lineas.length) {
+        bloque.innerHTML = '<p class="text-on-surface-variant">Tu carrito está vacío. <a href="products.html" class="text-primary font-bold underline">Ir al catálogo</a></p>';
+        document.getElementById('co-subtotal').textContent = fmt(0);
+        document.getElementById('co-shipping').textContent = fmt(0);
+        document.getElementById('co-total').textContent = fmt(0);
+        document.getElementById('submit-btn').disabled = true;
+        currentProduct = null;
+        return;
+    }
+
+    carritoCalc = c;
+    currentProduct = { id: 'carrito', nombre: 'Carrito', descripcion: '', tipo: 'menudeo', origen: 'checkout-carrito' };
+    bloque.className = 'mb-8 pb-6 border-b border-outline-variant/30';
+    bloque.innerHTML = (c.nivel ? `<p class="text-xs font-bold text-primary mb-3">✓ Precio ${esc(c.nivel.etiqueta)} aplicado (${c.piezas} piezas)</p>` : '') +
+        c.lineas.map(l => `<div class="flex items-center gap-3 mb-4">
+            <div class="w-16 h-16 rounded-lg bg-white border border-outline-variant/20 flex items-center justify-center overflow-hidden shrink-0"><img src="${esc(l.imagen)}" alt="" class="max-h-full object-contain" onerror="this.src='producto.webp'"></div>
+            <div class="flex-1 min-w-0"><p class="font-bold text-primary leading-tight">${esc(l.nombre)}</p><p class="text-xs text-on-surface-variant">${l.cantidad} × ${fmt(l.precioUnitario)}</p></div>
+            <span class="font-bold text-primary">${fmt(l.subtotal)}</span></div>`).join('') +
+        '<a href="products.html" class="text-xs text-primary underline">Seguir comprando</a>' +
+        '<p class="text-on-surface-variant/60 text-xs mt-3 italic leading-tight">Productos cosméticos elaborados con ingredientes naturales para uso tópico externo. No sustituyen consulta médica.</p>';
+
+    document.getElementById('label-subtotal').textContent = 'Subtotal';
+    document.getElementById('co-subtotal').textContent = fmt(c.subtotal);
+    const shipEl = document.getElementById('co-shipping');
+    if (!c.envio) { shipEl.textContent = 'GRATIS'; shipEl.classList.add('text-green-600'); }
+    else { shipEl.textContent = fmt(c.envio); shipEl.classList.remove('text-green-600'); }
+    document.getElementById('co-total').textContent = fmt(c.total);
+}
+
 async function renderProduct() {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('carrito')) { await renderCarrito(); return; }
     const pid = params.get('p') || params.get('producto') || 'gel_balsamico_700g';
     const tier = params.get('tier') || params.get('t') || 'publico';
 
@@ -214,16 +254,19 @@ function initForm() {
         const total     = totalEl ? totalEl.textContent : '?';
 
         const tierActual = new URLSearchParams(window.location.search).get('tier') || new URLSearchParams(window.location.search).get('t') || 'publico';
-        const precioUnitario = getPriceForTier(currentProduct, tierActual);
-        const envio = currentProduct.costoEnvio || 0;
+        const esCarrito = !!carritoCalc;
+        const precioUnitario = esCarrito ? 0 : getPriceForTier(currentProduct, tierActual);
+        const envio = esCarrito ? carritoCalc.envio : (currentProduct.costoEnvio || 0);
+        const resumenCarrito = esCarrito ? ('Carrito: ' + carritoCalc.lineas.map(l => `${l.cantidad}× ${l.nombre}`).join(', ')).slice(0, 190) : '';
         const orderData = {
             productoId: currentProduct.id,
-            nivelPrecio: tierActual,
+            nivelPrecio: esCarrito ? (carritoCalc.nivel ? carritoCalc.nivel.clave : 'publico') : tierActual,
             precioUnitario,
             envio,
-            totalNumero: precioUnitario + envio,
+            totalNumero: esCarrito ? carritoCalc.total : precioUnitario + envio,
             estado: 'nuevo',
-            producto: currentProduct.nombre,
+            ...(esCarrito ? { items: carritoCalc.lineas.map(l => ({ id: l.id, nombre: l.nombre, cantidad: l.cantidad, precioUnitario: l.precioUnitario, subtotal: l.subtotal })), subtotal: carritoCalc.subtotal } : {}),
+            producto: esCarrito ? resumenCarrito : currentProduct.nombre,
             descripcion: currentProduct.descripcion,
             total,
             nombre: `${nombre} ${apellidos}`.trim(),
@@ -250,7 +293,9 @@ function initForm() {
         const msgLines = [
             isMayoreo ? '🛒 *NUEVO PEDIDO MAYOREO - VJ.Lab*' : '🛒 *NUEVO PEDIDO - VJ.Lab*',
             '─────────────────────',
-            `📦 *Producto:* ${currentProduct.nombre}`,
+            ...(esCarrito
+                ? ['📦 *Productos:*', ...carritoCalc.lineas.map(l => `• ${l.cantidad} × ${l.nombre} — ${fmt(l.subtotal)}`), `🚚 *Envío:* ${envio ? fmt(envio) : 'GRATIS'}`]
+                : [`📦 *Producto:* ${currentProduct.nombre}`]),
             `💰 *Total:* ${total}`,
             `🕐 *Fecha:* ${fecha}`,
             '─────────────────────',
@@ -278,6 +323,7 @@ function initForm() {
             submitIcon.classList.remove('animate-spin');
             submitIcon.textContent = 'check_circle';
             submitText.textContent = '¡Pedido registrado! Abriendo WhatsApp...';
+            if (esCarrito && window.VJCarrito) VJCarrito.vaciar();
             window.location.href = waURL;
         }, 800);
     });
