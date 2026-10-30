@@ -264,7 +264,7 @@ function initForm() {
             `• Ciudad: ${ciudad}`,
             `• C.P.: ${cp}`,
             '─────────────────────',
-            '💳 Pago: por coordinar con el cliente.',
+            '💳 Pago: enviar link de Mercado Pago al cliente.',
         ];
         const msg = msgLines.map(encodeURIComponent).join('%0A');
         const waURL = `https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`;

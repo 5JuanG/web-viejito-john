@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Pedidos | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "#154212", surface: "#f3f4f6" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }
+    </script>
+    <style>[x-cloak] { display: none !important; }</style>
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="admin-auth.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-surface font-sans text-gray-800 antialiased min-h-screen" x-data="pedidosAdmin()" x-cloak>
+
+<div x-show="authenticated" class="min-h-screen">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-2xl">receipt_long</span>
+                <h1 class="text-lg font-extrabold">Pedidos</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <a href="admin-precios.html" class="text-gray-500 hover:text-primary">Precios</a>
+                <button @click="cargar()" class="text-gray-500 hover:text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">refresh</span> Actualizar</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <div class="flex gap-2 overflow-x-auto pb-3">
+            <template x-for="f in filtros" :key="f[0]">
+                <button @click="filtro = f[0]" :class="filtro === f[0] ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200'" class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap">
+                    <span x-text="f[1]"></span> <span class="opacity-70" x-text="'(' + contar(f[0]) + ')'"></span>
+                </button>
+            </template>
+        </div>
+
+        <p x-show="cargando" class="text-center text-gray-500 py-12">Cargando pedidos…</p>
+        <p x-show="!cargando && error" class="bg-red-50 text-red-700 rounded-xl p-4 text-sm" x-text="error"></p>
+        <p x-show="!cargando && !error && visibles.length === 0" class="text-center text-gray-500 py-12">No hay pedidos en esta lista.</p>
+
+        <div class="space-y-4">
+            <template x-for="o in visibles" :key="o.id">
+                <article class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <h2 class="font-extrabold text-base" x-text="o.producto"></h2>
+                            <p class="text-xs text-gray-400" x-text="fechaTexto(o.fecha)"></p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-extrabold text-primary" x-text="o.total"></p>
+                            <span class="inline-block text-xs font-bold px-2 py-1 rounded-full" :class="colorEstado(o.estado)" x-text="etiquetaEstado(o.estado)"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4 mt-4 text-sm">
+                        <div>
+                            <p class="font-bold" x-text="o.nombre"></p>
+                            <p class="text-gray-600" x-text="o.telefono"></p>
+                            <p class="text-gray-600" x-text="o.email"></p>
+                        </div>
+                        <div class="text-gray-600">
+                            <p x-text="o.direccion"></p>
+                            <p x-text="[o.ciudad, o.cp ? 'C.P. ' + o.cp : ''].filter(Boolean).join(', ')"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-3 mt-4">
+                        <label class="text-xs font-bold text-gray-500">Estado
+                            <select class="mt-1 w-full rounded-lg border-gray-300 text-sm" x-model="o.estado" @change="guardar(o, {estado: o.estado})">
+                                <template x-for="e in estados" :key="e[0]"><option :value="e[0]" x-text="e[1]"></option></template>
+                            </select>
+                        </label>
+                        <label class="text-xs font-bold text-gray-500 md:col-span-2">Link de pago de Mercado Pago
+                            <input type="url" placeholder="Pega aquí el link que generaste en la app" class="mt-1 w-full rounded-lg border-gray-300 text-sm" x-model="o.linkPago" @change="guardar(o, {linkPago: o.linkPago || ''})">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500">Paquetería
+                            <input type="text" placeholder="Estafeta, DHL…" class="mt-1 w-full rounded-lg border-gray-300 text-sm" x-model="o.paqueteria" @change="guardar(o, {paqueteria: o.paqueteria || ''})">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500 md:col-span-2">Número de guía
+                            <input type="text" class="mt-1 w-full rounded-lg border-gray-300 text-sm" x-model="o.guia" @change="guardar(o, {guia: o.guia || ''})">
+                        </label>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        <button @click="enviarLink(o)" class="bg-green-600 hover:bg-green-700 text-white text-sm font-bold px-4 py-2 rounded-full flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">chat</span> Enviar link de pago por WhatsApp
+                        </button>
+                        <button @click="enviarGuia(o)" x-show="o.guia" class="bg-white border border-gray-300 text-sm font-bold px-4 py-2 rounded-full flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">local_shipping</span> Enviar guía por WhatsApp
+                        </button>
+                        <button @click="guardar(o, {estado: 'pagado'}); o.estado = 'pagado'" x-show="o.estado !== 'pagado' && o.estado !== 'enviado' && o.estado !== 'entregado'" class="bg-primary text-white text-sm font-bold px-4 py-2 rounded-full flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">check</span> Marcar como pagado
+                        </button>
+                    </div>
+                </article>
+            </template>
+        </div>
+    </main>
+
+    <div x-show="mensaje" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-3 rounded-full shadow-lg" x-text="mensaje"></div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    const ESTADOS = [['nuevo', 'Nuevo'], ['link_enviado', 'Link enviado'], ['pagado', 'Pagado'], ['enviado', 'Enviado'], ['entregado', 'Entregado'], ['cancelado', 'Cancelado']];
+    const COLORES = { nuevo: 'bg-amber-100 text-amber-800', link_enviado: 'bg-blue-100 text-blue-800', pagado: 'bg-green-100 text-green-800', enviado: 'bg-purple-100 text-purple-800', entregado: 'bg-gray-200 text-gray-700', cancelado: 'bg-red-100 text-red-700' };
+
+    Alpine.data('pedidosAdmin', () => ({
+        authenticated: false, db: null, cargando: true, error: '', mensaje: '',
+        pedidos: [], filtro: 'activos', estados: ESTADOS,
+        filtros: [['activos', 'Pendientes'], ['nuevo', 'Nuevos'], ['link_enviado', 'Link enviado'], ['pagado', 'Pagados'], ['enviado', 'Enviados'], ['todos', 'Todos']],
+
+        get visibles() {
+            return this.pedidos.filter(o => this.coincide(o, this.filtro));
+        },
+        coincide(o, f) {
+            const e = o.estado || 'nuevo';
+            if (f === 'todos') return true;
+            if (f === 'activos') return e === 'nuevo' || e === 'link_enviado' || e === 'pagado';
+            return e === f;
+        },
+        contar(f) { return this.pedidos.filter(o => this.coincide(o, f)).length; },
+        etiquetaEstado(e) { const x = ESTADOS.find(s => s[0] === (e || 'nuevo')); return x ? x[1] : e; },
+        colorEstado(e) { return COLORES[e || 'nuevo'] || COLORES.nuevo; },
+        fechaTexto(f) { try { return new Date(f).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return ''; } },
+        aviso(t) { this.mensaje = t; setTimeout(() => { this.mensaje = ''; }, 3500); },
+
+        async init() {
+            await window.vjAuthReady;
+            this.authenticated = true;
+            this.db = (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) ? firebase.firestore() : null;
+            await this.cargar();
+        },
+
+        async cargar() {
+            this.cargando = true; this.error = '';
+            if (!this.db) { this.error = 'No hay conexión con la base de datos.'; this.cargando = false; return; }
+            try {
+                const snap = await this.db.collection('orders').get();
+                this.pedidos = snap.docs.map(d => ({ estado: 'nuevo', linkPago: '', paqueteria: '', guia: '', ...d.data(), id: d.id }))
+                    .sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
+            } catch (e) {
+                console.error(e);
+                this.error = 'No se pudieron leer los pedidos: ' + (e.code || e.message || e);
+            }
+            this.cargando = false;
+        },
+
+        async guardar(o, cambios) {
+            try {
+                await this.db.collection('orders').doc(o.id).update({ ...cambios, actualizado: new Date().toISOString() });
+                this.aviso('Guardado');
+            } catch (e) {
+                console.error(e);
+                this.aviso('No se pudo guardar: ' + (e.code || e.message));
+            }
+        },
+
+        telWA(o) {
+            let d = String(o.telefono || '').replace(/\D/g, '');
+            if (d.length === 10) d = '52' + d;
+            return d;
+        },
+        abrirWA(o, texto) {
+            const tel = this.telWA(o);
+            if (tel.length < 11) { this.aviso('El teléfono del cliente no parece válido.'); return false; }
+            window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(texto), '_blank');
+            return true;
+        },
+
+        async enviarLink(o) {
+            if (!o.linkPago || !/^https?:\/\//.test(o.linkPago)) { this.aviso('Primero pega el link de pago de Mercado Pago.'); return; }
+            const nombre = String(o.nombre || '').split(' ')[0] || '';
+            const texto = `Hola ${nombre}, gracias por tu pedido en VJ.Lab 🙌\n\n📦 ${o.producto}\n💰 Total: ${o.total}\n\nPuedes pagar de forma segura con Mercado Pago en este link:\n${o.linkPago}\n\nCuando se acredite el pago preparamos tu envío y te mandamos la guía de rastreo.`;
+            if (this.abrirWA(o, texto)) {
+                if (!o.estado || o.estado === 'nuevo') { o.estado = 'link_enviado'; await this.guardar(o, { estado: 'link_enviado' }); }
+            }
+        },
+
+        async enviarGuia(o) {
+            const nombre = String(o.nombre || '').split(' ')[0] || '';
+            const texto = `Hola ${nombre}, tu pedido de VJ.Lab ya va en camino 🚚\n\nPaquetería: ${o.paqueteria || 'por confirmar'}\nGuía: ${o.guia}\n\n¡Gracias por tu compra!`;
+            if (this.abrirWA(o, texto)) {
+                if (o.estado !== 'enviado' && o.estado !== 'entregado') { o.estado = 'enviado'; await this.guardar(o, { estado: 'enviado' }); }
+            }
+        }
+    }));
+});
+</script>
+</body>
+</html>
