@@ -52,6 +52,9 @@
     // Calcula líneas, nivel de precio aplicado, envío y total con los datos actuales de Firestore.
     async function calcular() {
         const { productos, niveles } = await VJCatalogo.cargar();
+        const dist = window.VJDistribuidor;
+        if (dist) { try { await dist.listo; } catch (e) { /* sigue como público */ } }
+        const esDist = !!(dist && dist.activo);
         const guardados = leer();
         const lineas = [];
         const noDisponibles = [];
@@ -65,16 +68,17 @@
         const piezas = lineas.filter(l => !l.esCaja).reduce((s, l) => s + l.cantidad, 0);
         const conMinimo = Object.keys(niveles || {})
             .map(k => ({ clave: k, etiqueta: niveles[k].etiqueta || k, minimo: num(niveles[k].minimo) }))
-            .filter(n => n.minimo && n.minimo > 0)
+            .filter(n => n.clave !== 'distribuidores' && n.minimo && n.minimo > 0)
             .sort((a, b) => a.minimo - b.minimo);
         const alcanzados = conMinimo.filter(n => n.minimo <= piezas);
-        const nivel = alcanzados.length ? alcanzados[alcanzados.length - 1] : null;
-        const siguiente = conMinimo.find(n => n.minimo > piezas) || null;
+        // Distribuidor autorizado: su precio aplica siempre, sin importar la cantidad
+        const nivel = esDist ? { clave: 'distribuidores', etiqueta: 'Distribuidor', minimo: 0 } : (alcanzados.length ? alcanzados[alcanzados.length - 1] : null);
+        const siguiente = esDist ? null : (conMinimo.find(n => n.minimo > piezas) || null);
 
         lineas.forEach(l => {
             let unit = l.lista;
             if (nivel && !l.esCaja) {
-                const v = num(l.p[nivel.clave]);
+                const v = esDist ? num(dist.precios[l.id]) : num(l.p[nivel.clave]);
                 if (v && v > 0) unit = Math.min(v, l.lista);
             }
             l.precioUnitario = unit;
@@ -82,7 +86,7 @@
         });
         const subtotal = lineas.reduce((s, l) => s + l.subtotal, 0);
         const envio = lineas.reduce((s, l) => s + l.costoEnvio, 0);
-        return { lineas, piezas, nivel, siguiente, faltan: siguiente ? siguiente.minimo - piezas : 0, subtotal, envio, total: subtotal + envio, noDisponibles };
+        return { lineas, piezas, nivel, distribuidor: esDist ? { correo: dist.correo, nombre: dist.nombre } : null, siguiente, faltan: siguiente ? siguiente.minimo - piezas : 0, subtotal, envio, total: subtotal + envio, noDisponibles };
     }
 
     // ---------------- Interfaz (botón flotante + panel) ----------------
@@ -148,6 +152,7 @@
             else quitar(id);
         });
         window.addEventListener('vj-carrito', actualizar);
+        window.addEventListener('vj-distribuidor', actualizar);
         window.addEventListener('storage', e => { if (e.key === KEY) actualizar(); });
         actualizar();
     }
@@ -183,7 +188,8 @@
         if (!c.lineas.length) { cuerpo.innerHTML = '<div class="vjc-vac">Los productos de tu carrito ya no están disponibles.</div>'; pie.innerHTML = ''; return; }
 
         let aviso = '';
-        if (c.nivel) aviso += `<div class="vjc-aviso">✓ Precio <b>${esc(c.nivel.etiqueta)}</b> aplicado (${c.piezas} piezas).</div>`;
+        if (c.distribuidor) aviso += `<div class="vjc-aviso">✓ Precio de <b>distribuidor</b> aplicado.</div>`;
+        else if (c.nivel) aviso += `<div class="vjc-aviso">✓ Precio <b>${esc(c.nivel.etiqueta)}</b> aplicado (${c.piezas} piezas).</div>`;
         if (c.siguiente) aviso += `<div class="vjc-aviso hint">Agrega ${c.faltan} pieza${c.faltan === 1 ? '' : 's'} más para precio <b>${esc(c.siguiente.etiqueta)}</b>.</div>`;
 
         cuerpo.innerHTML = aviso + c.lineas.map(l => `
@@ -202,7 +208,8 @@
             <div class="vjc-r"><span>Subtotal</span><span>${dinero(c.subtotal)}</span></div>
             <div class="vjc-r"><span>Envío</span><span>${c.envio ? dinero(c.envio) : 'GRATIS'}</span></div>
             <div class="vjc-r t"><span>Total</span><span>${dinero(c.total)}</span></div>
-            <a class="vjc-ir" href="checkout.html?carrito=1">Finalizar pedido</a>`;
+            <a class="vjc-ir" href="checkout.html?carrito=1">Finalizar pedido</a>` +
+            ((window.VJDistribuidor && !c.distribuidor) ? '<p style="text-align:center;font-size:12px;margin:12px 0 0"><a href="#" data-distribuidor style="color:#154212;text-decoration:underline">¿Eres distribuidor? Inicia sesión</a></p>' : '');
     }
 
     // Botones "Agregar al carrito": cualquier elemento con data-add="ID_PRODUCTO"

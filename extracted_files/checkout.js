@@ -36,8 +36,23 @@ function getPriceForTier(product, tier) {
     const base = Number(product.ofertaActiva ? (product.precioOferta ?? product.precio ?? product.precioNormal ?? 0)
                                              : (product.precio ?? product.precioNormal ?? 0));
     if (key === 'publico') return base;
+    if (key === 'distribuidores') {
+        // El precio de distribuidor es privado: solo existe para un distribuidor autorizado
+        const d = window.VJDistribuidor;
+        const v = (d && d.activo && product.tipo !== 'mayoreo') ? Number(d.precios[product.id] || 0) : 0;
+        return v > 0 ? Math.min(v, base) : base;
+    }
     const tierPrice = product[key];
     return Number(tierPrice !== undefined && tierPrice !== null ? tierPrice : base);
+}
+
+// Un distribuidor autorizado siempre paga su precio; para cualquier otra persona
+// el nivel "distribuidores" de la URL se ignora.
+function tierEfectivo(t) {
+    const d = window.VJDistribuidor;
+    if (d && d.activo) return 'distribuidores';
+    const n = String(t || 'publico').toLowerCase();
+    return (n === 'distribuidores' || n === 'distributor') ? 'publico' : (t || 'publico');
 }
 
 function getPriceTierLabel(tier) {
@@ -79,6 +94,7 @@ let currentProduct = null;
 let carritoCalc = null;
 
 async function renderCarrito() {
+    if (window.VJDistribuidor) await VJDistribuidor.listo;
     await loadRemotePrices();
     const c = await VJCarrito.calcular();
     const esc = VJCatalogo.esc;
@@ -119,7 +135,8 @@ async function renderProduct() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('carrito')) { await renderCarrito(); return; }
     const pid = params.get('p') || params.get('producto') || 'gel_balsamico_700g';
-    const tier = params.get('tier') || params.get('t') || 'publico';
+    if (window.VJDistribuidor) await VJDistribuidor.listo;
+    const tier = tierEfectivo(params.get('tier') || params.get('t') || 'publico');
 
     await loadRemotePrices();
     currentProduct = await findProduct(pid);
@@ -253,7 +270,7 @@ function initForm() {
         const totalEl   = document.getElementById('co-total');
         const total     = totalEl ? totalEl.textContent : '?';
 
-        const tierActual = new URLSearchParams(window.location.search).get('tier') || new URLSearchParams(window.location.search).get('t') || 'publico';
+        const tierActual = tierEfectivo(new URLSearchParams(window.location.search).get('tier') || new URLSearchParams(window.location.search).get('t') || 'publico');
         const esCarrito = !!carritoCalc;
         const precioUnitario = esCarrito ? 0 : getPriceForTier(currentProduct, tierActual);
         const envio = esCarrito ? carritoCalc.envio : (currentProduct.costoEnvio || 0);
@@ -261,6 +278,8 @@ function initForm() {
         const orderData = {
             productoId: currentProduct.id,
             nivelPrecio: esCarrito ? (carritoCalc.nivel ? carritoCalc.nivel.clave : 'publico') : tierActual,
+            ...(((esCarrito && carritoCalc.distribuidor) || (!esCarrito && tierActual === 'distribuidores')) && window.VJDistribuidor && VJDistribuidor.activo
+                ? { distribuidorCorreo: VJDistribuidor.correo, distribuidorNombre: VJDistribuidor.nombre } : {}),
             precioUnitario,
             envio,
             totalNumero: esCarrito ? carritoCalc.total : precioUnitario + envio,

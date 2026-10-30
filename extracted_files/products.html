@@ -71,7 +71,9 @@
     </style>
     <script src="vendor/firebase-app-compat.js"></script>
     <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <script src="distribuidor.js"></script>
     <script src="catalogo-seed.js"></script>
     <script src="catalogo.js"></script>
     <script src="carrito.js"></script>
@@ -93,6 +95,9 @@
                 <button id="btn-mayoristas-nav" class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">lock</span> Acceso Mayoristas
                 </button>
+                <button id="btn-distribuidores-nav" data-distribuidor class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">badge</span> Distribuidores
+                </button>
             </div>
             <a href="https://wa.me/528113160143?text=Hola,%20deseo%20información%20sobre%20precios%20de%20mayoreo." target="_blank" class="bg-primary text-on-primary px-4 py-2 rounded-full font-bold text-sm hover:bg-primary-container transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-sm">chat</span> WhatsApp
@@ -106,6 +111,9 @@
                 <hr class="border-outline-variant/30">
                 <button id="btn-mayoristas-mobile" class="text-left text-on-surface-variant hover:text-primary font-body-md flex items-center gap-2">
                     <span class="material-symbols-outlined text-sm">lock</span> Acceso Mayoristas
+                </button>
+                <button id="btn-distribuidores-mobile" data-distribuidor class="text-left text-on-surface-variant hover:text-primary font-body-md flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">badge</span> Distribuidores
                 </button>
             </div>
         </div>
@@ -202,6 +210,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const { fmt, esc, precioFinal, precioNivel, textoMinimo, videoHTML, ICONOS } = VJCatalogo;
             const { productos, niveles, origen } = await VJCatalogo.cargar();
+            if (window.VJDistribuidor) await VJDistribuidor.listo;
             const mayorista = safeParseJSON(sessionStorage.getItem('vj_current_mayorista'), null);
             const menudeo = productos.filter(p => p.tipo !== 'caja');
             const cajas = productos.filter(p => p.tipo === 'caja');
@@ -218,6 +227,9 @@
                 </div>`;
             };
 
+            const D = window.VJDistribuidor;
+            const miPrecio = p => (D && D.activo && D.precios[p.id] > 0)
+                ? `<div class="text-xs font-bold text-primary mt-1">Tu precio: ${fmt(Math.min(D.precios[p.id], precioFinal(p)))}</div>` : '';
             const tarjeta = p => {
                 const verMayoreo = mayorista && p.imagenMayoreo;
                 const img = verMayoreo ? p.imagenMayoreo : p.imagen;
@@ -230,7 +242,7 @@
                     <div class="p-6 flex flex-col flex-grow">
                         <div class="flex justify-between items-start gap-2 mb-2">
                             <h3 class="text-xl font-bold text-primary">${esc(p.nombre)}</h3>
-                            <div class="text-right whitespace-nowrap">${precio}</div>
+                            <div class="text-right whitespace-nowrap">${precio}${miPrecio(p)}</div>
                         </div>
                         <p class="text-on-surface-variant text-sm mb-4 flex-grow">${esc(p.descripcion)}</p>
                         ${video}

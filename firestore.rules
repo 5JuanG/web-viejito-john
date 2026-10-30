@@ -8,6 +8,12 @@ service cloud.firestore {
         && request.auth.token.email == 'viejitojohn@gmail.com';
     }
 
+    // Distribuidores autorizados: el documento se llama como su correo (en minúsculas).
+    function esDistribuidor() {
+      return request.auth != null && request.auth.token.email != null
+        && exists(/databases/$(database)/documents/distribuidores/$(request.auth.token.email.lower()));
+    }
+
     // Pedidos: cualquier visitante puede crear uno desde el checkout,
     // pero solo el administrador puede leerlos o modificarlos.
     match /orders/{orderId} {
@@ -15,7 +21,10 @@ service cloud.firestore {
         && request.resource.data.producto is string && request.resource.data.producto.size() < 200
         && request.resource.data.nombre is string && request.resource.data.nombre.size() < 200
         && request.resource.data.telefono is string && request.resource.data.telefono.size() < 50
-        && request.resource.data.direccion is string && request.resource.data.direccion.size() < 500;
+        && request.resource.data.direccion is string && request.resource.data.direccion.size() < 500
+        // Un pedido a precio distribuidor solo lo puede crear un distribuidor autorizado
+        && (request.resource.data.get('nivelPrecio', '') != 'distribuidores'
+            || (esDistribuidor() && request.resource.data.get('distribuidorCorreo', '') == request.auth.token.email.lower()));
       allow read, update, delete: if isAdmin();
     }
 
@@ -36,6 +45,18 @@ service cloud.firestore {
     }
     match /config/{id} {
       allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Lista de distribuidores: cada uno solo puede leer su propio registro; solo el administrador la edita.
+    match /distribuidores/{correo} {
+      allow read: if isAdmin()
+        || (request.auth != null && request.auth.token.email != null && correo == request.auth.token.email.lower());
+      allow write: if isAdmin();
+    }
+    // Precio de distribuidor: privado. Solo lo leen los distribuidores autorizados y el administrador.
+    match /preciosDistribuidor/{id} {
+      allow read: if isAdmin() || esDistribuidor();
       allow write: if isAdmin();
     }
 

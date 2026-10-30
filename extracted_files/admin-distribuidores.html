@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Distribuidores | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "#154212", surface: "#f3f4f6" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }
+    </script>
+    <style>[x-cloak] { display: none !important; }</style>
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="admin-auth.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-surface font-sans text-gray-800 antialiased min-h-screen" x-data="distribuidoresAdmin()" x-cloak>
+
+<div x-show="authenticated" class="min-h-screen">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-2xl">badge</span>
+                <h1 class="text-lg font-extrabold">Distribuidores</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <a href="admin-precios.html" class="text-gray-500 hover:text-primary">Precios</a>
+                <a href="admin-pedidos.html" class="text-gray-500 hover:text-primary">Pedidos</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+
+        <section class="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-900">
+            <h2 class="font-bold mb-2">Cómo dar de alta a un distribuidor</h2>
+            <ol class="list-decimal ml-5 space-y-1">
+                <li>En la consola de Firebase entra a <b>Authentication → Users → Add user</b>, escribe su correo y una contraseña, y guarda. <b>Hazlo primero</b>.</li>
+                <li>Aquí abajo agrega ese mismo correo (y su nombre). Desde ese momento ve y paga su precio de distribuidor, sin importar cuántas piezas compre.</li>
+                <li>Mándale por WhatsApp el enlace del catálogo, su correo y su contraseña. Entra con “Distribuidores” en el menú del catálogo.</li>
+            </ol>
+            <p class="mt-2 text-xs">El precio de distribuidor de cada producto se edita en <a href="admin-precios.html" class="underline font-bold">Precios</a>, y solo lo pueden leer las cuentas que estén en esta lista.</p>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h2 class="font-bold mb-3">Agregar distribuidor</h2>
+            <div class="grid md:grid-cols-3 gap-3">
+                <label class="text-xs font-bold text-gray-500">Correo
+                    <input type="email" x-model="nuevo.correo" placeholder="vendedor@correo.com" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                </label>
+                <label class="text-xs font-bold text-gray-500">Nombre
+                    <input type="text" x-model="nuevo.nombre" placeholder="Nombre del vendedor" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                </label>
+                <label class="text-xs font-bold text-gray-500">Teléfono (opcional)
+                    <input type="tel" x-model="nuevo.telefono" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                </label>
+            </div>
+            <button @click="agregar()" :disabled="guardando" class="mt-4 bg-primary text-white text-sm font-bold px-5 py-2 rounded-full disabled:opacity-60">Autorizar distribuidor</button>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h2 class="font-bold mb-3">Distribuidores autorizados <span class="text-gray-400 font-medium" x-text="'(' + lista.length + ')'"></span></h2>
+            <p x-show="cargando" class="text-gray-500 text-sm">Cargando…</p>
+            <p x-show="!cargando && error" class="bg-red-50 text-red-700 rounded-xl p-3 text-sm" x-text="error"></p>
+            <p x-show="!cargando && !error && lista.length === 0" class="text-gray-500 text-sm">Todavía no hay distribuidores autorizados.</p>
+            <div class="divide-y divide-gray-100">
+                <template x-for="d in lista" :key="d.id">
+                    <div class="py-3 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-bold" x-text="d.nombre || d.id"></p>
+                            <p class="text-sm text-gray-500 truncate" x-text="d.id + (d.telefono ? ' · ' + d.telefono : '')"></p>
+                        </div>
+                        <button @click="quitar(d)" class="text-sm text-red-600 hover:underline whitespace-nowrap">Quitar acceso</button>
+                    </div>
+                </template>
+            </div>
+            <p class="text-xs text-gray-400 mt-3">“Quitar acceso” le quita el precio de distribuidor al instante. Su cuenta de Firebase sigue existiendo; si quieres borrarla, hazlo en Authentication → Users.</p>
+        </section>
+    </main>
+
+    <div x-show="mensaje" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-3 rounded-full shadow-lg" x-text="mensaje"></div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('distribuidoresAdmin', () => ({
+        authenticated: false, db: null, cargando: true, guardando: false, error: '', mensaje: '',
+        lista: [], nuevo: { correo: '', nombre: '', telefono: '' },
+
+        aviso(t) { this.mensaje = t; setTimeout(() => { this.mensaje = ''; }, 3500); },
+
+        async init() {
+            await window.vjAuthReady;
+            this.authenticated = true;
+            this.db = (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) ? firebase.firestore() : null;
+            await this.cargar();
+        },
+
+        async cargar() {
+            this.cargando = true; this.error = '';
+            if (!this.db) { this.error = 'No hay conexión con la base de datos.'; this.cargando = false; return; }
+            try {
+                const snap = await this.db.collection('distribuidores').get();
+                this.lista = snap.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => String(a.nombre || a.id).localeCompare(String(b.nombre || b.id)));
+            } catch (e) {
+                console.error(e);
+                this.error = 'No se pudo leer la lista: ' + (e.code || e.message || e) + '. Si dice permission-denied, falta publicar las reglas nuevas (ejecuta DESPLEGAR.bat).';
+            }
+            this.cargando = false;
+        },
+
+        async agregar() {
+            const correo = String(this.nuevo.correo || '').trim().toLowerCase();
+            const nombre = String(this.nuevo.nombre || '').trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { this.aviso('Escribe un correo válido.'); return; }
+            if (!nombre) { this.aviso('Escribe el nombre del distribuidor.'); return; }
+            this.guardando = true;
+            try {
+                await this.db.collection('distribuidores').doc(correo).set({ nombre, telefono: String(this.nuevo.telefono || '').trim(), correo, alta: new Date().toISOString() });
+                this.nuevo = { correo: '', nombre: '', telefono: '' };
+                this.aviso('Distribuidor autorizado.');
+                await this.cargar();
+            } catch (e) {
+                console.error(e);
+                this.aviso('No se pudo guardar: ' + (e.code || e.message));
+            }
+            this.guardando = false;
+        },
+
+        async quitar(d) {
+            if (!confirm('¿Quitar el acceso de distribuidor a ' + (d.nombre || d.id) + '?')) return;
+            try {
+                await this.db.collection('distribuidores').doc(d.id).delete();
+                this.aviso('Acceso quitado.');
+                await this.cargar();
+            } catch (e) {
+                console.error(e);
+                this.aviso('No se pudo quitar: ' + (e.code || e.message));
+            }
+        }
+    }));
+});
+</script>
+</body>
+</html>

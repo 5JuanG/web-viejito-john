@@ -62,6 +62,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <a href="admin-pedidos.html" class="text-sm font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">receipt_long</span> Pedidos</a>
+                    <a href="admin-distribuidores.html" class="text-sm font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">badge</span> Distribuidores</a>
                     <span class="text-xs text-gray-400 hidden md:block">Lo que guardes aquí se ve en el catálogo y en el pedido</span>
                     <button @click="logout()" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium">
                         <span class="material-symbols-outlined text-sm">logout</span> Salir
@@ -205,7 +206,7 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <template x-for="k in ['medioMayoreo','mayoreo','distribuidores','cambaceo']" :key="k">
                                         <div>
-                                            <label class="text-xs text-gray-500" x-text="niveles[k].etiqueta + (niveles[k].minimo ? ' (desde ' + niveles[k].minimo + ' pzas)' : '')"></label>
+                                            <label class="text-xs text-gray-500" x-text="k === 'distribuidores' ? niveles[k].etiqueta + ' (privado, sin mínimo)' : niveles[k].etiqueta + (niveles[k].minimo ? ' (desde ' + niveles[k].minimo + ' pzas)' : '')"></label>
                                             <input type="number" step="0.01" min="0" x-model.number="prod[k]" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
                                         </div>
                                     </template>
@@ -233,6 +234,7 @@
                 </div>
                 <div class="p-6 space-y-4">
                     <p class="text-sm text-gray-500">Escribe desde cuántas piezas aplica cada nivel. Se muestra al mayorista en el catálogo y en el pedido junto al precio (ej. “Mayoreo (desde 100 pzas)”). Déjalo vacío si no quieres mostrar cantidad.</p>
+                    <p class="text-sm text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2"><b>Distribuidores</b> no usa cantidad mínima: su precio se aplica siempre a las cuentas de distribuidor autorizadas (ver <a href="admin-distribuidores.html" class="underline font-bold">Distribuidores</a>). El precio de ese nivel es privado y no lo ve el público.</p>
                     <template x-for="k in ['medioMayoreo','mayoreo','distribuidores','cambaceo']" :key="k">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
@@ -406,6 +408,13 @@
                         this.origen = r.origen;
                         this.niveles = r.niveles;
                         this.productos = r.productos.map(p => ({ ...BLANCO, ...p, _k: ++contador }));
+                        // El precio de distribuidor es privado: vive en su propia colección
+                        try {
+                            const sn = await this.db.collection('preciosDistribuidor').get();
+                            const privados = {};
+                            sn.forEach(d => { privados[d.id] = Number(d.data().precio || 0); });
+                            this.productos.forEach(p => { if (privados[p.id] !== undefined) p.distribuidores = privados[p.id]; });
+                        } catch (e) { console.warn('No se pudieron leer los precios de distribuidor.', e); }
                         this.sucio = false;
                         window.addEventListener('beforeunload', ev => { if (this.sucio) { ev.preventDefault(); ev.returnValue = ''; } });
                         if (this.db) {
@@ -508,16 +517,21 @@
                             datos.orden = i + 1; p.orden = i + 1;
                             ['precio', 'precioOferta', 'mayoreo', 'medioMayoreo', 'distribuidores', 'cambaceo', 'costoEnvio'].forEach(k => { datos[k] = Number(datos[k] || 0); });
                             datos.piezas = Number(datos.piezas || 1);
+                            // El precio de distribuidor no se guarda en el documento público
+                            const precioDist = datos.tipo === 'caja' ? 0 : Number(datos.distribuidores || 0);
+                            delete datos.distribuidores;
                             datos.actualizado = ahora;
                             batch.set(this.db.collection('productos').doc(p.id), datos);
                             // Copia de precios para las tarjetas fijas del inicio
                             batch.set(this.db.collection(p.tipo === 'caja' ? 'preciosMayoreo' : 'preciosMenudeo').doc(p.id), {
                                 id: p.id, nombre: datos.nombre, precio: datos.precio, ofertaActiva: !!datos.ofertaActiva, precioOferta: datos.precioOferta, publico: datos.precio,
-                                mayoreo: datos.mayoreo, medioMayoreo: datos.medioMayoreo, distribuidores: datos.distribuidores, cambaceo: datos.cambaceo, actualizado: ahora
+                                mayoreo: datos.mayoreo, medioMayoreo: datos.medioMayoreo, distribuidores: firebase.firestore.FieldValue.delete(), cambaceo: datos.cambaceo, actualizado: ahora
                             }, { merge: true });
+                            batch.set(this.db.collection('preciosDistribuidor').doc(p.id), { id: p.id, nombre: datos.nombre, precio: precioDist, actualizado: ahora });
                         });
                         this.eliminados.forEach(e => {
                             batch.delete(this.db.collection('productos').doc(e.id));
+                            batch.delete(this.db.collection('preciosDistribuidor').doc(e.id));
                             batch.delete(this.db.collection(e.tipo === 'caja' ? 'preciosMayoreo' : 'preciosMenudeo').doc(e.id));
                         });
                         await batch.commit();
