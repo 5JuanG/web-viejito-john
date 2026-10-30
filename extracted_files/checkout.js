@@ -247,6 +247,14 @@ function initCarousel() {
     setInterval(() => { currentIndex = (currentIndex + 1) % 2; update(); }, 3000);
 }
 
+// Número de pedido para el rastreo (VJ-XXXXXXXX, sin letras/números que se confundan)
+function nuevoCodigoPedido() {
+    const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const bytes = new Uint8Array(8);
+    (window.crypto || window.msCrypto).getRandomValues(bytes);
+    return 'VJ-' + Array.from(bytes, b => alfabeto[b % alfabeto.length]).join('');
+}
+
 // ---------- FORM SUBMIT ----------
 function initForm() {
     const form = document.getElementById('checkout-form');
@@ -275,7 +283,9 @@ function initForm() {
         const precioUnitario = esCarrito ? 0 : getPriceForTier(currentProduct, tierActual);
         const envio = esCarrito ? carritoCalc.envio : (currentProduct.costoEnvio || 0);
         const resumenCarrito = esCarrito ? ('Carrito: ' + carritoCalc.lineas.map(l => `${l.cantidad}× ${l.nombre}`).join(', ')).slice(0, 190) : '';
+        const codigoPedido = nuevoCodigoPedido();
         const orderData = {
+            codigo: codigoPedido,
             productoId: currentProduct.id,
             nivelPrecio: esCarrito ? (carritoCalc.nivel ? carritoCalc.nivel.clave : 'publico') : tierActual,
             ...(((esCarrito && carritoCalc.distribuidor) || (!esCarrito && tierActual === 'distribuidores')) && window.VJDistribuidor && VJDistribuidor.activo
@@ -305,6 +315,14 @@ function initForm() {
         } catch (err) {
             console.warn('Error guardando pedido en Firebase:', err);
         }
+        // Registro público mínimo para que el cliente consulte el estado con su número de pedido
+        try {
+            if (typeof db !== 'undefined' && db) {
+                await db.collection('seguimiento').doc(codigoPedido).set({ codigo: codigoPedido, estado: 'nuevo', fecha: orderData.fecha });
+            }
+        } catch (err) {
+            console.warn('No se pudo crear el registro de seguimiento:', err);
+        }
 
         const fecha = new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
         const isMayoreo = currentProduct.tipo === 'mayoreo';
@@ -317,6 +335,8 @@ function initForm() {
                 : [`📦 *Producto:* ${currentProduct.nombre}`]),
             `💰 *Total:* ${total}`,
             `🕐 *Fecha:* ${fecha}`,
+            `🔎 *Número de pedido:* ${codigoPedido}`,
+            `📍 Rastrea tu pedido: ${location.origin}/rastreo.html?c=${codigoPedido}`,
             '─────────────────────',
             isMayoreo ? '👤 *DATOS DEL DISTRIBUIDOR*' : '👤 *DATOS DEL CLIENTE*',
             `• Nombre: ${orderData.nombre}`,
@@ -341,10 +361,10 @@ function initForm() {
         setTimeout(() => {
             submitIcon.classList.remove('animate-spin');
             submitIcon.textContent = 'check_circle';
-            submitText.textContent = '¡Pedido registrado! Abriendo WhatsApp...';
+            submitText.textContent = `¡Pedido ${codigoPedido} registrado! Abriendo WhatsApp...`;
             if (esCarrito && window.VJCarrito) VJCarrito.vaciar();
             window.location.href = waURL;
-        }, 800);
+        }, 1500);
     });
 }
 

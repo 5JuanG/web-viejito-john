@@ -60,6 +60,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Seguimiento del pedido: el cliente consulta SOLO con su número de pedido (no se puede listar).
+    // Guarda únicamente estado, paquetería, guía y fechas: nunca nombre, teléfono ni dirección.
+    match /seguimiento/{codigo} {
+      allow get: if true;
+      allow list, update, delete: if isAdmin();
+      allow create: if isAdmin()
+        || (codigo.matches('VJ-[A-Z0-9]{8}')
+            && request.resource.data.keys().hasOnly(['codigo', 'estado', 'fecha'])
+            && request.resource.data.codigo == codigo
+            && request.resource.data.estado == 'nuevo');
+    }
+
     // Todo lo demás (inventario, fórmulas, ventas, mayoristas, auditoría, etc.): solo el administrador
     match /{document=**} {
       allow read, write: if isAdmin();
