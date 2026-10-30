@@ -33,5 +33,6 @@ echo    https://web-viejito-john-20260720-01.web.app
 echo.
 echo Admin:      https://web-viejito-john-20260720-01.web.app/admin.html
 echo Precios:    https://web-viejito-john-20260720-01.web.app/admin-precios.html
+echo Pedidos:    https://web-viejito-john-20260720-01.web.app/admin-pedidos.html
 echo.
 pause
