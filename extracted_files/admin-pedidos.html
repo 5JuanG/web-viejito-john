@@ -355,7 +355,7 @@ document.addEventListener('alpine:init', () => {
             if (!o.linkPago || !/^https?:\/\//.test(o.linkPago)) { this.aviso('Primero pega el link de pago de Mercado Pago.'); return; }
             if (!o.codigo) o.codigo = this.nuevoCodigo(); // antes de abrir WhatsApp, para no perder el gesto del clic
             const nombre = String(o.nombre || '').split(' ')[0] || '';
-            const texto = `Hola ${nombre}, gracias por tu pedido en VJ.Lab 🙌\n\n📦 ${this.listaProductos(o)}\n💰 Total: ${o.total}\n\nPuedes pagar de forma segura con Mercado Pago en este link:\n${o.linkPago}\n\nCuando se acredite el pago preparamos tu envío y te mandamos la guía de rastreo.\n\n🔎 Sigue tu pedido aquí: ${this.rastreoLink(o)}`;
+            const texto = `Hola ${nombre}, gracias por tu pedido en VJ.Lab\n\n${this.listaProductos(o)}\nTotal: ${o.total}\n\nPuedes pagar de forma segura con Mercado Pago en este link:\n${o.linkPago}\n\nCuando se acredite el pago preparamos tu envío y te mandamos la guía de rastreo.\n\nSigue tu pedido aquí: ${this.rastreoLink(o)}`;
             if (this.abrirWA(o, texto)) {
                 const nuevo = (!o.estado || o.estado === 'nuevo') ? 'link_enviado' : o.estado;
                 o.estado = nuevo;
@@ -366,7 +366,7 @@ document.addEventListener('alpine:init', () => {
         async enviarGuia(o) {
             if (!o.codigo) o.codigo = this.nuevoCodigo();
             const nombre = String(o.nombre || '').split(' ')[0] || '';
-            const texto = `Hola ${nombre}, tu pedido de VJ.Lab ya va en camino 🚚\n\nPaquetería: ${o.paqueteria || 'por confirmar'}\nGuía: ${o.guia}\n\n🔎 Sigue tu pedido aquí: ${this.rastreoLink(o)}\n\n¡Gracias por tu compra!`;
+            const texto = `Hola ${nombre}, tu pedido de VJ.Lab ya va en camino\n\nPaquetería: ${o.paqueteria || 'por confirmar'}\nGuía: ${o.guia}\n\nSigue tu pedido aquí: ${this.rastreoLink(o)}\n\n¡Gracias por tu compra!`;
             if (this.abrirWA(o, texto)) {
                 const nuevo = (o.estado !== 'enviado' && o.estado !== 'entregado') ? 'enviado' : o.estado;
                 o.estado = nuevo;

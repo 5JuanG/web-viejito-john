@@ -328,27 +328,27 @@ function initForm() {
         const isMayoreo = currentProduct.tipo === 'mayoreo';
 
         const msgLines = [
-            isMayoreo ? '🛒 *NUEVO PEDIDO MAYOREO - VJ.Lab*' : '🛒 *NUEVO PEDIDO - VJ.Lab*',
+            isMayoreo ? '*NUEVO PEDIDO MAYOREO - VJ.Lab*' : '*NUEVO PEDIDO - VJ.Lab*',
             '─────────────────────',
             ...(esCarrito
-                ? ['📦 *Productos:*', ...carritoCalc.lineas.map(l => `• ${l.cantidad} × ${l.nombre} — ${fmt(l.subtotal)}`), `🚚 *Envío:* ${envio ? fmt(envio) : 'GRATIS'}`]
-                : [`📦 *Producto:* ${currentProduct.nombre}`]),
-            `💰 *Total:* ${total}`,
-            `🕐 *Fecha:* ${fecha}`,
-            `🔎 *Número de pedido:* ${codigoPedido}`,
-            `📍 Rastrea tu pedido: ${location.origin}/rastreo.html?c=${codigoPedido}`,
+                ? ['*Productos:*', ...carritoCalc.lineas.map(l => `• ${l.cantidad} × ${l.nombre} — ${fmt(l.subtotal)}`), `*Envío:* ${envio ? fmt(envio) : 'GRATIS'}`]
+                : [`*Producto:* ${currentProduct.nombre}`]),
+            `*Total:* ${total}`,
+            `*Fecha:* ${fecha}`,
+            `*Número de pedido:* ${codigoPedido}`,
+            `Rastrea tu pedido: ${location.origin}/rastreo.html?c=${codigoPedido}`,
             '─────────────────────',
-            isMayoreo ? '👤 *DATOS DEL DISTRIBUIDOR*' : '👤 *DATOS DEL CLIENTE*',
+            isMayoreo ? '*DATOS DEL DISTRIBUIDOR*' : '*DATOS DEL CLIENTE*',
             `• Nombre: ${orderData.nombre}`,
             `• Tel: ${telefono}`,
             `• Email: ${email}`,
             '─────────────────────',
-            '📍 *DIRECCIÓN DE ENTREGA*',
+            '*DIRECCIÓN DE ENTREGA*',
             `• Calle: ${direccion}`,
             `• Ciudad: ${ciudad}`,
             `• C.P.: ${cp}`,
             '─────────────────────',
-            '💳 Pago: enviar link de Mercado Pago al cliente.',
+            'Pago: enviar link de Mercado Pago al cliente.',
         ];
         const msg = msgLines.map(encodeURIComponent).join('%0A');
         const waURL = `https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`;
