@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Envíos | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: "#154212", surface: "#f3f4f6" }, fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] } } } }
+    </script>
+    <style>[x-cloak] { display: none !important; }</style>
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="admin-auth.js"></script>
+    <script src="envio.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-surface font-sans text-gray-800 antialiased min-h-screen" x-data="enviosAdmin()" x-cloak>
+
+<div x-show="authenticated" class="min-h-screen pb-24">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-2xl">local_shipping</span>
+                <h1 class="text-lg font-extrabold">Envíos</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <a href="admin-precios.html" class="text-gray-500 hover:text-primary">Precios</a>
+                <a href="admin-pedidos.html" class="text-gray-500 hover:text-primary">Pedidos</a>
+                <a href="admin-distribuidores.html" class="text-gray-500 hover:text-primary">Distribuidores</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <p x-show="cargando" class="text-gray-500 text-sm">Cargando…</p>
+        <p x-show="error" class="bg-red-50 text-red-700 rounded-xl p-3 text-sm" x-text="error"></p>
+
+        <template x-if="cfg">
+            <div class="space-y-6">
+
+                <section class="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-900">
+                    <h2 class="font-bold mb-2">Cómo funciona</h2>
+                    <ol class="list-decimal ml-5 space-y-1">
+                        <li>El cliente escribe su código postal. Si es de tu <b>zona local</b>, paga tu cuota. Si no, se busca su estado, su <b>zona</b> y la tarifa según el peso del pedido.</li>
+                        <li>El peso sale de la suma del <b>peso (kg)</b> de cada producto (se captura en <a href="admin-precios.html" class="underline font-bold">Precios</a>). Se elige la caja más chica que alcance y se cobra el mayor entre el peso real y el volumétrico, redondeado hacia arriba al siguiente peso cotizado.</li>
+                        <li>Si una tarifa está en <b>$0</b>, el pedido no cabe en ninguna caja o pasa del peso máximo, el cliente ve <b>“Por confirmar”</b> y tú le confirmas el envío por WhatsApp.</li>
+                    </ol>
+                    <p class="mt-2 text-xs">Captura las tarifas cotizando en Pakke desde tu código postal hacia una ciudad de cada zona, con las medidas de cada caja. Agrega tu margen si quieres.</p>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <label class="flex items-center gap-3 font-bold">
+                        <input type="checkbox" x-model="cfg.activo" class="rounded border-gray-300 text-primary">
+                        Calcular el envío por código postal y peso
+                    </label>
+                    <p class="text-xs text-gray-500 mt-2">Si lo apagas, el sitio vuelve a usar el “Envío fijo” de cada producto.</p>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h2 class="font-bold mb-3">Entrega local (la haces tú)</h2>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <label class="text-xs font-bold text-gray-500">Cuota de envío local ($)
+                            <input type="number" min="0" x-model.number="cfg.cuotaLocal" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500">Códigos postales locales (inicios, separados por coma)
+                            <input type="text" x-model="cfg.prefijosLocales" placeholder="Ej. 64, 66, 6700" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Un C.P. es local si empieza con alguno de estos números. “64” cubre todos los 64xxx; “6700” solo los 6700x. Déjalo vacío si no haces entregas locales.</p>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h2 class="font-bold mb-3">Paquetes y cajas</h2>
+                    <div class="grid md:grid-cols-3 gap-3">
+                        <label class="text-xs font-bold text-gray-500">Pesos cotizados (kg, separados por coma)
+                            <input type="text" x-model="pesosTxt" @change="aplicarPesos()" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500">Peso por pieza si el producto no tiene (kg)
+                            <input type="number" min="0" step="0.01" x-model.number="cfg.pesoDefaultKg" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500">Divisor del peso volumétrico
+                            <input type="number" min="1" x-model.number="cfg.divisorVolumetrico" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Volumétrico = largo × ancho × alto (cm) ÷ divisor (5000 es el más común; confírmalo en Pakke).</p>
+
+                    <h3 class="font-bold text-sm mt-5 mb-2">Cajas</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead><tr class="text-left text-xs text-gray-500"><th class="pr-2">Nombre</th><th class="pr-2">Largo cm</th><th class="pr-2">Ancho cm</th><th class="pr-2">Alto cm</th><th class="pr-2">Pedidos hasta (kg)</th><th></th></tr></thead>
+                            <tbody>
+                                <template x-for="(c, i) in cfg.cajas" :key="i">
+                                    <tr>
+                                        <td class="pr-2 pb-2"><input type="text" x-model="c.nombre" class="w-28 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="pr-2 pb-2"><input type="number" min="0" x-model.number="c.largo" class="w-20 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="pr-2 pb-2"><input type="number" min="0" x-model.number="c.ancho" class="w-20 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="pr-2 pb-2"><input type="number" min="0" x-model.number="c.alto" class="w-20 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="pr-2 pb-2"><input type="number" min="0" step="0.1" x-model.number="c.hastaKg" class="w-24 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="pb-2"><button type="button" @click="cfg.cajas.splice(i, 1)" class="text-xs text-red-600 hover:underline">Quitar</button></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" @click="cfg.cajas.push({ nombre: '', largo: 0, ancho: 0, alto: 0, hastaKg: 0 })" class="text-sm font-bold text-primary hover:underline">+ Agregar caja</button>
+                    <p class="text-xs text-gray-400 mt-2">Cada pedido usa la caja más chica cuyo “hasta (kg)” alcance. Agrega una caja por cada tamaño que uses (por ejemplo la de 5 kg y la de 10 kg) para que los pedidos medianos no se coticen con una caja demasiado grande. Un pedido más pesado que la caja más grande queda “por confirmar”.</p>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h2 class="font-bold mb-3">Tarifas por zona ($ por paquete)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-xs text-gray-500">
+                                    <th class="pr-2">Zona</th>
+                                    <template x-for="w in cfg.pesos" :key="w"><th class="pr-2" x-text="w + ' kg'"></th></template>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(z, i) in cfg.zonas" :key="z.id">
+                                    <tr>
+                                        <td class="pr-2 pb-2"><input type="text" x-model="z.nombre" class="w-52 rounded-lg border-gray-300 text-sm"></td>
+                                        <template x-for="w in cfg.pesos" :key="w"><td class="pr-2 pb-2"><input type="number" min="0" x-model.number="z.precios[w]" class="w-24 rounded-lg border-gray-300 text-sm"></td></template>
+                                        <td class="pb-2"><button type="button" @click="quitarZona(i)" class="text-xs text-red-600 hover:underline">Quitar</button></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" @click="agregarZona()" class="text-sm font-bold text-primary hover:underline">+ Agregar zona</button>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h2 class="font-bold mb-3">Zona de cada estado</h2>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2">
+                        <template x-for="e in estados" :key="e">
+                            <label class="flex items-center justify-between gap-2 text-sm">
+                                <span x-text="e"></span>
+                                <select x-model="cfg.estadoZona[e]" class="rounded-lg border-gray-300 text-sm py-1 max-w-[11rem]">
+                                    <option value="">— sin zona —</option>
+                                    <template x-for="z in cfg.zonas" :key="z.id"><option :value="z.id" x-text="z.nombre" :selected="cfg.estadoZona[e] === z.id"></option></template>
+                                </select>
+                            </label>
+                        </template>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-3">El estado se toma de los dos primeros dígitos del código postal. “Sin zona” significa que el envío a ese estado se confirma por WhatsApp.</p>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h2 class="font-bold mb-3">Probar</h2>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <label class="text-xs font-bold text-gray-500">Código postal
+                            <input type="text" maxlength="5" x-model="prueba.cp" class="mt-1 block w-32 rounded-lg border-gray-300 text-sm">
+                        </label>
+                        <label class="text-xs font-bold text-gray-500">Peso del pedido (kg)
+                            <input type="number" min="0" step="0.1" x-model.number="prueba.peso" class="mt-1 block w-32 rounded-lg border-gray-300 text-sm">
+                        </label>
+                        <button type="button" @click="probar()" class="bg-gray-800 text-white text-sm font-bold px-5 py-2 rounded-full">Calcular</button>
+                    </div>
+                    <p x-show="prueba.res" class="mt-3 text-sm bg-gray-50 rounded-xl p-3" x-text="textoPrueba()"></p>
+                    <p class="text-xs text-gray-400 mt-2">Usa lo que ves en pantalla, aunque todavía no lo hayas guardado.</p>
+                </section>
+            </div>
+        </template>
+    </main>
+
+    <div x-show="cfg" class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 py-3">
+        <div class="max-w-5xl mx-auto px-4 flex items-center justify-between gap-3">
+            <p class="text-xs text-gray-500" x-text="existe ? 'Los cambios se ven en el sitio al guardar.' : 'Todavía no hay envíos configurados: el sitio usa el envío fijo de cada producto hasta que guardes.'"></p>
+            <button @click="guardar()" :disabled="guardando" class="bg-primary text-white text-sm font-bold px-6 py-2 rounded-full disabled:opacity-60">Guardar envíos</button>
+        </div>
+    </div>
+
+    <div x-show="mensaje" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-3 rounded-full shadow-lg" x-text="mensaje"></div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('enviosAdmin', () => ({
+        authenticated: false, db: null, cargando: true, guardando: false, error: '', mensaje: '',
+        cfg: null, existe: false, pesosTxt: '', estados: VJEnvio.ESTADOS,
+        prueba: { cp: '', peso: 1, res: null },
+
+        aviso(t) { this.mensaje = t; setTimeout(() => { this.mensaje = ''; }, 3500); },
+
+        async init() {
+            await window.vjAuthReady;
+            this.authenticated = true;
+            this.db = (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) ? firebase.firestore() : null;
+            let guardada = null;
+            if (!this.db) this.error = 'No hay conexión con la base de datos.';
+            else {
+                try {
+                    const snap = await this.db.collection('config').doc('envio').get();
+                    if (snap.exists) guardada = snap.data();
+                } catch (e) {
+                    console.error(e);
+                    this.error = 'No se pudo leer la configuración: ' + (e.code || e.message || e);
+                }
+            }
+            const base = VJEnvio.porDefecto();
+            this.existe = !!guardada;
+            this.cfg = guardada ? { ...base, ...guardada, estadoZona: { ...base.estadoZona, ...(guardada.estadoZona || {}) } } : base;
+            this.pesosTxt = this.cfg.pesos.join(', ');
+            this.cargando = false;
+        },
+
+        aplicarPesos() {
+            const lista = [...new Set(String(this.pesosTxt).split(/[\s,]+/).map(Number).filter(w => w > 0))].sort((a, b) => a - b);
+            if (!lista.length) { this.aviso('Escribe al menos un peso, por ejemplo 1, 5, 10.'); this.pesosTxt = this.cfg.pesos.join(', '); return; }
+            this.cfg.pesos = lista;
+            this.pesosTxt = lista.join(', ');
+            this.cfg.zonas.forEach(z => lista.forEach(w => { if (z.precios[w] === undefined) z.precios[w] = 0; }));
+        },
+
+        agregarZona() {
+            const precios = {}; this.cfg.pesos.forEach(w => { precios[w] = 0; });
+            this.cfg.zonas.push({ id: 'z' + Date.now().toString(36), nombre: 'Nueva zona', precios });
+        },
+        quitarZona(i) {
+            const z = this.cfg.zonas[i];
+            if (!confirm('¿Quitar la zona “' + z.nombre + '”? Sus estados quedarán sin zona.')) return;
+            Object.keys(this.cfg.estadoZona).forEach(e => { if (this.cfg.estadoZona[e] === z.id) this.cfg.estadoZona[e] = ''; });
+            this.cfg.zonas.splice(i, 1);
+        },
+
+        // Copia limpia y con números de lo que hay en pantalla
+        limpia() {
+            const c = JSON.parse(JSON.stringify(this.cfg));
+            const num = v => Number(v) || 0;
+            c.activo = !!c.activo;
+            c.cuotaLocal = num(c.cuotaLocal);
+            c.pesoDefaultKg = num(c.pesoDefaultKg) || 0.3;
+            c.divisorVolumetrico = num(c.divisorVolumetrico) || 5000;
+            c.prefijosLocales = String(c.prefijosLocales || '').replace(/[^\d,\s]/g, '').trim();
+            c.cajas = c.cajas.filter(x => num(x.hastaKg) > 0).map(x => ({ nombre: String(x.nombre || '').trim(), largo: num(x.largo), ancho: num(x.ancho), alto: num(x.alto), hastaKg: num(x.hastaKg) }));
+            c.zonas.forEach(z => {
+                const p = {}; c.pesos.forEach(w => { p[w] = num(z.precios[w]); });
+                z.precios = p; z.nombre = String(z.nombre || '').trim() || z.id;
+            });
+            return c;
+        },
+
+        async guardar() {
+            this.aplicarPesos();
+            const c = this.limpia();
+            if (!c.cajas.length) { this.aviso('Agrega al menos una caja (con “hasta kg” mayor a 0).'); return; }
+            if (!this.db) { this.aviso('No hay conexión con la base de datos.'); return; }
+            this.guardando = true;
+            try {
+                c.actualizado = new Date().toISOString();
+                await this.db.collection('config').doc('envio').set(c);
+                this.existe = true;
+                this.aviso('Envíos guardados.');
+            } catch (e) {
+                console.error(e);
+                this.aviso('No se pudo guardar: ' + (e.code || e.message));
+            }
+            this.guardando = false;
+        },
+
+        probar() {
+            const c = this.limpia();
+            this.prueba.res = VJEnvio.calcular(c, this.prueba.cp, Number(this.prueba.peso) || 0);
+        },
+        textoPrueba() {
+            const r = this.prueba.res; if (!r) return '';
+            const dinero = n => '$' + Number(n).toLocaleString('es-MX');
+            if (r.monto === null) return (r.tipo === 'sin-cp' ? 'Escribe un código postal de 5 dígitos.' : 'Por confirmar: ' + r.mensaje + '.') + (r.estado ? ' (' + r.estado + (r.caja ? ', caja ' + r.caja + ', se cobraría como ' + r.pesoCobrado + ' kg' : '') + ')' : '');
+            if (r.tipo === 'local') return 'Entrega local: ' + dinero(r.monto) + (r.estado ? ' (' + r.estado + ')' : '');
+            return dinero(r.monto) + ' — ' + r.estado + ', zona “' + r.zona + '”, caja ' + r.caja + ', se cobra como paquete de ' + r.pesoCobrado + ' kg.';
+        }
+    }));
+});
+</script>
+</body>
+</html>

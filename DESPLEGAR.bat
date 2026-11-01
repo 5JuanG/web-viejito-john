@@ -35,6 +35,7 @@ echo Admin:      https://web-viejito-john-20260720-01.web.app/admin.html
 echo Precios:    https://web-viejito-john-20260720-01.web.app/admin-precios.html
 echo Pedidos:    https://web-viejito-john-20260720-01.web.app/admin-pedidos.html
 echo Distribuid: https://web-viejito-john-20260720-01.web.app/admin-distribuidores.html
+echo Envios:     https://web-viejito-john-20260720-01.web.app/admin-envios.html
 echo Rastreo:    https://web-viejito-john-20260720-01.web.app/rastreo.html
 echo.
 pause

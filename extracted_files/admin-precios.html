@@ -63,6 +63,7 @@
                 <div class="flex items-center gap-4">
                     <a href="admin-pedidos.html" class="text-sm font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">receipt_long</span> Pedidos</a>
                     <a href="admin-distribuidores.html" class="text-sm font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">badge</span> Distribuidores</a>
+                    <a href="admin-envios.html" class="text-sm font-bold text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">local_shipping</span> Envíos</a>
                     <span class="text-xs text-gray-400 hidden md:block">Lo que guardes aquí se ve en el catálogo y en el pedido</span>
                     <button @click="logout()" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 text-sm font-medium">
                         <span class="material-symbols-outlined text-sm">logout</span> Salir
@@ -157,8 +158,12 @@
                                     <input type="text" x-model="prod.textoPromo" placeholder="Mayoreo Especial" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
                                 </div>
                                 <div>
-                                    <label class="text-xs text-gray-500">Costo de envío ($)</label>
+                                    <label class="text-xs text-gray-500">Envío fijo ($, se ignora con envío por C.P.)</label>
                                     <input type="number" min="0" x-model.number="prod.costoEnvio" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500">Peso del producto (kg)</label>
+                                    <input type="number" min="0" step="0.01" x-model.number="prod.pesoKg" placeholder="Ej. 0.3" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
                                 </div>
                             </div>
 
@@ -383,7 +388,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             let contador = 0;
-            const BLANCO = { tipo: 'menudeo', linea: 'viejito', categoria: '', nombre: '', descripcion: '', imagen: '', imagenFrente: '', imagenLado: '', imagenMayoreo: '', video: '', precio: 0, ofertaActiva: false, precioOferta: 0, mayoreo: 0, medioMayoreo: 0, distribuidores: 0, cambaceo: 0, piezas: 1, textoPromo: '', productoBase: '', costoEnvio: 0, barcode: '', activo: true };
+            const BLANCO = { tipo: 'menudeo', linea: 'viejito', categoria: '', nombre: '', descripcion: '', imagen: '', imagenFrente: '', imagenLado: '', imagenMayoreo: '', video: '', precio: 0, ofertaActiva: false, precioOferta: 0, mayoreo: 0, medioMayoreo: 0, distribuidores: 0, cambaceo: 0, piezas: 1, textoPromo: '', productoBase: '', costoEnvio: 0, pesoKg: 0, barcode: '', activo: true };
             const slug = t => String(t || 'producto').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'producto';
             const num = v => (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
 
@@ -515,7 +520,7 @@
                         this.productos.forEach((p, i) => {
                             const { _k, _nuevo, ...datos } = p;
                             datos.orden = i + 1; p.orden = i + 1;
-                            ['precio', 'precioOferta', 'mayoreo', 'medioMayoreo', 'distribuidores', 'cambaceo', 'costoEnvio'].forEach(k => { datos[k] = Number(datos[k] || 0); });
+                            ['precio', 'precioOferta', 'mayoreo', 'medioMayoreo', 'distribuidores', 'cambaceo', 'costoEnvio', 'pesoKg'].forEach(k => { datos[k] = Number(datos[k] || 0); });
                             datos.piezas = Number(datos.piezas || 1);
                             // El precio de distribuidor no se guarda en el documento público
                             const precioDist = datos.tipo === 'caja' ? 0 : Number(datos.distribuidores || 0);

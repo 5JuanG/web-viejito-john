@@ -31,6 +31,7 @@
             <div class="flex items-center gap-4 text-sm font-medium">
                 <a href="admin-precios.html" class="text-gray-500 hover:text-primary">Precios</a>
                 <a href="admin-distribuidores.html" class="text-gray-500 hover:text-primary">Distribuidores</a>
+                <a href="admin-envios.html" class="text-gray-500 hover:text-primary">Envíos</a>
                 <button @click="cargar()" class="text-gray-500 hover:text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">refresh</span> Actualizar</button>
             </div>
         </div>
@@ -100,7 +101,7 @@
                                     <li><span class="font-bold" x-text="it.cantidad + ' ×'"></span> <span x-text="it.nombre"></span> <span class="text-gray-400" x-text="'— ' + dinero(it.subtotal)"></span></li>
                                 </template>
                             </ul>
-                            <p x-show="o.items && o.items.length && Number(o.envio) > 0" class="text-xs text-gray-500 mt-1" x-text="'Envío: ' + dinero(o.envio)"></p>
+                            <p x-show="o.envioPorConfirmar || Number(o.envio) > 0" class="text-xs mt-1" :class="o.envioPorConfirmar ? 'font-bold text-red-600' : 'text-gray-500'" x-text="o.envioPorConfirmar ? 'Envío POR CONFIRMAR con el cliente (' + ((o.envioDetalle && o.envioDetalle.estado) || 'destino sin reconocer') + (o.envioDetalle && o.envioDetalle.pesoKg ? ', ' + o.envioDetalle.pesoKg + ' kg' : '') + ')' : 'Envío: ' + dinero(o.envio) + (o.envioDetalle && o.envioDetalle.zona ? ' · ' + o.envioDetalle.zona + (o.envioDetalle.pesoCobrado ? ' · paquete de ' + o.envioDetalle.pesoCobrado + ' kg' : '') : '')"></p>
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-extrabold text-primary" x-text="o.total"></p>

@@ -107,7 +107,7 @@
 </div>
 <div>
 <label class="block font-label-sm text-on-surface-variant mb-2">Código Postal</label>
-<input id="campo-cp" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="01000" type="text" required/>
+<input id="campo-cp" class="w-full bg-surface-cream border border-outline-variant rounded-lg p-3 form-input-focus transition-all" placeholder="01000" type="text" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" title="Código postal de 5 dígitos" required/>
 </div>
 <div class="md:col-span-2">
 <label class="block font-label-sm text-on-surface-variant mb-2">Teléfono de Contacto</label>
@@ -182,6 +182,7 @@
 <span id="label-envio">Envío</span>
 <span id="co-shipping" class="font-bold"></span>
 </div>
+<p id="co-envio-nota" class="text-xs text-on-surface-variant"></p>
 </div>
 <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-primary">
 <span class="font-headline-md text-headline-md">Total</span>
@@ -254,6 +255,7 @@
 </div>
 <script src="catalogo-seed.js"></script>
 <script src="catalogo.js"></script>
+<script src="envio.js"></script>
 <script src="carrito.js"></script>
 <script src="checkout.js"></script>
 </body>

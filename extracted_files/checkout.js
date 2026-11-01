@@ -93,6 +93,44 @@ let currentProduct = null;
 
 let carritoCalc = null;
 
+// ---------- ENVÍO POR C.P. (envio.js) ----------
+// subtotalActual: productos; envioLegacy: envío fijo por producto (si el envío por C.P.
+// no está activo); envioInfo: resultado del cálculo por C.P. (o null).
+let subtotalActual = 0;
+let envioLegacy = 0;
+let envioInfo = null;
+const envioMonto = () => envioInfo ? (envioInfo.monto || 0) : envioLegacy;
+const envioPorConfirmar = () => !!(envioInfo && envioInfo.tipo === 'consultar');
+
+function pintarTotales() {
+    const shipEl = document.getElementById('co-shipping');
+    const notaEl = document.getElementById('co-envio-nota');
+    const monto = envioMonto();
+    shipEl.classList.remove('text-green-600');
+    if (envioInfo && envioInfo.monto === null) {
+        shipEl.textContent = envioPorConfirmar() ? 'Por confirmar' : 'Escribe tu C.P.';
+    } else if (!monto) {
+        shipEl.textContent = 'GRATIS'; shipEl.classList.add('text-green-600');
+    } else {
+        shipEl.textContent = fmt(monto);
+    }
+    if (notaEl) notaEl.textContent = envioInfo ? envioInfo.mensaje : '';
+    document.getElementById('co-total').textContent = fmt(subtotalActual + monto);
+}
+
+async function actualizarEnvio() {
+    if (!currentProduct) return;
+    const cfg = window.VJEnvio ? await VJEnvio.cargar() : null;
+    if (!cfg) { envioInfo = null; pintarTotales(); return; }
+    const campo = document.getElementById('campo-cp');
+    if (campo && !campo.value && VJEnvio.cpGuardado()) campo.value = VJEnvio.cpGuardado();
+    const cp = campo ? campo.value : '';
+    if (VJEnvio.limpiaCP(cp).length === 5) VJEnvio.guardarCP(cp);
+    const peso = carritoCalc ? carritoCalc.pesoTotal : VJEnvio.pesoDe(currentProduct, 1, cfg);
+    envioInfo = VJEnvio.calcular(cfg, cp, peso);
+    pintarTotales();
+}
+
 async function renderCarrito() {
     if (window.VJDistribuidor) await VJDistribuidor.listo;
     await loadRemotePrices();
@@ -125,10 +163,9 @@ async function renderCarrito() {
 
     document.getElementById('label-subtotal').textContent = 'Subtotal';
     document.getElementById('co-subtotal').textContent = fmt(c.subtotal);
-    const shipEl = document.getElementById('co-shipping');
-    if (!c.envio) { shipEl.textContent = 'GRATIS'; shipEl.classList.add('text-green-600'); }
-    else { shipEl.textContent = fmt(c.envio); shipEl.classList.remove('text-green-600'); }
-    document.getElementById('co-total').textContent = fmt(c.total);
+    subtotalActual = c.subtotal;
+    envioLegacy = c.envioInfo ? 0 : c.envio;
+    await actualizarEnvio();
 }
 
 async function renderProduct() {
@@ -148,7 +185,6 @@ async function renderProduct() {
 
     const isMayoreo = currentProduct.tipo === 'mayoreo';
     const precioFinal = getPriceForTier(currentProduct, tier);
-    const total = precioFinal + (currentProduct.costoEnvio || 0);
 
     document.title = `Tu pedido - ${currentProduct.nombre} | VJ.Lab`;
     document.getElementById('summary-title').textContent = isMayoreo ? 'Pedido de Mayoreo' : 'Resumen del Pedido';
@@ -199,15 +235,9 @@ async function renderProduct() {
     }
 
     document.getElementById('co-subtotal').textContent = fmt(precioFinal);
-    const shipEl = document.getElementById('co-shipping');
-    if ((currentProduct.costoEnvio || 0) === 0) {
-        shipEl.textContent = 'GRATIS';
-        shipEl.classList.add('text-green-600');
-    } else {
-        shipEl.textContent = fmt(currentProduct.costoEnvio);
-        shipEl.classList.remove('text-green-600');
-    }
-    document.getElementById('co-total').textContent = fmt(total);
+    subtotalActual = precioFinal;
+    envioLegacy = currentProduct.costoEnvio || 0;
+    await actualizarEnvio();
 
     if (isMayoreo) {
         document.getElementById('label-subtotal').textContent = 'Subtotal Mayoreo';
@@ -264,6 +294,12 @@ function initForm() {
 
     if (!form) return;
 
+    const cpInput = document.getElementById('campo-cp');
+    if (cpInput) cpInput.addEventListener('input', () => {
+        cpInput.value = cpInput.value.replace(/\D/g, '').slice(0, 5);
+        actualizarEnvio();
+    });
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentProduct) return;
@@ -281,7 +317,7 @@ function initForm() {
         const tierActual = tierEfectivo(new URLSearchParams(window.location.search).get('tier') || new URLSearchParams(window.location.search).get('t') || 'publico');
         const esCarrito = !!carritoCalc;
         const precioUnitario = esCarrito ? 0 : getPriceForTier(currentProduct, tierActual);
-        const envio = esCarrito ? carritoCalc.envio : (currentProduct.costoEnvio || 0);
+        const envio = envioMonto();
         const resumenCarrito = esCarrito ? ('Carrito: ' + carritoCalc.lineas.map(l => `${l.cantidad}× ${l.nombre}`).join(', ')).slice(0, 190) : '';
         const codigoPedido = nuevoCodigoPedido();
         const orderData = {
@@ -292,7 +328,9 @@ function initForm() {
                 ? { distribuidorCorreo: VJDistribuidor.correo, distribuidorNombre: VJDistribuidor.nombre } : {}),
             precioUnitario,
             envio,
-            totalNumero: esCarrito ? carritoCalc.total : precioUnitario + envio,
+            envioPorConfirmar: envioPorConfirmar(),
+            envioDetalle: envioInfo ? { tipo: envioInfo.tipo, zona: envioInfo.zona || '', estado: envioInfo.estado || '', caja: envioInfo.caja || '', pesoKg: envioInfo.pesoKg || 0, pesoCobrado: envioInfo.pesoCobrado || 0 } : null,
+            totalNumero: esCarrito ? carritoCalc.subtotal + envio : precioUnitario + envio,
             estado: 'nuevo',
             ...(esCarrito ? { items: carritoCalc.lineas.map(l => ({ id: l.id, nombre: l.nombre, cantidad: l.cantidad, precioUnitario: l.precioUnitario, subtotal: l.subtotal })), subtotal: carritoCalc.subtotal } : {}),
             producto: esCarrito ? resumenCarrito : currentProduct.nombre,
@@ -326,14 +364,16 @@ function initForm() {
 
         const fecha = new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
         const isMayoreo = currentProduct.tipo === 'mayoreo';
+        const envioTexto = envioPorConfirmar() ? 'POR CONFIRMAR' : (envio ? fmt(envio) : 'GRATIS');
 
         const msgLines = [
             isMayoreo ? '*NUEVO PEDIDO MAYOREO - VJ.Lab*' : '*NUEVO PEDIDO - VJ.Lab*',
             '─────────────────────',
             ...(esCarrito
-                ? ['*Productos:*', ...carritoCalc.lineas.map(l => `• ${l.cantidad} × ${l.nombre} — ${fmt(l.subtotal)}`), `*Envío:* ${envio ? fmt(envio) : 'GRATIS'}`]
-                : [`*Producto:* ${currentProduct.nombre}`]),
+                ? ['*Productos:*', ...carritoCalc.lineas.map(l => `• ${l.cantidad} × ${l.nombre} — ${fmt(l.subtotal)}`), `*Envío:* ${envioTexto}`]
+                : [`*Producto:* ${currentProduct.nombre}`, ...(envioInfo ? [`*Envío:* ${envioTexto}`] : [])]),
             `*Total:* ${total}`,
+            ...(envioPorConfirmar() ? ['El envío se confirma por WhatsApp (no está incluido en el total).'] : []),
             `*Fecha:* ${fecha}`,
             `*Número de pedido:* ${codigoPedido}`,
             `Rastrea tu pedido: ${location.origin}/rastreo.html?c=${codigoPedido}`,
