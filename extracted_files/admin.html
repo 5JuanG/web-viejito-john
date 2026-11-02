@@ -480,6 +480,64 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Peso y medidas para envío (productos del catálogo) -->
+                <div class="mt-10">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold">Peso y medidas para envío</h3>
+                            <p class="text-sm text-gray-500">Los productos y sus nombres vienen del catálogo (se cambian en el administrador de precios). Captura el peso y las medidas de <strong>una pieza ya empacada</strong>.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+                            <div class="relative flex-1 lg:flex-none lg:w-56">
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                                <input type="text" x-model="buscarEnvio" placeholder="Buscar producto..." class="pl-9 rounded-lg border-gray-300 w-full text-sm">
+                            </div>
+                            <button @click="cargarCatalogoEnvio()" title="Recargar del catálogo" class="text-gray-500 hover:text-primary material-symbols-outlined bg-gray-100 p-2 rounded-lg">refresh</button>
+                            <button @click="guardarMedidasEnvio()" :disabled="!envioSucio || guardandoEnvio" :class="(!envioSucio || guardandoEnvio) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-light'" class="bg-primary text-white px-4 py-2 rounded-lg font-bold transition text-sm whitespace-nowrap" x-text="guardandoEnvio ? 'Guardando...' : 'Guardar peso y medidas'"></button>
+                        </div>
+                    </div>
+
+                    <div x-show="catalogoEnvio.length === 0" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center text-sm text-gray-500">
+                        No se encontraron productos del catálogo. Entra al administrador de precios y pulsa "Guardar" una vez para que los productos queden registrados; después vuelve aquí y pulsa recargar.
+                    </div>
+
+                    <div x-show="catalogoEnvio.length > 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                                    <th class="px-4 py-3 font-medium">Producto (catálogo)</th>
+                                    <th class="px-2 py-3 font-medium">Peso (kg)</th>
+                                    <th class="px-2 py-3 font-medium">Largo (cm)</th>
+                                    <th class="px-2 py-3 font-medium">Ancho (cm)</th>
+                                    <th class="px-2 py-3 font-medium">Alto (cm)</th>
+                                    <th class="px-2 py-3 font-medium">Volumen (cm³)</th>
+                                    <th class="px-4 py-3 font-medium">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-gray-100">
+                                <template x-for="p in catalogoEnvioFiltrado" :key="p.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 font-bold text-gray-800">
+                                            <span x-text="p.nombre"></span>
+                                            <span x-show="p.tipo === 'caja'" class="ml-2 text-[10px] font-bold uppercase bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Caja mayoreo</span>
+                                            <span x-show="!p.activo" class="ml-2 text-[10px] font-bold uppercase bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Oculto</span>
+                                        </td>
+                                        <td class="px-2 py-2"><input type="number" min="0" step="0.001" x-model.number="p.pesoKg" @input="envioSucio = true" class="w-24 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="px-2 py-2"><input type="number" min="0" step="0.1" x-model.number="p.largoCm" @input="envioSucio = true" class="w-20 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="px-2 py-2"><input type="number" min="0" step="0.1" x-model.number="p.anchoCm" @input="envioSucio = true" class="w-20 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="px-2 py-2"><input type="number" min="0" step="0.1" x-model.number="p.altoCm" @input="envioSucio = true" class="w-20 rounded-lg border-gray-300 text-sm"></td>
+                                        <td class="px-2 py-3 text-gray-600" x-text="envioVolumen(p) || '-'"></td>
+                                        <td class="px-4 py-3">
+                                            <span class="text-xs font-bold px-2 py-1 rounded-full" :class="envioEstadoClase(p)" x-text="envioEstadoTexto(p)"></span>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">El peso es el mismo campo "Peso del paquete (kg)" del administrador de precios: lo que captures aquí se ve allá y al revés.</p>
+                </div>
             </div>
 
             <!-- ===== FABRICACIÓN (COSTO UNITARIO) ===== -->
@@ -1249,6 +1307,12 @@
             formulaForm: { name: '', retailPrice: '', wholesalePrice: '', ingredients: [] },
             tempIngredient: { insumoId: '', qty: '' },
 
+            // Peso y medidas de envío (productos del catálogo)
+            catalogoEnvio: [],
+            buscarEnvio: '',
+            envioSucio: false,
+            guardandoEnvio: false,
+
             // Fabricación
             fabSelectedProductId: '',
             fabConfig: {
@@ -1321,6 +1385,9 @@
                 } else {
                     this.loadFromLocalStorage();
                 }
+
+                // Productos del catálogo para peso y medidas de envío
+                await this.cargarCatalogoEnvio();
 
                 // Si no hay datos, cargar demo
                 if (this.inventory.length === 0 && this.products.length === 0) {
@@ -1897,6 +1964,66 @@
                 this.saveToLocalStorage();
                 this.logAudit('formula', `Fórmula eliminada: ${id}`);
                 this.toast('Fórmula eliminada');
+            },
+
+            // ===== PESO Y MEDIDAS DE ENVÍO =====
+            get catalogoEnvioFiltrado() {
+                const q = (this.buscarEnvio || '').toLowerCase().trim();
+                return q ? this.catalogoEnvio.filter(p => String(p.nombre).toLowerCase().includes(q)) : this.catalogoEnvio;
+            },
+            envioNum(v) { const x = Number(v); return isFinite(x) && x > 0 ? x : 0; },
+            envioVolumen(p) {
+                const v = this.envioNum(p.largoCm) * this.envioNum(p.anchoCm) * this.envioNum(p.altoCm);
+                return v ? Math.round(v).toLocaleString('es-MX') : '';
+            },
+            envioEstadoTexto(p) {
+                const peso = this.envioNum(p.pesoKg) > 0;
+                const med = this.envioNum(p.largoCm) > 0 && this.envioNum(p.anchoCm) > 0 && this.envioNum(p.altoCm) > 0;
+                return peso && med ? 'Completo' : (peso || med ? 'Incompleto' : 'Sin datos');
+            },
+            envioEstadoClase(p) {
+                const t = this.envioEstadoTexto(p);
+                return t === 'Completo' ? 'bg-green-100 text-green-700' : (t === 'Incompleto' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500');
+            },
+            async cargarCatalogoEnvio() {
+                if (!this.db) { this.catalogoEnvio = []; return; }
+                try {
+                    const snap = await this.db.collection('productos').get();
+                    this.catalogoEnvio = snap.docs.map(d => {
+                        const x = d.data();
+                        return {
+                            id: d.id, nombre: x.nombre || d.id, tipo: x.tipo || 'menudeo', activo: x.activo !== false, orden: x.orden || 0,
+                            pesoKg: x.pesoKg || '', largoCm: x.largoCm || '', anchoCm: x.anchoCm || '', altoCm: x.altoCm || ''
+                        };
+                    }).sort((a, b) => a.orden - b.orden);
+                    this.envioSucio = false;
+                } catch (e) {
+                    console.error('Error leyendo productos del catálogo:', e);
+                    this.catalogoEnvio = [];
+                    this.toast('No se pudo leer el catálogo');
+                }
+            },
+            async guardarMedidasEnvio() {
+                if (!this.db) { alert('No hay conexión con la base de datos.'); return; }
+                this.guardandoEnvio = true;
+                try {
+                    const batch = this.db.batch();
+                    const ahora = new Date().toISOString();
+                    this.catalogoEnvio.forEach(p => {
+                        batch.set(this.db.collection('productos').doc(p.id), {
+                            pesoKg: this.envioNum(p.pesoKg), largoCm: this.envioNum(p.largoCm),
+                            anchoCm: this.envioNum(p.anchoCm), altoCm: this.envioNum(p.altoCm), actualizado: ahora
+                        }, { merge: true });
+                    });
+                    await batch.commit();
+                    this.envioSucio = false;
+                    this.logAudit('formula', `Peso y medidas de envío guardados (${this.catalogoEnvio.length} productos)`);
+                    this.toast('Peso y medidas guardados');
+                } catch (e) {
+                    console.error(e);
+                    alert('No se pudo guardar. Revisa tu sesión de administrador y tu conexión.');
+                }
+                this.guardandoEnvio = false;
             },
 
             // ===== FABRICACIÓN =====
