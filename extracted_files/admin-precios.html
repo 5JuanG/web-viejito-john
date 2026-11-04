@@ -526,7 +526,7 @@
                             const precioDist = datos.tipo === 'caja' ? 0 : Number(datos.distribuidores || 0);
                             delete datos.distribuidores;
                             datos.actualizado = ahora;
-                            batch.set(this.db.collection('productos').doc(p.id), datos);
+                            batch.set(this.db.collection('productos').doc(p.id), datos, { merge: true });
                             // Copia de precios para las tarjetas fijas del inicio
                             batch.set(this.db.collection(p.tipo === 'caja' ? 'preciosMayoreo' : 'preciosMenudeo').doc(p.id), {
                                 id: p.id, nombre: datos.nombre, precio: datos.precio, ofertaActiva: !!datos.ofertaActiva, precioOferta: datos.precioOferta, publico: datos.precio,

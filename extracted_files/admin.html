@@ -84,7 +84,7 @@
             <a href="#" @click.prevent="currentTab = 'fabricacion'" :class="currentTab === 'fabricacion' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">precision_manufacturing</span> <span class="font-medium">Costo de Fabricación</span>
             </a>
-            <a href="#" @click.prevent="currentTab = 'produccion'" :class="currentTab === 'produccion' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+            <a href="#" @click.prevent="currentTab = 'produccion'; cargarCatalogoVinc()" :class="currentTab === 'produccion' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">factory</span> <span class="font-medium">Producción</span>
             </a>
             <a href="#" @click.prevent="currentTab = 'escenarios'" :class="currentTab === 'escenarios' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
@@ -137,7 +137,7 @@
         <!-- MOBILE MENU -->
         <div x-show="mobileMenuOpen" class="md:hidden bg-primary text-white p-4 space-y-2" @click.away="mobileMenuOpen = false">
             <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'produccion',l:'Producción',i:'factory'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'mayoristas',l:'Mayoristas',i:'storefront'},{k:'auditoria',l:'Auditoría',i:'history'}]">
-                <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
+                <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false; if (item.k === 'produccion') cargarCatalogoVinc()" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
                     <span class="material-symbols-outlined" x-text="item.i"></span> <span x-text="item.l"></span>
                 </a>
             </template>
@@ -808,6 +808,20 @@
                         </template></tbody>
                     </table>
                 </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-6">
+                    <h4 class="font-bold text-primary mb-1">Catálogo en línea: ligar cada artículo con su inventario</h4>
+                    <p class="text-xs text-gray-500 mb-4">Elige de qué producto terminado sale cada artículo. Cuando se acaben las piezas, el catálogo muestra "Agotado". Las cajas usan sus piezas por caja.</p>
+                    <div class="overflow-x-auto"><table class="w-full text-sm">
+                        <thead><tr class="text-left text-xs text-gray-500"><th class="py-1">Artículo del catálogo</th><th>Sale de</th><th>En catálogo</th></tr></thead>
+                        <tbody><template x-for="c in catalogoVinc" :key="c.id">
+                            <tr class="border-t border-gray-100">
+                                <td class="py-2"><span x-text="c.nombre"></span> <span x-show="c.tipo === 'caja'" class="text-xs text-gray-400">(caja de <span x-text="c.piezas"></span> pzas)</span></td>
+                                <td><select x-model="c.formulaId" @change="vincularCatalogo(c)" class="rounded-lg border-gray-300 text-sm"><option value="">Sin ligar</option><template x-for="pr in products" :key="pr.id"><option :value="pr.id" x-text="pr.name"></option></template></select></td>
+                                <td><span x-show="c.formulaId && c.disponible === false" class="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">AGOTADO</span><span x-show="c.formulaId && c.disponible !== false" class="text-xs text-green-600">Disponible</span></td>
+                            </tr>
+                        </template></tbody>
+                    </table></div>
+                </div>
             </div>
 
             <div x-show="currentTab === 'escenarios'" x-transition>
@@ -1386,7 +1400,7 @@
 
             // Fórmulas
             products: [],
-            prodForm: { productId: '', qty: '' },
+            prodForm: { productId: '', qty: '' }, catalogoVinc: [],
             bases: [], showBaseForm: false, editingBaseId: null,
             baseForm: { name: '', loteG: 20000, merma: 0, ingredients: [], presentaciones: [] },
             tempBaseIng: { insumoId: '', qty: '' },
@@ -2050,6 +2064,31 @@
                 const others = this.products.filter(x => x.id !== prod.id && (x.ingredients || []).some(i => i.insumoId === limitId)).map(x => x.name);
                 return { rows, max: isFinite(max) ? max : 0, limit, ok: q > 0 && rows.length > 0 && rows.every(r => r.ok), shared: others.slice(0, 4).join(', ') };
             },
+            async cargarCatalogoVinc() {
+                if (!this.db) return;
+                try {
+                    const snap = await this.db.collection('productos').get();
+                    this.catalogoVinc = snap.docs.map(d => { const x = d.data(); return { id: d.id, nombre: x.nombre || d.id, tipo: x.tipo || 'menudeo', piezas: x.tipo === 'caja' ? (parseInt(x.piezas) || 1) : 1, formulaId: x.formulaId || '', disponible: x.disponible, orden: x.orden || 0 }; }).sort((a, b) => a.orden - b.orden);
+                } catch (e) { console.error('Catálogo:', e); }
+            },
+            async vincularCatalogo(c) {
+                if (!c.formulaId) { c.disponible = true; await this.fsSave('productos', c.id, { formulaId: '', disponible: true }); return; }
+                await this.fsSave('productos', c.id, { formulaId: c.formulaId });
+                await this.sincronizarCatalogo();
+            },
+            async sincronizarCatalogo() {
+                if (!this.catalogoVinc.length) await this.cargarCatalogoVinc();
+                for (const c of this.catalogoVinc) {
+                    const f = c.formulaId ? this.products.find(x => x.id === c.formulaId) : null;
+                    if (!f || f.stockPz == null) continue;
+                    const disp = Math.floor((f.stockPz || 0) / c.piezas) > 0;
+                    if (c.disponible !== disp) { c.disponible = disp; await this.fsSave('productos', c.id, { disponible: disp }); }
+                }
+            },
+            async movStock(prod, delta) {
+                prod.stockPz = (prod.stockPz || 0) + delta;
+                if (this.db && prod.id && !String(prod.id).startsWith('local_')) { try { await this.db.collection('vj_formulas').doc(prod.id).update({ stockPz: firebase.firestore.FieldValue.increment(delta) }); } catch (e) {} }
+            },
             async elaborarLote() {
                 const plan = this.prodPlan, prod = this.getProductById(this.prodForm.productId), qty = parseInt(this.prodForm.qty);
                 if (!prod || !(qty > 0) || !plan.ok) { alert('No alcanza la materia prima para esa cantidad.'); return; }
@@ -2060,9 +2099,9 @@
                     inv.qty -= ing.qty * qty;
                     await this.fsSave('vj_insumos', inv.id, { qty: inv.qty });
                 }
-                prod.stockPz = (prod.stockPz || 0) + qty;
-                await this.fsSave('vj_formulas', prod.id, { stockPz: prod.stockPz });
+                await this.movStock(prod, qty);
                 this.saveToLocalStorage();
+                await this.sincronizarCatalogo();
                 this.logAudit('formula', `Producción: ${qty} pz de ${prod.name}`);
                 this.prodForm.qty = '';
                 this.toast('Lote elaborado e inventario actualizado');
@@ -2075,6 +2114,7 @@
                 prod.stockPz = n;
                 await this.fsSave('vj_formulas', prod.id, { stockPz: n });
                 this.saveToLocalStorage();
+                await this.sincronizarCatalogo();
                 this.logAudit('formula', `Inventario ajustado: ${prod.name} = ${n} pz`);
             },
 
@@ -2445,8 +2485,8 @@
                 // Descontar inventario: piezas terminadas si el producto tiene control; si no, materia prima (modo anterior)
                 if (prod.stockPz != null) {
                     if (prod.stockPz < qty && !confirm(`Solo hay ${prod.stockPz} piezas de "${prod.name}" en inventario. ¿Registrar la venta de todos modos?`)) return;
-                    prod.stockPz -= qty;
-                    await this.fsSave('vj_formulas', prod.id, { stockPz: prod.stockPz });
+                    await this.movStock(prod, -qty);
+                    this.sincronizarCatalogo();
                 } else {
                     for (const ing of prod.ingredients || []) {
                         const inv = this.inventory.find(i => i.id === ing.insumoId);

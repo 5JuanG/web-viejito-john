@@ -63,7 +63,7 @@
         const noDisponibles = [];
         guardados.forEach(g => {
             const p = productos.find(x => x.id === g.id);
-            if (!p) { noDisponibles.push(g.id); return; }
+            if (!p || p.disponible === false) { noDisponibles.push(g.id); return; }
             lineas.push({ p, id: p.id, nombre: p.nombre, imagen: p.imagen, cantidad: g.cantidad, esCaja: p.tipo === 'caja', lista: VJCatalogo.precioFinal(p), costoEnvio: Number(p.costoEnvio || 0) });
         });
         if (noDisponibles.length) guardar(guardados.filter(g => !noDisponibles.includes(g.id)));

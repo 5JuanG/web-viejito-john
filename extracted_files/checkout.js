@@ -182,6 +182,12 @@ async function renderProduct() {
         document.getElementById('co-product-name').textContent = 'Producto no encontrado';
         return;
     }
+    if (currentProduct.disponible === false) {
+        document.getElementById('co-product-name').textContent = currentProduct.nombre + ' — AGOTADO';
+        document.getElementById('co-product-desc').textContent = 'Por ahora no hay existencias de este producto. Vuelve a consultar pronto o escríbenos por WhatsApp.';
+        document.querySelectorAll('form button[type="submit"], form button:not([type])').forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-not-allowed'); });
+        return;
+    }
 
     const isMayoreo = currentProduct.tipo === 'mayoreo';
     const precioFinal = getPriceForTier(currentProduct, tier);
@@ -332,6 +338,7 @@ function initForm() {
             envioDetalle: envioInfo ? { tipo: envioInfo.tipo, zona: envioInfo.zona || '', estado: envioInfo.estado || '', caja: envioInfo.caja || '', pesoKg: envioInfo.pesoKg || 0, pesoCobrado: envioInfo.pesoCobrado || 0 } : null,
             totalNumero: esCarrito ? carritoCalc.subtotal + envio : precioUnitario + envio,
             estado: 'nuevo',
+            ...(!esCarrito && currentProduct && currentProduct.id ? { productoId: currentProduct.id } : {}),
             ...(esCarrito ? { items: carritoCalc.lineas.map(l => ({ id: l.id, nombre: l.nombre, cantidad: l.cantidad, precioUnitario: l.precioUnitario, subtotal: l.subtotal })), subtotal: carritoCalc.subtotal } : {}),
             producto: esCarrito ? resumenCarrito : currentProduct.nombre,
             descripcion: currentProduct.descripcion,

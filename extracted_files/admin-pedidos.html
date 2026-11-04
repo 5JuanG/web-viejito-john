@@ -184,7 +184,7 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.data('pedidosAdmin', () => ({
         authenticated: false, db: null, cargando: true, error: '', mensaje: '',
-        pedidos: [], filtro: 'activos', estados: ESTADOS, busqueda: '', periodo: 'mes',
+        catalogo: [], pedidos: [], filtro: 'activos', estados: ESTADOS, busqueda: '', periodo: 'mes',
         filtros: [['activos', 'Pendientes'], ['nuevo', 'Nuevos'], ['link_enviado', 'Link enviado'], ['pagado', 'Pagados'], ['enviado', 'Enviados'], ['todos', 'Todos']],
 
         // ---------- utilidades ----------
@@ -269,6 +269,7 @@ document.addEventListener('alpine:init', () => {
                     o._estadoGuardado = o.estado;
                     return o;
                 }).sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
+                try { this.catalogo = (await this.db.collection('productos').get()).docs.map(d => ({ id: d.id, ...d.data() })); } catch (e) { console.error(e); }
             } catch (e) {
                 console.error(e);
                 this.error = 'No se pudieron leer los pedidos: ' + (e.code || e.message || e);
@@ -293,6 +294,13 @@ document.addEventListener('alpine:init', () => {
             const ahora = new Date().toISOString();
             if (!o.codigo) o.codigo = this.nuevoCodigo();
             const upd = { ...cambios, codigo: o.codigo, actualizado: ahora };
+            // Inventario: se descuenta una sola vez al pasar a "pagado" y se devuelve si se cancela
+            let mov = 0;
+            if ('estado' in cambios && cambios.estado !== o._estadoGuardado) {
+                if (cambios.estado === 'pagado' && !o.inventarioDescontado) mov = -1;
+                else if (cambios.estado === 'cancelado' && o.inventarioDescontado) mov = 1;
+            }
+            if (mov) upd.inventarioDescontado = mov < 0;
             let hist = Array.isArray(o.historial) ? o.historial.slice() : [];
             if ('estado' in cambios && cambios.estado !== o._estadoGuardado) {
                 if (!hist.length) hist.push({ estado: o._estadoGuardado || 'nuevo', fecha: o.fecha || ahora });
@@ -314,6 +322,7 @@ document.addEventListener('alpine:init', () => {
                 await batch.commit();
                 Object.assign(o, upd);
                 o._estadoGuardado = n.estado || 'nuevo';
+                if (mov) await this.moverInventario(o, mov);
                 this.aviso('Guardado');
                 return true;
             } catch (e) {
@@ -321,6 +330,39 @@ document.addEventListener('alpine:init', () => {
                 this.aviso('No se pudo guardar: ' + (e.code || e.message));
                 return false;
             }
+        },
+
+        async moverInventario(o, signo) {
+            const lineas = (o.items && o.items.length) ? o.items : (o.productoId ? [{ id: o.productoId, cantidad: 1 }] : []);
+            const tocadas = new Set(), negativos = [];
+            for (const l of lineas) {
+                const c = this.catalogo.find(x => x.id === l.id);
+                if (!c || !c.formulaId) continue;
+                const uds = (c.tipo === 'caja' ? (parseInt(c.piezas) || 1) : 1) * (Number(l.cantidad) || 1);
+                const ref = this.db.collection('vj_formulas').doc(c.formulaId);
+                try {
+                    const nuevo = await this.db.runTransaction(async t => {
+                        const d = await t.get(ref);
+                        if (!d.exists || d.data().stockPz == null) return null;
+                        const st = d.data().stockPz + signo * uds;
+                        t.update(ref, { stockPz: st });
+                        return st;
+                    });
+                    if (nuevo === null) continue;
+                    tocadas.add(c.formulaId);
+                    if (nuevo < 0) negativos.push(c.nombre);
+                } catch (e) { console.error(e); this.aviso('No se pudo mover el inventario de ' + c.nombre + ': ajústalo a mano en Producción'); }
+            }
+            for (const fid of tocadas) {
+                try {
+                    const st = (await this.db.collection('vj_formulas').doc(fid).get()).data().stockPz;
+                    for (const c of this.catalogo.filter(x => x.formulaId === fid)) {
+                        const disp = Math.floor(st / (c.tipo === 'caja' ? (parseInt(c.piezas) || 1) : 1)) > 0;
+                        if (c.disponible !== disp) { c.disponible = disp; await this.db.collection('productos').doc(c.id).update({ disponible: disp }); }
+                    }
+                } catch (e) { console.error(e); }
+            }
+            if (negativos.length) this.aviso('Ojo: el inventario quedó en negativo en ' + negativos.join(', '));
         },
 
         async cambiarEstado(o, estado) {

@@ -255,7 +255,7 @@
                         <p class="text-on-surface-variant text-sm mb-4 flex-grow">${esc(p.descripcion)}</p>
                         ${video}
                         ${filasNivel(p)}
-                        <button type="button" data-add="${esc(p.id)}" class="mt-3 w-full text-center bg-primary text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"><span class="material-symbols-outlined text-base">add_shopping_cart</span> Agregar al carrito</button>
+                        ${p.disponible === false ? '<div class="mt-3 w-full text-center bg-gray-200 text-gray-500 font-bold py-3 rounded-xl">Agotado · no hay en inventario</div>' : `<button type="button" data-add="${esc(p.id)}" class="mt-3 w-full text-center bg-primary text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"><span class="material-symbols-outlined text-base">add_shopping_cart</span> Agregar al carrito</button>`}
                     </div>
                 </div>`;
             };
@@ -297,7 +297,7 @@
                                     <span class="text-primary font-bold text-lg block">${fmt(precioFinal(p))}</span>
                                 </div>
                                 ${p.video ? `<details class="mb-3"><summary class="cursor-pointer text-primary text-xs font-bold">▶ Ver video</summary><div class="mt-2">${videoHTML(p.video)}</div></details>` : ''}
-                                <a href="checkout.html?p=${esc(p.id)}" class="mt-auto w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>
+                                ${p.disponible === false ? '<div class="mt-auto w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-xl text-sm">Agotado</div>' : `<a href="checkout.html?p=${esc(p.id)}" class="mt-auto w-full text-center bg-primary text-white font-bold py-2 rounded-xl hover:bg-primary-container transition-colors text-sm">Comprar Caja</a>`}
                             </div>
                         </div>`).join('');
                 } else {
