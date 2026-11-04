@@ -84,6 +84,9 @@
             <a href="#" @click.prevent="currentTab = 'fabricacion'" :class="currentTab === 'fabricacion' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">precision_manufacturing</span> <span class="font-medium">Costo de Fabricación</span>
             </a>
+            <a href="#" @click.prevent="currentTab = 'produccion'" :class="currentTab === 'produccion' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">factory</span> <span class="font-medium">Producción</span>
+            </a>
             <a href="#" @click.prevent="currentTab = 'escenarios'" :class="currentTab === 'escenarios' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">analytics</span> <span class="font-medium">Escenarios & Análisis</span>
             </a>
@@ -133,7 +136,7 @@
 
         <!-- MOBILE MENU -->
         <div x-show="mobileMenuOpen" class="md:hidden bg-primary text-white p-4 space-y-2" @click.away="mobileMenuOpen = false">
-            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'mayoristas',l:'Mayoristas',i:'storefront'},{k:'auditoria',l:'Auditoría',i:'history'}]">
+            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'produccion',l:'Producción',i:'factory'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'mayoristas',l:'Mayoristas',i:'storefront'},{k:'auditoria',l:'Auditoría',i:'history'}]">
                 <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
                     <span class="material-symbols-outlined" x-text="item.i"></span> <span x-text="item.l"></span>
                 </a>
@@ -769,6 +772,44 @@
             </div>
 
             <!-- ===== ESCENARIOS Y ANÁLISIS ===== -->
+            <div x-show="currentTab === 'produccion'" x-transition>
+                <h3 class="text-xl font-bold mb-6">Producción e inventario de piezas</h3>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                    <h4 class="font-bold text-primary mb-4">Elaborar lote</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <select x-model="prodForm.productId" class="sm:col-span-2 rounded-lg border-gray-300 text-sm">
+                            <option value="">-- Elige el producto a elaborar --</option>
+                            <template x-for="pr in products.filter(x => (x.ingredients || []).length)" :key="pr.id"><option :value="pr.id" x-text="pr.name"></option></template>
+                        </select>
+                        <input type="number" min="1" x-model="prodForm.qty" placeholder="Piezas a elaborar" class="rounded-lg border-gray-300 text-sm">
+                    </div>
+                    <div x-show="prodForm.productId" class="mb-4">
+                        <p class="text-sm font-bold mb-2">Con tu materia prima actual puedes elaborar hasta <span class="text-green-700" x-text="prodPlan.max"></span> piezas<span x-show="prodPlan.limit"> (limita: <span x-text="prodPlan.limit"></span>)</span>.</p>
+                        <p x-show="prodPlan.shared" class="text-xs text-amber-700 mb-2">Ojo: ese insumo también lo usan <span x-text="prodPlan.shared"></span>, así que el máximo se reparte entre ellos.</p>
+                        <div class="overflow-x-auto"><table class="w-full text-sm">
+                            <thead><tr class="text-left text-xs text-gray-500"><th class="py-1">Insumo</th><th>Se necesita</th><th>Tienes</th><th></th></tr></thead>
+                            <tbody><template x-for="r in prodPlan.rows" :key="r.name">
+                                <tr class="border-t border-gray-100"><td class="py-1" x-text="r.name"></td><td><span x-text="formatNumber(r.need)"></span> <span x-text="r.unit" class="text-xs text-gray-400"></span></td><td><span x-text="formatNumber(r.have)"></span></td><td><span x-text="r.ok ? 'Alcanza' : 'Falta'" :class="r.ok ? 'text-green-600' : 'text-red-600 font-bold'" class="text-xs"></span></td></tr>
+                            </template></tbody>
+                        </table></div>
+                    </div>
+                    <button @click="elaborarLote()" :disabled="!prodPlan.ok" :class="prodPlan.ok ? 'bg-primary' : 'bg-gray-300'" class="text-white px-5 py-2 rounded-lg font-bold text-sm">Elaborar lote</button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50"><tr class="text-left text-xs text-gray-500"><th class="px-4 py-3">Producto terminado</th><th class="px-4 py-3">Piezas en inventario</th><th class="px-4 py-3">Costo pieza</th><th class="px-4 py-3"></th></tr></thead>
+                        <tbody><template x-for="pr in products" :key="pr.id">
+                            <tr class="border-t border-gray-100">
+                                <td class="px-4 py-3 font-medium" x-text="pr.name"></td>
+                                <td class="px-4 py-3"><span x-show="pr.stockPz == null" class="text-xs text-gray-400">Sin control</span><span x-show="pr.stockPz != null" class="font-bold" :class="pr.stockPz <= 0 ? 'text-red-600' : ''" x-text="pr.stockPz"></span><span x-show="pr.stockPz != null && pr.stockPz <= 0" class="ml-2 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-bold">AGOTADO</span></td>
+                                <td class="px-4 py-3 text-red-600">$<span x-text="formatMoney(calculateFormulaCost(pr.ingredients || []))"></span></td>
+                                <td class="px-4 py-3"><button @click="ajustarStock(pr)" class="text-primary font-bold text-sm">Ajustar</button></td>
+                            </tr>
+                        </template></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div x-show="currentTab === 'escenarios'" x-transition>
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
                     <div>
@@ -1345,6 +1386,7 @@
 
             // Fórmulas
             products: [],
+            prodForm: { productId: '', qty: '' },
             bases: [], showBaseForm: false, editingBaseId: null,
             baseForm: { name: '', loteG: 20000, merma: 0, ingredients: [], presentaciones: [] },
             tempBaseIng: { insumoId: '', qty: '' },
@@ -1993,6 +2035,49 @@
                 this.toast('Conversión terminada');
             },
 
+            // ===== PRODUCCIÓN E INVENTARIO DE PIEZAS =====
+            get prodPlan() {
+                const prod = this.getProductById(this.prodForm.productId);
+                const q = parseInt(this.prodForm.qty) || 0;
+                if (!prod || !prod.ingredients) return { rows: [], max: 0, limit: '', ok: false, shared: '' };
+                let max = Infinity, limit = '', limitId = '';
+                const rows = prod.ingredients.map(ing => {
+                    const inv = this.getInsumoById(ing.insumoId);
+                    const have = Math.max(0, inv.qty || 0), need = ing.qty * q;
+                    if (ing.qty > 0) { const m = Math.floor(have / ing.qty); if (m < max) { max = m; limit = inv.name; limitId = ing.insumoId; } }
+                    return { name: inv.name || '(insumo borrado)', unit: inv.unit || '', need, have, ok: need <= have };
+                });
+                const others = this.products.filter(x => x.id !== prod.id && (x.ingredients || []).some(i => i.insumoId === limitId)).map(x => x.name);
+                return { rows, max: isFinite(max) ? max : 0, limit, ok: q > 0 && rows.length > 0 && rows.every(r => r.ok), shared: others.slice(0, 4).join(', ') };
+            },
+            async elaborarLote() {
+                const plan = this.prodPlan, prod = this.getProductById(this.prodForm.productId), qty = parseInt(this.prodForm.qty);
+                if (!prod || !(qty > 0) || !plan.ok) { alert('No alcanza la materia prima para esa cantidad.'); return; }
+                if (!confirm(`¿Elaborar ${qty} piezas de ${prod.name}? Se descontará la materia prima.`)) return;
+                for (const ing of prod.ingredients) {
+                    const inv = this.inventory.find(i => i.id === ing.insumoId);
+                    if (!inv) continue;
+                    inv.qty -= ing.qty * qty;
+                    await this.fsSave('vj_insumos', inv.id, { qty: inv.qty });
+                }
+                prod.stockPz = (prod.stockPz || 0) + qty;
+                await this.fsSave('vj_formulas', prod.id, { stockPz: prod.stockPz });
+                this.saveToLocalStorage();
+                this.logAudit('formula', `Producción: ${qty} pz de ${prod.name}`);
+                this.prodForm.qty = '';
+                this.toast('Lote elaborado e inventario actualizado');
+            },
+            async ajustarStock(prod) {
+                const v = prompt(`¿Cuántas piezas de "${prod.name}" hay en inventario ahora? (esto activa el control de inventario de este producto)`, prod.stockPz == null ? '' : prod.stockPz);
+                if (v === null) return;
+                const n = parseInt(v);
+                if (isNaN(n) || n < 0) { alert('Escribe un número de piezas (0 o más).'); return; }
+                prod.stockPz = n;
+                await this.fsSave('vj_formulas', prod.id, { stockPz: n });
+                this.saveToLocalStorage();
+                this.logAudit('formula', `Inventario ajustado: ${prod.name} = ${n} pz`);
+            },
+
             // ===== FÓRMULAS BASE =====
             insumosDeTipo(tipos) { return this.inventory.filter(i => tipos.includes(i.tipo || 'otro')); },
             rendimientoG(b) { return (parseFloat(b.loteG) || 0) * (1 - (parseFloat(b.merma) || 0) / 100); },
@@ -2051,7 +2136,7 @@
                     const data = { name: `${b.name} ${p.gramos} g`, retailPrice: p.retailPrice, wholesalePrice: p.wholesalePrice, ingredients: this.ingredientesPresentacion(b, p), baseId: id, pid: p.pid, gramos: p.gramos, unidadesBase: true };
                     const ex = this.products.find(x => x.baseId === id && x.pid === p.pid);
                     if (ex) { await this.fsSave('vj_formulas', ex.id, data); Object.assign(ex, data); }
-                    else { const fid = await this.fsAdd('vj_formulas', data); this.products.unshift({ id: fid, ...data }); }
+                    else { const nd = { ...data, stockPz: 0 }; const fid = await this.fsAdd('vj_formulas', nd); this.products.unshift({ id: fid, ...nd }); }
                 }
                 for (const old of this.products.filter(x => x.baseId === id && !keep.has(x.pid))) {
                     if (this.db && !String(old.id).startsWith('local_')) { try { await this.db.collection('vj_formulas').doc(old.id).delete(); } catch (e) {} }
@@ -2357,13 +2442,19 @@
                 const revenue = parseFloat(price) * qty;
                 const commissionAmount = entity ? (revenue * (Number(entity.commissionRate || 0) / 100)) : 0;
                 const depositAmount = revenue - commissionAmount;
-                // Descontar inventario
-                for (const ing of prod.ingredients || []) {
-                    const inv = this.inventory.find(i => i.id === ing.insumoId);
-                    if (inv) {
-                        inv.qty -= (ing.qty * qty);
-                        if (this.db) {
-                            try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
+                // Descontar inventario: piezas terminadas si el producto tiene control; si no, materia prima (modo anterior)
+                if (prod.stockPz != null) {
+                    if (prod.stockPz < qty && !confirm(`Solo hay ${prod.stockPz} piezas de "${prod.name}" en inventario. ¿Registrar la venta de todos modos?`)) return;
+                    prod.stockPz -= qty;
+                    await this.fsSave('vj_formulas', prod.id, { stockPz: prod.stockPz });
+                } else {
+                    for (const ing of prod.ingredients || []) {
+                        const inv = this.inventory.find(i => i.id === ing.insumoId);
+                        if (inv) {
+                            inv.qty -= (ing.qty * qty);
+                            if (this.db) {
+                                try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
+                            }
                         }
                     }
                 }
