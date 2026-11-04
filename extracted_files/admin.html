@@ -401,17 +401,18 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1">Presentaciones</label>
                             <template x-for="(pr, idx) in baseForm.presentaciones" :key="idx">
-                                <div class="grid grid-cols-2 lg:grid-cols-7 gap-2 items-center mb-2">
+                                <div class="grid grid-cols-2 lg:grid-cols-8 gap-2 items-center mb-2">
                                     <input type="number" x-model="pr.gramos" placeholder="Gramos" class="rounded-lg border-gray-300 text-sm">
                                     <select x-model="pr.envaseId" class="rounded-lg border-gray-300 text-sm"><option value="">Envase</option><template x-for="i in insumosDeTipo(['envase'])" :key="i.id"><option :value="i.id" x-text="i.name"></option></template></select>
                                     <select x-model="pr.etiquetaId" class="rounded-lg border-gray-300 text-sm"><option value="">Etiqueta</option><template x-for="i in insumosDeTipo(['etiqueta'])" :key="i.id"><option :value="i.id" x-text="i.name"></option></template></select>
+                                    <select x-model="pr.etiquetaPubId" class="rounded-lg border-gray-300 text-sm"><option value="">Sin etiq. publicitaria</option><template x-for="i in insumosDeTipo(['etiqueta'])" :key="i.id"><option :value="i.id" x-text="i.name"></option></template></select>
                                     <input type="number" step="0.01" x-model="pr.retailPrice" placeholder="Precio público" class="rounded-lg border-gray-300 text-sm">
                                     <input type="number" step="0.01" x-model="pr.wholesalePrice" placeholder="Mayoreo" class="rounded-lg border-gray-300 text-sm">
                                     <span class="text-xs text-red-600 font-bold">Costo pieza: $<span x-text="formatMoney(costoPresentacion(baseForm, pr))"></span></span>
                                     <button @click="baseForm.presentaciones.splice(idx, 1)" class="text-red-500 text-sm">Quitar</button>
                                 </div>
                             </template>
-                            <button @click="baseForm.presentaciones.push({ pid: '', gramos: '', envaseId: '', etiquetaId: '', retailPrice: '', wholesalePrice: '' })" class="text-sm font-bold text-primary">+ Presentación</button>
+                            <button @click="baseForm.presentaciones.push({ pid: '', gramos: '', envaseId: '', etiquetaId: '', etiquetaPubId: '', retailPrice: '', wholesalePrice: '' })" class="text-sm font-bold text-primary">+ Presentación</button>
                         </div>
                         <div class="flex justify-end gap-3">
                             <button @click="showBaseForm = false; editingBaseId = null" class="text-sm text-gray-500">Cancelar</button>
@@ -2002,6 +2003,7 @@
                 const out = (b.ingredients || []).map(i => ({ insumoId: i.insumoId, qty: (parseFloat(i.qty) || 0) * g / y }));
                 if (pr.envaseId) out.push({ insumoId: pr.envaseId, qty: 1 });
                 if (pr.etiquetaId) out.push({ insumoId: pr.etiquetaId, qty: 1 });
+                if (pr.etiquetaPubId) out.push({ insumoId: pr.etiquetaPubId, qty: 1 });
                 return out;
             },
             costoPresentacion(b, pr) { return this.calculateFormulaCost(this.ingredientesPresentacion(b, pr)); },
@@ -2014,7 +2016,7 @@
             },
             openBaseForm() {
                 this.editingBaseId = null;
-                this.baseForm = { name: '', loteG: 20000, merma: 0, ingredients: [], presentaciones: [{ pid: '', gramos: '', envaseId: '', etiquetaId: '', retailPrice: '', wholesalePrice: '' }] };
+                this.baseForm = { name: '', loteG: 20000, merma: 0, ingredients: [], presentaciones: [{ pid: '', gramos: '', envaseId: '', etiquetaId: '', etiquetaPubId: '', retailPrice: '', wholesalePrice: '' }] };
                 this.showBaseForm = true;
             },
             editBase(b) {
@@ -2037,7 +2039,7 @@
                 const base = {
                     name: f.name, loteG: parseFloat(f.loteG) || 20000, merma: parseFloat(f.merma) || 0,
                     ingredients: f.ingredients.map(g => ({ insumoId: g.insumoId, qty: parseFloat(g.qty) })),
-                    presentaciones: f.presentaciones.map((p, i) => ({ pid: p.pid || ('p' + Date.now() + i), gramos: parseFloat(p.gramos), envaseId: p.envaseId, etiquetaId: p.etiquetaId, retailPrice: parseFloat(p.retailPrice) || 0, wholesalePrice: parseFloat(p.wholesalePrice) || 0 }))
+                    presentaciones: f.presentaciones.map((p, i) => ({ pid: p.pid || ('p' + Date.now() + i), gramos: parseFloat(p.gramos), envaseId: p.envaseId, etiquetaId: p.etiquetaId, etiquetaPubId: p.etiquetaPubId || '', retailPrice: parseFloat(p.retailPrice) || 0, wholesalePrice: parseFloat(p.wholesalePrice) || 0 }))
                 };
                 let id = this.editingBaseId;
                 if (id) { await this.fsSave('vj_bases', id, base); const i = this.bases.findIndex(x => x.id === id); this.bases[i] = { ...this.bases[i], ...base }; }
