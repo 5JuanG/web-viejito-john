@@ -248,6 +248,10 @@
                     </div>
                 </div>
 
+                <div x-show="inventory.some(i => i.costoBase == null) || products.some(p => !p.unidadesBase)" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-sm text-amber-800">Hay insumos o fórmulas en el sistema anterior de unidades. Conviértelos a gramos / mililitros para que el costo y las fórmulas queden correctos.</p>
+                    <button @click="migrarUnidades()" class="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm">Convertir a g / ml</button>
+                </div>
                 <!-- Formulario Insumo -->
                 <div x-show="showInsumoForm" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 border-t-4 border-t-primary" x-transition>
                     <h4 class="font-bold mb-4 text-primary" x-text="editingInsumoIndex !== null ? 'Editar Insumo' : 'Registrar Nuevo Insumo'"></h4>
@@ -269,45 +273,18 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Unidad de Medida</label>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Unidad de compra</label>
                             <select x-model="insumoForm.unit" class="w-full rounded-lg border-gray-300 text-sm">
-                                <template x-if="insumoForm.tipo === 'liquido'">
-                                    <option value="ml">Mililitros (ml)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'liquido'">
-                                    <option value="L">Litros (L)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'solido'">
-                                    <option value="gr">Gramos (gr)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'solido'">
-                                    <option value="kg">Kilogramos (kg)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'longitud'">
-                                    <option value="cm">Centímetros (cm)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'longitud'">
-                                    <option value="m">Metros (m)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'etiqueta'">
-                                    <option value="plantilla">Plantilla tabloide</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'envase'">
-                                    <option value="pz">Pieza / Unidad</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'empaque'">
-                                    <option value="caja">Caja</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'otro'">
-                                    <option value="pz">Pieza / Unidad</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'otro'">
-                                    <option value="ml">Mililitros (ml)</option>
-                                </template>
-                                <template x-if="insumoForm.tipo === 'otro'">
-                                    <option value="gr">Gramos (gr)</option>
-                                </template>
+                                <template x-for="u in unidadesCompraPara(insumoForm.tipo)" :key="u.v"><option :value="u.v" x-text="u.l"></option></template>
                             </select>
+                        </div>
+                        <div x-show="necesitaContenido(insumoForm)" class="lg:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Contenido de cada <span x-text="insumoForm.unit"></span> (en <span x-text="insumoForm.tipo === 'liquido' ? 'litros' : 'kg'"></span>)</label>
+                            <input type="number" step="0.001" x-model="insumoForm.contenido" placeholder="Ej. 20 (galón vacío = 3.785 L)" class="w-full rounded-lg border-gray-300 text-sm">
+                        </div>
+                        <div x-show="necesitaDensidad(insumoForm)" class="lg:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Densidad (g por ml): te lo venden por peso</label>
+                            <input type="number" step="0.001" x-model="insumoForm.densidad" placeholder="Ej. 1.17 (ver ficha técnica)" class="w-full rounded-lg border-gray-300 text-sm">
                         </div>
                         <!-- Rendimiento para etiquetas -->
                         <div x-show="insumoForm.tipo === 'etiqueta'" class="lg:col-span-2">
@@ -1296,7 +1273,7 @@
             searchInventory: '',
             filterInsumoTipo: '',
             filterInsumoPorProducto: '',
-            insumoForm: { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '' },
+            insumoForm: { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '', contenido: '', densidad: '' },
 
             // Fórmulas
             products: [],
@@ -1764,6 +1741,7 @@
             // ===== UNIT COST =====
             getUnitCost(item) {
                 if (!item) return 0;
+                if (item.costoBase != null) return item.costoBase;
                 let baseQty = item.qty || 1;
                 // Si es etiqueta, el costo unitario es por etiqueta, no por plantilla
                 if (item.tipo === 'etiqueta' && item.rendimiento) {
@@ -1799,45 +1777,54 @@
             openInsumoForm() {
                 this.editingInsumoIndex = null;
                 this.editingInsumoId = null;
-                this.insumoForm = { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '' };
+                this.insumoForm = { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '', contenido: '', densidad: '' };
                 this.showInsumoForm = true;
             },
             closeInsumoForm() { this.showInsumoForm = false; this.editingInsumoIndex = null; this.editingInsumoId = null; },
             editInsumo(item) {
+                if (item.costoBase == null) { alert('Primero pulsa "Convertir a g / ml" para pasar este insumo al nuevo sistema de unidades.'); return; }
                 this.editingInsumoIndex = this.inventory.findIndex(i => i.id === item.id);
                 this.editingInsumoId = item.id;
-                this.insumoForm = { name: item.name, tipo: item.tipo || 'otro', unit: item.unit, cost: item.cost, qty: item.qty, proveedor: item.proveedor || '', rendimiento: item.rendimiento || '' };
+                const f = item.factor || 1;
+                this.insumoForm = { name: item.name, tipo: item.tipo || 'otro', unit: item.unidadCompra || item.unit, cost: +(item.costoBase * item.qty).toFixed(2), qty: +(item.qty / f).toFixed(4), proveedor: item.proveedor || '', rendimiento: item.rendimiento || '', contenido: item.contenido || '', densidad: item.densidad || '' };
                 this.showInsumoForm = true;
             },
             async restockInsumo(item) {
-                const extraQty = prompt(`¿Cuántas ${item.unit} de "${item.name}" estás comprando?`);
+                if (item.costoBase == null) { alert('Primero pulsa "Convertir a g / ml" para pasar este insumo al nuevo sistema de unidades.'); return; }
+                const extraQty = parseFloat(prompt(`¿Cuántas ${item.unidadCompra || item.unit} de "${item.name}" estás comprando?`));
                 if (!extraQty || isNaN(extraQty)) return;
-                const extraCost = prompt(`¿Cuánto pagaste en total por esta compra? ($)`);
+                const extraCost = parseFloat(prompt(`¿Cuánto pagaste en total por esta compra? ($)`));
                 if (!extraCost || isNaN(extraCost)) return;
-                const idx = this.inventory.findIndex(i => i.id === item.id);
-                if (idx === -1) return;
-                this.inventory[idx].qty += parseFloat(extraQty);
-                this.inventory[idx].cost += parseFloat(extraCost);
+                const inv = this.inventory.find(i => i.id === item.id);
+                if (!inv) return;
+                const addBase = extraQty * (inv.factor || 1);
+                const prev = Math.max(0, inv.qty || 0);
+                inv.costoBase = (prev * (inv.costoBase || 0) + extraCost) / (prev + addBase);
+                inv.qty = (inv.qty || 0) + addBase;
+                inv.cost = (inv.cost || 0) + extraCost;
                 if (this.db) {
-                    try {
-                        await this.db.collection('vj_insumos').doc(item.id).update({
-                            qty: this.inventory[idx].qty,
-                            cost: this.inventory[idx].cost,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    } catch(e) {}
+                    try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, cost: inv.cost, costoBase: inv.costoBase, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
                 }
                 this.saveToLocalStorage();
-                this.logAudit('insumo', `Reabastecido: ${item.name} (+${extraQty} ${item.unit}, +$${extraCost})`);
+                this.logAudit('insumo', `Reabastecido: ${item.name} (+${extraQty} ${item.unidadCompra || item.unit}, +$${extraCost})`);
                 this.toast('Stock actualizado');
             },
             async saveInsumo() {
+                const f = this.factorCompra(this.insumoForm);
+                if (!(f > 0)) { alert('Falta el contenido (porrón, costal) o la densidad (kg de un líquido) para convertir la unidad de compra.'); return; }
+                const qtyBase = (parseFloat(this.insumoForm.qty) || 0) * f;
+                const costTotal = parseFloat(this.insumoForm.cost) || 0;
                 const data = {
                     name: this.insumoForm.name,
                     tipo: this.insumoForm.tipo,
-                    unit: this.insumoForm.unit,
-                    cost: parseFloat(this.insumoForm.cost) || 0,
-                    qty: parseFloat(this.insumoForm.qty) || 0,
+                    unit: this.baseUnitFor(this.insumoForm.tipo, this.insumoForm.unit),
+                    unidadCompra: this.insumoForm.unit,
+                    contenido: parseFloat(this.insumoForm.contenido) || null,
+                    densidad: parseFloat(this.insumoForm.densidad) || null,
+                    factor: f,
+                    cost: costTotal,
+                    qty: qtyBase,
+                    costoBase: qtyBase > 0 ? costTotal / qtyBase : 0,
                     proveedor: this.insumoForm.proveedor || '',
                     rendimiento: this.insumoForm.tipo === 'etiqueta' ? (parseInt(this.insumoForm.rendimiento) || 1) : null,
                     updatedAt: new Date()
@@ -1875,6 +1862,63 @@
                 this.saveToLocalStorage();
                 this.logAudit('insumo', `Insumo eliminado: ${id}`);
                 this.toast('Insumo eliminado');
+            },
+
+            // ===== UNIDADES BASE (gr / ml / pz) =====
+            unidadesCompraPara(tipo) {
+                const L = { ml:'Mililitros (ml)', L:'Litros (L)', galon:'Galón', porron:'Porrón', kg:'Kilogramos (kg)', gr:'Gramos (gr)', costal:'Costal', cm:'Centímetros (cm)', m:'Metros (m)', plantilla:'Plantilla tabloide', pz:'Pieza / Unidad', caja:'Caja' };
+                const m = { liquido:['ml','L','galon','porron','kg','gr'], solido:['gr','kg','costal','porron'], longitud:['cm','m'], etiqueta:['plantilla'], envase:['pz'], empaque:['caja'], otro:['pz','ml','gr'] };
+                return (m[tipo] || ['pz']).map(v => ({ v, l: L[v] }));
+            },
+            baseUnitFor(tipo, unit) {
+                return ({ liquido:'ml', solido:'gr', longitud:'cm', etiqueta:'etiqueta', envase:'pz', empaque:'caja' })[tipo] || (unit === 'ml' || unit === 'gr' ? unit : 'pz');
+            },
+            necesitaContenido(f) { return ['porron', 'costal', 'galon'].includes(f.unit); },
+            necesitaDensidad(f) { return f.tipo === 'liquido' && ['kg', 'gr'].includes(f.unit); },
+            // Cuántas unidades base (gr / ml / pz) trae UNA unidad de compra
+            factorCompra(f) {
+                const t = f.tipo, u = f.unit, c = parseFloat(f.contenido) || 0, d = parseFloat(f.densidad) || 0;
+                if (t === 'liquido') {
+                    if (u === 'ml') return 1; if (u === 'L') return 1000;
+                    if (u === 'galon') return c ? c * 1000 : 3785;
+                    if (u === 'porron' || u === 'costal') return c * 1000;
+                    if (u === 'kg') return d ? 1000 / d : 0;
+                    if (u === 'gr') return d ? 1 / d : 0;
+                }
+                if (t === 'solido') return u === 'gr' ? 1 : (u === 'kg' ? 1000 : c * 1000);
+                if (t === 'longitud') return u === 'm' ? 100 : 1;
+                if (t === 'etiqueta') return parseFloat(f.rendimiento) || 1;
+                return 1;
+            },
+            async migrarUnidades() {
+                const LEG = { kg: 1000, L: 1000, m: 100 };
+                const pend = this.inventory.filter(i => i.costoBase == null);
+                const plan = pend.map(i => {
+                    const etq = i.tipo === 'etiqueta';
+                    const fIns = etq ? (i.rendimiento || 1) : (LEG[i.unit] || 1);
+                    const fForm = etq ? 1 : fIns;
+                    const costoBase = this.getUnitCost(i) / (etq ? 1 : fIns);
+                    return { i, fIns, fForm, costoBase, unitBase: this.baseUnitFor(i.tipo, i.unit) };
+                });
+                const forms = this.products.filter(p => !p.unidadesBase);
+                if (!plan.length && !forms.length) { this.toast('Todo ya está convertido'); return; }
+                const lin = plan.map(x => `- ${x.i.name}: ${x.i.qty} ${x.i.unit} -> ${+(x.i.qty * x.fIns).toFixed(2)} ${x.unitBase} | costo $${x.costoBase.toFixed(4)} por ${x.unitBase}`).join('\n');
+                if (!confirm(`Se convertirán ${plan.length} insumos y ${forms.length} fórmulas a gramos / mililitros / piezas.\n\n${lin}\n\nRevisa que los costos por unidad tengan sentido. ¿Continuar?`)) return;
+                const byId = {}; plan.forEach(x => byId[x.i.id] = x);
+                const sv = (col, id, data) => { if (this.db && id && !String(id).startsWith('local_')) return this.db.collection(col).doc(id).update(data).catch(() => {}); };
+                for (const x of plan) {
+                    const i = x.i;
+                    Object.assign(i, { unidadCompra: i.unit, factor: x.fIns, contenido: null, densidad: null, qty: i.qty * x.fIns, costoBase: x.costoBase, unit: x.unitBase });
+                    await sv('vj_insumos', i.id, { unidadCompra: i.unidadCompra, factor: i.factor, qty: i.qty, costoBase: i.costoBase, unit: i.unit });
+                }
+                for (const p of forms) {
+                    p.ingredients = (p.ingredients || []).map(g => byId[g.insumoId] ? { ...g, qty: g.qty * byId[g.insumoId].fForm } : g);
+                    p.unidadesBase = true;
+                    await sv('vj_formulas', p.id, { ingredients: p.ingredients, unidadesBase: true });
+                }
+                this.saveToLocalStorage();
+                this.logAudit('insumo', `Conversión a unidades base: ${plan.length} insumos, ${forms.length} fórmulas`);
+                this.toast('Conversión terminada');
             },
 
             // ===== FÓRMULAS =====
@@ -1921,6 +1965,7 @@
                 alert(`Receta de ${prod.name}:\n\n${lineas}\n\nCosto total: $${this.formatMoney(this.calculateFormulaCost(prod.ingredients))}`);
             },
             async saveFormula() {
+                if (this.formulaForm.ingredients.some(g => this.getInsumoById(g.insumoId).costoBase == null)) { alert('Hay insumos sin convertir a g / ml. Ve a Materia Prima y pulsa "Convertir a g / ml" antes de guardar fórmulas.'); return; }
                 if (!this.formulaForm.name || !this.formulaForm.retailPrice || this.formulaForm.ingredients.length === 0) {
                     alert('Completa nombre, precio y al menos un insumo.'); return;
                 }
@@ -1929,6 +1974,7 @@
                     retailPrice: parseFloat(this.formulaForm.retailPrice) || 0,
                     wholesalePrice: parseFloat(this.formulaForm.wholesalePrice) || 0,
                     ingredients: this.formulaForm.ingredients,
+                    unidadesBase: true,
                     updatedAt: new Date()
                 };
                 if (this.editingFormulaId) {
