@@ -365,6 +365,73 @@
                     </div>
                 </div>
 
+                <!-- Fórmulas base -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h4 class="font-bold text-primary">Fórmulas base (una receta, varias presentaciones)</h4>
+                            <p class="text-xs text-gray-500">Capturas la receta una sola vez por lote y agregas las presentaciones (90 g, 700 g...).</p>
+                        </div>
+                        <button @click="openBaseForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap">+ Nueva fórmula base</button>
+                    </div>
+                    <div x-show="showBaseForm" class="border border-gray-200 rounded-xl p-4 mb-4 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="sm:col-span-1"><label class="block text-xs font-bold text-gray-500 mb-1">Nombre del producto base</label><input type="text" x-model="baseForm.name" placeholder="Ej. Gel VJ" class="w-full rounded-lg border-gray-300 text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">Lote (gramos)</label><input type="number" x-model="baseForm.loteG" class="w-full rounded-lg border-gray-300 text-sm"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">Merma (%) opcional</label><input type="number" step="0.1" x-model="baseForm.merma" class="w-full rounded-lg border-gray-300 text-sm"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Ingredientes del lote (en g o ml)</label>
+                            <div class="flex gap-2 mb-2">
+                                <select x-model="tempBaseIng.insumoId" class="flex-1 rounded-lg border-gray-300 text-sm">
+                                    <option value="">-- Elige un insumo --</option>
+                                    <template x-for="i in insumosDeTipo(['liquido','solido','otro'])" :key="i.id"><option :value="i.id" x-text="i.name + ' (' + i.unit + ')'"></option></template>
+                                </select>
+                                <input type="number" step="0.001" x-model="tempBaseIng.qty" placeholder="Cant." class="w-28 rounded-lg border-gray-300 text-sm">
+                                <button @click="addBaseIng()" class="bg-gray-800 text-white px-3 rounded-lg text-sm font-bold">Agregar</button>
+                            </div>
+                            <template x-for="(g, idx) in baseForm.ingredients" :key="idx">
+                                <div class="flex justify-between text-sm py-1 border-b border-gray-100">
+                                    <span><strong x-text="g.qty"></strong> <span x-text="getInsumoById(g.insumoId).unit"></span> de <span x-text="getInsumoById(g.insumoId).name"></span></span>
+                                    <span class="flex gap-3"><span class="text-green-700">$<span x-text="formatMoney(calculateIngredientCost(g))"></span></span><button @click="baseForm.ingredients.splice(idx, 1)" class="text-red-500">✕</button></span>
+                                </div>
+                            </template>
+                            <p class="text-xs text-gray-600 mt-2">Costo del lote: <strong>$<span x-text="formatMoney(calculateFormulaCost(baseForm.ingredients))"></span></strong> · Rinde <span x-text="Math.round(rendimientoG(baseForm))"></span> g · Costo por gramo: <strong>$<span x-text="costoPorG(baseForm).toFixed(4)"></span></strong></p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Presentaciones</label>
+                            <template x-for="(pr, idx) in baseForm.presentaciones" :key="idx">
+                                <div class="grid grid-cols-2 lg:grid-cols-7 gap-2 items-center mb-2">
+                                    <input type="number" x-model="pr.gramos" placeholder="Gramos" class="rounded-lg border-gray-300 text-sm">
+                                    <select x-model="pr.envaseId" class="rounded-lg border-gray-300 text-sm"><option value="">Envase</option><template x-for="i in insumosDeTipo(['envase'])" :key="i.id"><option :value="i.id" x-text="i.name"></option></template></select>
+                                    <select x-model="pr.etiquetaId" class="rounded-lg border-gray-300 text-sm"><option value="">Etiqueta</option><template x-for="i in insumosDeTipo(['etiqueta'])" :key="i.id"><option :value="i.id" x-text="i.name"></option></template></select>
+                                    <input type="number" step="0.01" x-model="pr.retailPrice" placeholder="Precio público" class="rounded-lg border-gray-300 text-sm">
+                                    <input type="number" step="0.01" x-model="pr.wholesalePrice" placeholder="Mayoreo" class="rounded-lg border-gray-300 text-sm">
+                                    <span class="text-xs text-red-600 font-bold">Costo pieza: $<span x-text="formatMoney(costoPresentacion(baseForm, pr))"></span></span>
+                                    <button @click="baseForm.presentaciones.splice(idx, 1)" class="text-red-500 text-sm">Quitar</button>
+                                </div>
+                            </template>
+                            <button @click="baseForm.presentaciones.push({ pid: '', gramos: '', envaseId: '', etiquetaId: '', retailPrice: '', wholesalePrice: '' })" class="text-sm font-bold text-primary">+ Presentación</button>
+                        </div>
+                        <div class="flex justify-end gap-3">
+                            <button @click="showBaseForm = false; editingBaseId = null" class="text-sm text-gray-500">Cancelar</button>
+                            <button @click="saveBase()" class="bg-primary text-white px-5 py-2 rounded-lg font-bold text-sm">Guardar fórmula base</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="b in bases" :key="b.id">
+                            <div class="border border-gray-200 rounded-xl p-4 flex justify-between items-start gap-3">
+                                <div>
+                                    <p class="font-bold" x-text="b.name"></p>
+                                    <p class="text-xs text-gray-500">Lote <span x-text="b.loteG"></span> g · $<span x-text="costoPorG(b).toFixed(4)"></span>/g · <span x-text="(b.presentaciones || []).length"></span> presentaciones</p>
+                                    <p class="text-xs text-gray-400" x-text="(b.presentaciones || []).map(pr => pr.gramos + ' g').join(' · ')"></p>
+                                </div>
+                                <div class="flex gap-2 text-sm"><button @click="editBase(b)" class="text-primary font-bold">Editar</button><button @click="deleteBase(b)" class="text-red-500">Borrar</button></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 <!-- Formulario Fórmula -->
                 <div x-show="showFormulaForm" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 border-t-4 border-t-primary" x-transition>
                     <h4 class="font-bold mb-4 text-primary" x-text="editingFormulaIndex !== null ? 'Editar Fórmula' : 'Nueva Fórmula'"></h4>
@@ -1277,6 +1344,9 @@
 
             // Fórmulas
             products: [],
+            bases: [], showBaseForm: false, editingBaseId: null,
+            baseForm: { name: '', loteG: 20000, merma: 0, ingredients: [], presentaciones: [] },
+            tempBaseIng: { insumoId: '', qty: '' },
             showFormulaForm: false,
             editingFormulaIndex: null,
             editingFormulaId: null,
@@ -1352,6 +1422,7 @@
                         await Promise.all([
                             this.loadCollection('inventory', 'vj_insumos'),
                             this.loadCollection('products', 'vj_formulas'),
+                            this.loadCollection('bases', 'vj_bases'),
                             this.loadCollection('sales', 'vj_ventas'),
                             this.loadCollection('auditLogs', 'vj_auditoria', 100)
                         ]);
@@ -1921,6 +1992,86 @@
                 this.toast('Conversión terminada');
             },
 
+            // ===== FÓRMULAS BASE =====
+            insumosDeTipo(tipos) { return this.inventory.filter(i => tipos.includes(i.tipo || 'otro')); },
+            rendimientoG(b) { return (parseFloat(b.loteG) || 0) * (1 - (parseFloat(b.merma) || 0) / 100); },
+            costoPorG(b) { const y = this.rendimientoG(b); return y > 0 ? this.calculateFormulaCost(b.ingredients || []) / y : 0; },
+            ingredientesPresentacion(b, pr) {
+                const y = this.rendimientoG(b), g = parseFloat(pr.gramos) || 0;
+                if (!(y > 0) || !(g > 0)) return [];
+                const out = (b.ingredients || []).map(i => ({ insumoId: i.insumoId, qty: (parseFloat(i.qty) || 0) * g / y }));
+                if (pr.envaseId) out.push({ insumoId: pr.envaseId, qty: 1 });
+                if (pr.etiquetaId) out.push({ insumoId: pr.etiquetaId, qty: 1 });
+                return out;
+            },
+            costoPresentacion(b, pr) { return this.calculateFormulaCost(this.ingredientesPresentacion(b, pr)); },
+            async fsSave(col, id, data) {
+                if (this.db && id && !String(id).startsWith('local_')) { try { await this.db.collection(col).doc(id).set({ ...data, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }); } catch (e) {} }
+            },
+            async fsAdd(col, data) {
+                if (this.db) { try { const r = await this.db.collection(col).add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() }); return r.id; } catch (e) {} }
+                return 'local_' + Date.now() + Math.random().toString(36).slice(2, 6);
+            },
+            openBaseForm() {
+                this.editingBaseId = null;
+                this.baseForm = { name: '', loteG: 20000, merma: 0, ingredients: [], presentaciones: [{ pid: '', gramos: '', envaseId: '', etiquetaId: '', retailPrice: '', wholesalePrice: '' }] };
+                this.showBaseForm = true;
+            },
+            editBase(b) {
+                this.editingBaseId = b.id;
+                this.baseForm = JSON.parse(JSON.stringify({ name: b.name, loteG: b.loteG, merma: b.merma || 0, ingredients: b.ingredients || [], presentaciones: b.presentaciones || [] }));
+                this.showBaseForm = true;
+            },
+            addBaseIng() {
+                const q = parseFloat(this.tempBaseIng.qty);
+                if (!this.tempBaseIng.insumoId || !(q > 0)) return;
+                this.baseForm.ingredients.push({ insumoId: this.tempBaseIng.insumoId, qty: q });
+                this.tempBaseIng = { insumoId: '', qty: '' };
+            },
+            async saveBase() {
+                const f = this.baseForm;
+                if (!f.name || !f.ingredients.length || !f.presentaciones.length || f.presentaciones.some(p => !(parseFloat(p.gramos) > 0) || !p.envaseId || !p.etiquetaId || !(parseFloat(p.retailPrice) > 0))) {
+                    alert('Completa el nombre, los ingredientes y, en cada presentación, gramos, envase, etiqueta y precio al público.'); return;
+                }
+                if (f.ingredients.some(g => this.getInsumoById(g.insumoId).costoBase == null)) { alert('Hay insumos sin convertir a g / ml. Ve a Materia Prima y pulsa "Convertir a g / ml".'); return; }
+                const base = {
+                    name: f.name, loteG: parseFloat(f.loteG) || 20000, merma: parseFloat(f.merma) || 0,
+                    ingredients: f.ingredients.map(g => ({ insumoId: g.insumoId, qty: parseFloat(g.qty) })),
+                    presentaciones: f.presentaciones.map((p, i) => ({ pid: p.pid || ('p' + Date.now() + i), gramos: parseFloat(p.gramos), envaseId: p.envaseId, etiquetaId: p.etiquetaId, retailPrice: parseFloat(p.retailPrice) || 0, wholesalePrice: parseFloat(p.wholesalePrice) || 0 }))
+                };
+                let id = this.editingBaseId;
+                if (id) { await this.fsSave('vj_bases', id, base); const i = this.bases.findIndex(x => x.id === id); this.bases[i] = { ...this.bases[i], ...base }; }
+                else { id = await this.fsAdd('vj_bases', base); this.bases.unshift({ id, ...base }); }
+                const b = this.bases.find(x => x.id === id);
+                const keep = new Set();
+                for (const p of b.presentaciones) {
+                    keep.add(p.pid);
+                    const data = { name: `${b.name} ${p.gramos} g`, retailPrice: p.retailPrice, wholesalePrice: p.wholesalePrice, ingredients: this.ingredientesPresentacion(b, p), baseId: id, pid: p.pid, gramos: p.gramos, unidadesBase: true };
+                    const ex = this.products.find(x => x.baseId === id && x.pid === p.pid);
+                    if (ex) { await this.fsSave('vj_formulas', ex.id, data); Object.assign(ex, data); }
+                    else { const fid = await this.fsAdd('vj_formulas', data); this.products.unshift({ id: fid, ...data }); }
+                }
+                for (const old of this.products.filter(x => x.baseId === id && !keep.has(x.pid))) {
+                    if (this.db && !String(old.id).startsWith('local_')) { try { await this.db.collection('vj_formulas').doc(old.id).delete(); } catch (e) {} }
+                    this.products = this.products.filter(x => x.id !== old.id);
+                }
+                this.saveToLocalStorage();
+                this.logAudit('formula', `Fórmula base guardada: ${b.name} (${b.presentaciones.length} presentaciones)`);
+                this.showBaseForm = false; this.editingBaseId = null;
+                this.toast('Fórmula base guardada');
+            },
+            async deleteBase(b) {
+                if (!confirm(`¿Borrar la fórmula base "${b.name}" y sus ${(b.presentaciones || []).length} presentaciones?`)) return;
+                for (const x of this.products.filter(x => x.baseId === b.id)) {
+                    if (this.db && !String(x.id).startsWith('local_')) { try { await this.db.collection('vj_formulas').doc(x.id).delete(); } catch (e) {} }
+                }
+                this.products = this.products.filter(x => x.baseId !== b.id);
+                if (this.db && !String(b.id).startsWith('local_')) { try { await this.db.collection('vj_bases').doc(b.id).delete(); } catch (e) {} }
+                this.bases = this.bases.filter(x => x.id !== b.id);
+                this.saveToLocalStorage();
+                this.logAudit('formula', `Fórmula base borrada: ${b.name}`);
+            },
+
             // ===== FÓRMULAS =====
             get filteredProducts() {
                 if (!this.searchProduct) return this.products;
@@ -1954,6 +2105,7 @@
             editFormula(prod) {
                 this.editingFormulaIndex = this.products.findIndex(p => p.id === prod.id);
                 this.editingFormulaId = prod.id;
+                if (prod.baseId) { this.editingFormulaIndex = null; this.editingFormulaId = null; const b = this.bases.find(x => x.id === prod.baseId); if (b) { alert('Esta es una presentación de una fórmula base: se edita desde la fórmula base.'); this.editBase(b); } return; }
                 this.formulaForm = JSON.parse(JSON.stringify(prod));
                 this.showFormulaForm = true;
             },
