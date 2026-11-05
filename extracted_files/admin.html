@@ -1119,6 +1119,22 @@
                                     <label class="block text-xs font-bold text-gray-500 mb-1">Salario base</label>
                                     <input type="number" min="0" x-model.number="cambaceoForm.salary" class="w-full rounded-lg border-gray-300 text-sm">
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Meta semanal 1 (piezas)</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.goal1Qty" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Comisión extra meta 1 (%)</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.goal1Extra" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Meta semanal 2 (piezas)</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.goal2Qty" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Comisión extra meta 2 (%)</label>
+                                    <input type="number" min="0" x-model.number="cambaceoForm.goal2Extra" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 mb-1">Notas</label>
@@ -1200,8 +1216,22 @@
                                         <p class="text-lg font-black text-amber-700" x-text="'$' + formatMoney(seller.commissionAmount)"></p>
                                     </div>
                                     <div class="bg-blue-50 p-3 rounded-xl">
-                                        <p class="text-xs uppercase text-blue-700 font-semibold">Depósito/por pagar</p>
+                                        <p class="text-xs uppercase text-blue-700 font-semibold">Pago al vendedor</p>
                                         <p class="text-lg font-black text-blue-700" x-text="'$' + formatMoney(seller.totalToPay)"></p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                                    <div class="bg-gray-50 p-3 rounded-xl">
+                                        <p class="text-xs uppercase text-gray-600 font-semibold">Debe depositar</p>
+                                        <p class="text-lg font-black text-gray-800" x-text="'$' + formatMoney(seller.depositTotal)"></p>
+                                    </div>
+                                    <div class="bg-purple-50 p-3 rounded-xl">
+                                        <p class="text-xs uppercase text-purple-700 font-semibold">Piezas de la semana</p>
+                                        <p class="text-lg font-black text-purple-700" x-text="seller.weekPieces + (seller.goal2Qty ? ' / ' + seller.goal2Qty : '')"></p>
+                                    </div>
+                                    <div class="bg-purple-50 p-3 rounded-xl">
+                                        <p class="text-xs uppercase text-purple-700 font-semibold">Bono semanal</p>
+                                        <p class="text-lg font-black text-purple-700" x-text="'$' + formatMoney(seller.weekBonus)"></p>
                                     </div>
                                 </div>
                                 <div class="overflow-x-auto">
@@ -1445,7 +1475,7 @@
 
             // Cambaceo
             cambaceoEntities: [],
-            cambaceoForm: { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, notes: '' },
+            cambaceoForm: { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, goal1Qty: 80, goal1Extra: 5, goal2Qty: 100, goal2Extra: 10, notes: '' },
             cambaceoPeriod: 'week',
 
             // Mayoristas
@@ -1724,7 +1754,7 @@
                 }
             },
             resetCambaceoForm() {
-                this.cambaceoForm = { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, notes: '' };
+                this.cambaceoForm = { id: '', name: '', type: 'cliente', phone: '', email: '', minPurchaseAmount: 0, priceTier: 'publico', commissionRate: 0, salary: 0, goal1Qty: 80, goal1Extra: 5, goal2Qty: 100, goal2Extra: 10, notes: '' };
             },
             saveCambaceoEntity() {
                 if (!this.cambaceoForm.name) {
@@ -1736,7 +1766,11 @@
                     id: this.cambaceoForm.id || 'cambaceo_' + Date.now(),
                     minPurchaseAmount: Number(this.cambaceoForm.minPurchaseAmount || 0),
                     commissionRate: Number(this.cambaceoForm.commissionRate || 0),
-                    salary: Number(this.cambaceoForm.salary || 0)
+                    salary: Number(this.cambaceoForm.salary || 0),
+                    goal1Qty: Number(this.cambaceoForm.goal1Qty || 0),
+                    goal1Extra: Number(this.cambaceoForm.goal1Extra || 0),
+                    goal2Qty: Number(this.cambaceoForm.goal2Qty || 0),
+                    goal2Extra: Number(this.cambaceoForm.goal2Extra || 0)
                 };
                 const existingIndex = this.cambaceoEntities.findIndex(e => e.id === payload.id);
                 if (existingIndex >= 0) {
@@ -1762,11 +1796,11 @@
                 }
                 return 'publico';
             },
-            getCambaceoSalesForPeriod(seller) {
+            getCambaceoSalesForPeriod(seller, period = this.cambaceoPeriod) {
                 const sales = this.sales.filter(s => s.entityId === seller.id);
                 if (!sales.length) return [];
                 const now = new Date();
-                if (this.cambaceoPeriod === 'day') {
+                if (period === 'day') {
                     const today = now.toDateString();
                     return sales.filter(sale => {
                         const date = sale.date ? (sale.date.toDate ? sale.date.toDate() : new Date(sale.date)) : now;
@@ -1782,6 +1816,29 @@
                     const date = sale.date ? (sale.date.toDate ? sale.date.toDate() : new Date(sale.date)) : now;
                     return date >= weekStart;
                 });
+            },
+            calcCambaceoWeeklyBonus(seller, weekSales) {
+                // Escalones: [pieza desde la que aplica, % extra]. Cada pieza gana el % extra del escalon mas alto que ya alcanzo.
+                const tiers = [
+                    { from: Number(seller.goal1Qty || 0), pct: Number(seller.goal1Extra || 0) },
+                    { from: Number(seller.goal2Qty || 0), pct: Number(seller.goal2Extra || 0) }
+                ].filter(t => t.from > 0 && t.pct > 0).sort((a, b) => a.from - b.from);
+                const toDate = d => d ? (d.toDate ? d.toDate() : new Date(d)) : new Date();
+                const ordered = [...weekSales].sort((a, b) => toDate(a.date) - toDate(b.date));
+                let done = 0, bonus = 0;
+                ordered.forEach(sale => {
+                    const qty = Number(sale.qty || 0);
+                    if (qty <= 0) return;
+                    const unit = Number(sale.revenue || 0) / qty;
+                    const first = done + 1, last = done + qty;
+                    tiers.forEach((t, i) => {
+                        const to = i + 1 < tiers.length ? tiers[i + 1].from - 1 : Infinity;
+                        const n = Math.min(last, to) - Math.max(first, t.from) + 1;
+                        if (n > 0) bonus += n * unit * (t.pct / 100);
+                    });
+                    done = last;
+                });
+                return { weekPieces: done, weekBonus: bonus };
             },
             getCambaceoDashboardRows() {
                 return this.cambaceoEntities.filter(e => e.type === 'vendedor').map(seller => {
@@ -1800,10 +1857,16 @@
                     const revenue = sellerSales.reduce((sum, sale) => sum + (sale.revenue || 0), 0);
                     const commissionAmount = sellerSales.reduce((sum, sale) => sum + (sale.commissionAmount || 0), 0);
                     const salary = Number(seller.salary || 0);
-                    const totalToPay = salary + commissionAmount;
+                    const weekSales = this.getCambaceoSalesForPeriod(seller, 'week');
+                    const { weekPieces, weekBonus } = this.calcCambaceoWeeklyBonus(seller, weekSales);
+                    const bonusInPeriod = this.cambaceoPeriod === 'week' ? weekBonus : 0;
+                    const totalToPay = salary + commissionAmount + bonusInPeriod;
                     const salesCount = sellerSales.length;
                     return {
                         ...seller,
+                        weekPieces,
+                        weekBonus,
+                        depositTotal: revenue - commissionAmount,
                         salesCount,
                         revenue,
                         commissionAmount,
