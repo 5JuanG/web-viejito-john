@@ -18,17 +18,49 @@ function sim() {
   return {
     productos: [], cargando: true,
     cfg: { base: 42, m1q: 80, m1e: 5, m2q: 100, m2e: 10 },
-    costos: {}, precios: {}, piezas: {},
+    costos: {}, precios: {}, piezas: {}, auto: {}, fuente: {},
     async init() {
       try { const g = JSON.parse(localStorage.getItem(KEY) || 'null'); if (g) { this.cfg = { ...this.cfg, ...g.cfg }; this.costos = g.costos || {}; this.precios = g.precios || {}; this.piezas = g.piezas || {}; } } catch (e) {}
       try { const r = await VJCatalogo.cargar(true, true); this.productos = r.productos || []; } catch (e) { this.productos = JSON.parse(JSON.stringify(window.VJ_SEED || [])); }
       this.productos = this.productos.filter(p => p.activo !== false && p.tipo === 'menudeo');
+      await this.cargarCostos();
       this.cargando = false;
       if (!Object.keys(this.piezas).length) this.repartir(100);
     },
     save() { try { localStorage.setItem(KEY, JSON.stringify({ cfg: this.cfg, costos: this.costos, precios: this.precios, piezas: this.piezas })); } catch (e) {} },
     precio(p) { const v = this.precios[p.id]; return v != null && v !== '' ? Number(v) : Number(p.cambaceo > 0 ? p.cambaceo : p.precio) || 0; },
-    costo(p) { return Number(this.costos[p.id]) || 0; },
+    costo(p) { const m = this.costos[p.id]; return m !== undefined && m !== '' && m !== null ? Number(m) || 0 : (this.auto[p.id] || 0); },
+    // Trae el costo de fabricación por pieza igual que la pestaña "Costo de Fabricación" del administrador.
+    async cargarCostos() {
+      try {
+        if (window.vjAuthReady) await window.vjAuthReady;
+        if (typeof db === 'undefined' || !db) return;
+        const rd = async n => (await db.collection(n).get()).docs.map(d => ({ id: d.id, ...d.data() }));
+        const [ins, forms, cfgs] = await Promise.all([rd('vj_insumos'), rd('vj_formulas'), rd('vj_fab_configs')]);
+        const insMap = {}; ins.forEach(i => insMap[i.id] = i);
+        const unit = it => {
+          if (!it) return 0;
+          if (it.costoBase != null) return Number(it.costoBase) || 0;
+          let q = it.qty || 1; if (it.tipo === 'etiqueta' && it.rendimiento) q = q * it.rendimiento;
+          return (it.cost || 0) / Math.max(q, 1);
+        };
+        const cfgMap = {}; cfgs.forEach(c => cfgMap[c.id] = c.config || {});
+        const n = v => parseFloat(v) || 0;
+        this.productos.forEach(p => {
+          const f = forms.find(x => x.id === p.formulaId); if (!f) return;
+          let total = (f.ingredients || []).reduce((t, g) => t + unit(insMap[g.insumoId]) * (g.qty || 0), 0);
+          const c = cfgMap[f.id];
+          if (c) {
+            const vol = Math.max(parseInt(c.volumen) || 1, 1);
+            total += n(c.costoCaja) / Math.max(parseInt(c.piezasPorCaja) || 1, 1)
+              + n(c.moCostoHora) * n(c.moHorasLote) / vol
+              + (n(c.gasolinaPorEntrega) + n(c.costoEnvio)) / Math.max(parseInt(c.piezasPorEntrega) || 1, 1)
+              + (n(c.cfRenta) + n(c.cfLuzAgua) + n(c.cfEquipo) + n(c.cfOtros)) / vol;
+          }
+          this.auto[p.id] = total; this.fuente[p.id] = c ? 'costo de fabricación' : 'solo materia prima';
+        });
+      } catch (e) { console.warn('No se pudo leer el costo de fabricación:', e); }
+    },
     money(n) { return '$' + (Number(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 }); },
     pct(n) { return (Number(n) || 0).toFixed(1) + '%'; },
     total() { return this.productos.reduce((s, p) => s + (Number(this.piezas[p.id]) || 0), 0); },
@@ -70,10 +102,10 @@ function sim() {
     <h1 class="text-2xl font-black">Simulador de ventas de cambaceo</h1>
     <a href="admin.html" class="text-sm text-blue-700 font-semibold">&larr; Volver al administrador</a>
   </div>
-  <p class="text-sm text-gray-600">Mueve el esquema de comisión, el costo por pieza y las piezas por producto para ver cuánto gana el vendedor y cuánto te queda a ti en la semana. Todo se guarda en este navegador.</p>
+  <p class="text-sm text-gray-600">Mueve el esquema de comisión y las piezas por producto (el costo de fabricación se trae solo de tus fórmulas, y puedes ajustarlo a mano) para ver cuánto gana el vendedor y cuánto te queda a ti en la semana. Todo se guarda en este navegador.</p>
 
   <div x-show="cargando" class="text-sm text-gray-500">Cargando productos…</div>
-  <div x-show="!cargando && sinCostos()" class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-3">Falta capturar el <b>costo por pieza</b> de algunos productos. Mientras esté en $0, la utilidad se verá más alta de lo real.</div>
+  <div x-show="!cargando && sinCostos()" class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-3">Algunos productos no tienen costo de fabricación (no están vinculados a una fórmula). Captúralo a mano en la tabla; mientras esté en $0 la utilidad se verá más alta de lo real.</div>
 
   <!-- Esquema -->
   <section class="bg-white rounded-2xl p-4 shadow-sm">
@@ -109,13 +141,14 @@ function sim() {
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead><tr class="text-left text-gray-500 border-b border-gray-100 text-xs">
-          <th class="py-2">Producto</th><th>Precio cambaceo</th><th>Costo por pieza</th><th>Piezas/semana</th><th></th></tr></thead>
+          <th class="py-2">Producto</th><th>Precio cambaceo</th><th>Costo de fabricación por pieza</th><th>Piezas/semana</th><th></th></tr></thead>
         <tbody>
           <template x-for="p in productos" :key="p.id">
             <tr class="border-b border-gray-50">
               <td class="py-2 pr-2" x-text="p.nombre"></td>
               <td><input type="number" min="0" :value="precio(p)" @input="precios[p.id] = $event.target.value; save()" class="w-24 rounded-lg border-gray-300 text-sm"></td>
-              <td><input type="number" min="0" step="0.5" :value="costos[p.id] || ''" placeholder="0" @input="costos[p.id] = $event.target.value; save()" class="w-24 rounded-lg border-gray-300 text-sm"></td>
+              <td><input type="number" min="0" step="0.5" :value="costos[p.id] ?? ''" :placeholder="auto[p.id] != null ? auto[p.id].toFixed(2) : '0'" @input="costos[p.id] = $event.target.value; save()" class="w-24 rounded-lg border-gray-300 text-sm">
+                <span class="block text-[10px] text-gray-400" x-text="costos[p.id] ? 'manual' : (fuente[p.id] || 'sin fórmula vinculada')"></span></td>
               <td><input type="number" min="0" x-model.number="piezas[p.id]" @input="save()" class="w-24 rounded-lg border-gray-300 text-sm"></td>
               <td><button @click="solo(p)" class="text-xs text-blue-700 font-semibold">Solo este</button></td>
             </tr>
