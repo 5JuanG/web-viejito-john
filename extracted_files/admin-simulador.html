@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador Cambaceo | El Viejito John</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="vendor/firebase-app-compat.js"></script>
+<script src="vendor/firebase-firestore-compat.js"></script>
+<script src="vendor/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="admin-auth.js"></script>
+<script src="catalogo-seed.js"></script>
+<script src="catalogo.js"></script>
+<script>
+function sim() {
+  const KEY = 'vj_sim_v1';
+  return {
+    productos: [], cargando: true,
+    cfg: { base: 42, m1q: 80, m1e: 5, m2q: 100, m2e: 10 },
+    costos: {}, precios: {}, piezas: {},
+    async init() {
+      try { const g = JSON.parse(localStorage.getItem(KEY) || 'null'); if (g) { this.cfg = { ...this.cfg, ...g.cfg }; this.costos = g.costos || {}; this.precios = g.precios || {}; this.piezas = g.piezas || {}; } } catch (e) {}
+      try { const r = await VJCatalogo.cargar(true, true); this.productos = r.productos || []; } catch (e) { this.productos = JSON.parse(JSON.stringify(window.VJ_SEED || [])); }
+      this.productos = this.productos.filter(p => p.activo !== false && p.tipo === 'menudeo');
+      this.cargando = false;
+      if (!Object.keys(this.piezas).length) this.repartir(100);
+    },
+    save() { try { localStorage.setItem(KEY, JSON.stringify({ cfg: this.cfg, costos: this.costos, precios: this.precios, piezas: this.piezas })); } catch (e) {} },
+    precio(p) { const v = this.precios[p.id]; return v != null && v !== '' ? Number(v) : Number(p.cambaceo > 0 ? p.cambaceo : p.precio) || 0; },
+    costo(p) { return Number(this.costos[p.id]) || 0; },
+    money(n) { return '$' + (Number(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 }); },
+    pct(n) { return (Number(n) || 0).toFixed(1) + '%'; },
+    total() { return this.productos.reduce((s, p) => s + (Number(this.piezas[p.id]) || 0), 0); },
+    repartir(n) {
+      const c = this.productos.length || 1, b = Math.floor(n / c), o = {};
+      this.productos.forEach((p, i) => o[p.id] = b + (i < n - b * c ? 1 : 0));
+      this.piezas = o; this.save();
+    },
+    solo(p) { const o = {}; this.productos.forEach(x => o[x.id] = x.id === p.id ? 100 : 0); this.piezas = o; this.save(); },
+    sinCostos() { return this.productos.some(p => !this.costo(p)); },
+    // Simula una semana con N piezas totales, respetando la mezcla de productos de arriba.
+    calc(N) {
+      const tot = this.total(); let rev = 0, cost = 0, pcs = 0;
+      this.productos.forEach(p => { const q = tot ? (Number(this.piezas[p.id]) || 0) * N / tot : 0; rev += q * this.precio(p); cost += q * this.costo(p); pcs += q; });
+      const avg = pcs ? rev / pcs : 0, c = this.cfg;
+      const comm = rev * c.base / 100; let bonus = 0;
+      const t = [{ f: +c.m1q, e: +c.m1e }, { f: +c.m2q, e: +c.m2e }].filter(x => x.f > 0 && x.e > 0).sort((a, b) => a.f - b.f);
+      t.forEach((x, i) => { const to = i + 1 < t.length ? t[i + 1].f - 1 : Infinity; const n = Math.min(pcs, to) - x.f + 1; if (n > 0) bonus += n * avg * x.e / 100; });
+      const util = rev - cost - comm - bonus;
+      return { pcs, rev, cost, comm, bonus, vend: comm + bonus, util, margen: rev ? util / rev * 100 : 0 };
+    },
+    actual() { return this.calc(this.total()); },
+    escenarios() { return [40, 50, 60, 70, 80, 90, 100, 110, 120, 140].map(n => ({ n, ...this.calc(n) })); },
+    ranking() {
+      const b = +this.cfg.base, e1 = b + (+this.cfg.m1e), e2 = b + (+this.cfg.m2e);
+      return this.productos.map(p => {
+        const pr = this.precio(p), co = this.costo(p), f = r => pr * (1 - r / 100) - co;
+        return { p, pr, co, u0: f(b), u1: f(e1), u2: f(e2) };
+      }).sort((a, b) => b.u2 - a.u2);
+    }
+  };
+}
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800" x-data="sim()" x-init="init()">
+<div class="max-w-6xl mx-auto p-4 space-y-5">
+  <div class="flex items-center justify-between flex-wrap gap-2">
+    <h1 class="text-2xl font-black">Simulador de ventas de cambaceo</h1>
+    <a href="admin.html" class="text-sm text-blue-700 font-semibold">&larr; Volver al administrador</a>
+  </div>
+  <p class="text-sm text-gray-600">Mueve el esquema de comisión, el costo por pieza y las piezas por producto para ver cuánto gana el vendedor y cuánto te queda a ti en la semana. Todo se guarda en este navegador.</p>
+
+  <div x-show="cargando" class="text-sm text-gray-500">Cargando productos…</div>
+  <div x-show="!cargando && sinCostos()" class="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-xl p-3">Falta capturar el <b>costo por pieza</b> de algunos productos. Mientras esté en $0, la utilidad se verá más alta de lo real.</div>
+
+  <!-- Esquema -->
+  <section class="bg-white rounded-2xl p-4 shadow-sm">
+    <h2 class="font-bold mb-3">1. Esquema de comisión</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs font-bold text-gray-500">
+      <label>Comisión base (%)<input type="number" min="0" x-model.number="cfg.base" @input="save()" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></label>
+      <label>Meta 1 (piezas)<input type="number" min="0" x-model.number="cfg.m1q" @input="save()" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></label>
+      <label>Extra meta 1 (%)<input type="number" min="0" x-model.number="cfg.m1e" @input="save()" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></label>
+      <label>Meta 2 (piezas)<input type="number" min="0" x-model.number="cfg.m2q" @input="save()" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></label>
+      <label>Extra meta 2 (%)<input type="number" min="0" x-model.number="cfg.m2e" @input="save()" class="mt-1 w-full rounded-lg border-gray-300 text-sm"></label>
+    </div>
+    <p class="text-xs text-gray-500 mt-2">El % extra se aplica solo a las piezas que pasan cada meta (opción B). En la simulación se usa el precio promedio de la mezcla.</p>
+  </section>
+
+  <!-- Resultado de la mezcla -->
+  <section class="bg-white rounded-2xl p-4 shadow-sm">
+    <h2 class="font-bold mb-3">2. Resultado de la semana con tu mezcla (<span x-text="total()"></span> piezas)</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div class="bg-gray-50 rounded-xl p-3"><p class="text-xs uppercase text-gray-500 font-semibold">Venta</p><p class="text-lg font-black" x-text="money(actual().rev)"></p></div>
+      <div class="bg-gray-50 rounded-xl p-3"><p class="text-xs uppercase text-gray-500 font-semibold">Costo producto</p><p class="text-lg font-black" x-text="money(actual().cost)"></p></div>
+      <div class="bg-blue-50 rounded-xl p-3"><p class="text-xs uppercase text-blue-700 font-semibold">Gana el vendedor</p><p class="text-lg font-black text-blue-700" x-text="money(actual().vend)"></p><p class="text-xs text-blue-700" x-text="'incluye bono ' + money(actual().bonus)"></p></div>
+      <div class="bg-green-50 rounded-xl p-3"><p class="text-xs uppercase text-green-700 font-semibold">Tu utilidad</p><p class="text-lg font-black text-green-700" x-text="money(actual().util)"></p></div>
+      <div class="bg-green-50 rounded-xl p-3"><p class="text-xs uppercase text-green-700 font-semibold">Margen</p><p class="text-lg font-black text-green-700" x-text="pct(actual().margen)"></p></div>
+    </div>
+  </section>
+
+  <!-- Productos -->
+  <section class="bg-white rounded-2xl p-4 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+      <h2 class="font-bold">3. Productos y mezcla de venta</h2>
+      <button @click="repartir(100)" class="text-xs font-bold bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2">Repartir 100 piezas por igual</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b border-gray-100 text-xs">
+          <th class="py-2">Producto</th><th>Precio cambaceo</th><th>Costo por pieza</th><th>Piezas/semana</th><th></th></tr></thead>
+        <tbody>
+          <template x-for="p in productos" :key="p.id">
+            <tr class="border-b border-gray-50">
+              <td class="py-2 pr-2" x-text="p.nombre"></td>
+              <td><input type="number" min="0" :value="precio(p)" @input="precios[p.id] = $event.target.value; save()" class="w-24 rounded-lg border-gray-300 text-sm"></td>
+              <td><input type="number" min="0" step="0.5" :value="costos[p.id] || ''" placeholder="0" @input="costos[p.id] = $event.target.value; save()" class="w-24 rounded-lg border-gray-300 text-sm"></td>
+              <td><input type="number" min="0" x-model.number="piezas[p.id]" @input="save()" class="w-24 rounded-lg border-gray-300 text-sm"></td>
+              <td><button @click="solo(p)" class="text-xs text-blue-700 font-semibold">Solo este</button></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Escenarios -->
+  <section class="bg-white rounded-2xl p-4 shadow-sm">
+    <h2 class="font-bold mb-1">4. ¿Qué pasa si vende más o menos piezas?</h2>
+    <p class="text-xs text-gray-500 mb-3">Usa la misma mezcla de productos de arriba, cambiando solo el total de piezas.</p>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b border-gray-100 text-xs"><th class="py-2">Piezas</th><th>Venta</th><th>Gana vendedor</th><th>Bono</th><th>Tu utilidad</th><th>Margen</th></tr></thead>
+        <tbody>
+          <template x-for="r in escenarios()" :key="r.n">
+            <tr class="border-b border-gray-50" :class="r.n >= cfg.m2q ? 'bg-green-50' : (r.n >= cfg.m1q ? 'bg-amber-50' : '')">
+              <td class="py-2 font-bold" x-text="r.n"></td><td x-text="money(r.rev)"></td><td x-text="money(r.vend)"></td><td x-text="money(r.bonus)"></td>
+              <td class="font-bold" :class="r.util < 0 ? 'text-red-600' : ''" x-text="money(r.util)"></td><td x-text="pct(r.margen)"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Ranking -->
+  <section class="bg-white rounded-2xl p-4 shadow-sm">
+    <h2 class="font-bold mb-1">5. ¿Qué producto te conviene que empujen?</h2>
+    <p class="text-xs text-gray-500 mb-3">Utilidad que te queda por cada pieza vendida, después de la comisión del vendedor en cada escalón. Ordenado de mayor a menor.</p>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b border-gray-100 text-xs"><th class="py-2">Producto</th><th>Precio</th><th>Costo</th>
+          <th x-text="'Con ' + cfg.base + '%'"></th><th x-text="'Con ' + (+cfg.base + +cfg.m1e) + '%'"></th><th x-text="'Con ' + (+cfg.base + +cfg.m2e) + '%'"></th></tr></thead>
+        <tbody>
+          <template x-for="r in ranking()" :key="r.p.id">
+            <tr class="border-b border-gray-50">
+              <td class="py-2" x-text="r.p.nombre"></td><td x-text="money(r.pr)"></td><td x-text="money(r.co)"></td>
+              <td :class="r.u0 < 0 ? 'text-red-600 font-bold' : ''" x-text="'$' + r.u0.toFixed(1)"></td>
+              <td :class="r.u1 < 0 ? 'text-red-600 font-bold' : ''" x-text="'$' + r.u1.toFixed(1)"></td>
+              <td class="font-bold" :class="r.u2 < 0 ? 'text-red-600' : 'text-green-700'" x-text="'$' + r.u2.toFixed(1)"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</body>
+</html>
