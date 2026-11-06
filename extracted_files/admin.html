@@ -1052,7 +1052,10 @@
                         <h3 class="text-xl font-bold">Control de clientes, distribuidores y vendedores</h3>
                         <p class="text-sm text-gray-500">Asigna reglas de precio por volumen y visualiza el rendimiento diario y semanal por vendedor.</p>
                     </div>
-                    <button @click="openCambaceoForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nuevo registro</button>
+                    <div class="flex flex-wrap gap-2">
+                        <a href="admin-simulador.html" class="border border-primary text-primary px-4 py-2 rounded-lg font-bold hover:bg-gray-50 transition text-sm">Simulador de ventas</a>
+                        <button @click="openCambaceoForm()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Nuevo registro</button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
