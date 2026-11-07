@@ -99,6 +99,9 @@
             <a href="#" @click.prevent="currentTab = 'mayoristas'" :class="currentTab === 'mayoristas' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">storefront</span> <span class="font-medium">Directorio Mayoristas</span>
             </a>
+            <a href="#" @click.prevent="currentTab = 'compras'" :class="currentTab === 'compras' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
+                <span class="material-symbols-outlined">shopping_cart</span> <span class="font-medium">Compras</span>
+            </a>
             <a href="#" @click.prevent="currentTab = 'auditoria'" :class="currentTab === 'auditoria' ? 'bg-white/20 active' : 'sidebar-link'" class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/80 hover:text-white">
                 <span class="material-symbols-outlined">history</span> <span class="font-medium">Auditoría</span>
             </a>
@@ -136,7 +139,7 @@
 
         <!-- MOBILE MENU -->
         <div x-show="mobileMenuOpen" class="md:hidden bg-primary text-white p-4 space-y-2" @click.away="mobileMenuOpen = false">
-            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'produccion',l:'Producción',i:'factory'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'mayoristas',l:'Mayoristas',i:'storefront'},{k:'auditoria',l:'Auditoría',i:'history'}]">
+            <template x-for="item in [{k:'dashboard',l:'Resumen',i:'dashboard'},{k:'insumos',l:'Materia Prima',i:'inventory_2'},{k:'formulas',l:'Fórmulas',i:'science'},{k:'fabricacion',l:'Fabricación',i:'precision_manufacturing'},{k:'produccion',l:'Producción',i:'factory'},{k:'escenarios',l:'Escenarios',i:'analytics'},{k:'sales',l:'Ventas',i:'point_of_sale'},{k:'cambaceo',l:'Cambaceo',i:'groups'},{k:'mayoristas',l:'Mayoristas',i:'storefront'},{k:'compras',l:'Compras',i:'shopping_cart'},{k:'auditoria',l:'Auditoría',i:'history'}]">
                 <a href="#" @click.prevent="currentTab = item.k; mobileMenuOpen = false; if (item.k === 'produccion') cargarCatalogoVinc()" :class="currentTab === item.k ? 'bg-white/20' : ''" class="flex items-center gap-3 px-4 py-2 rounded-xl">
                     <span class="material-symbols-outlined" x-text="item.i"></span> <span x-text="item.l"></span>
                 </a>
@@ -1366,6 +1369,182 @@
                 </div>
             </div>
 
+            <!-- ===== COMPRAS ===== -->
+            <div x-show="currentTab === 'compras'" x-transition>
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold">Hoja de Compras</h3>
+                        <p class="text-sm text-gray-500">Marca lo que vas a comprar, elige el proveedor y el sistema suma cuánto pagar a cada uno.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+                        <select x-model="compraFiltroProv" class="rounded-lg border-gray-300 text-sm min-w-[160px]">
+                            <option value="">Todos los proveedores</option>
+                            <template x-for="p in proveedoresLista()" :key="p"><option :value="p" x-text="p"></option></template>
+                            <option value="__sin__">Sin proveedor</option>
+                        </select>
+                        <div class="relative flex-1 lg:flex-none lg:w-48">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                            <input type="text" x-model="compraBusca" placeholder="Buscar insumo..." class="pl-9 rounded-lg border-gray-300 w-full text-sm">
+                        </div>
+                        <label class="flex items-center gap-2 text-sm text-gray-600 whitespace-nowrap">
+                            <input type="checkbox" x-model="compraSoloMarcados" class="rounded border-gray-300"> Solo marcados
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Alta rápida de proveedor -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-wrap items-end gap-3">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Agregar proveedor nuevo</label>
+                        <input type="text" x-model="nuevoProveedor" @keydown.enter.prevent="agregarProveedor(nuevoProveedor).then(() => nuevoProveedor = '')" placeholder="Nombre del proveedor" class="w-full rounded-lg border-gray-300 text-sm">
+                    </div>
+                    <button type="button" @click="agregarProveedor(nuevoProveedor).then(() => nuevoProveedor = '')" class="bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-primary-light transition text-sm">+ Agregar</button>
+                    <div class="text-xs text-gray-500" x-text="proveedoresLista().length + ' proveedores registrados'"></div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <!-- Checklist -->
+                    <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+                            <p class="text-sm font-bold text-gray-700">Lista de insumos <span class="text-gray-400 font-normal" x-text="'(' + compraInsumosVisibles().length + ')'"></span></p>
+                            <div class="flex gap-3 text-xs font-bold">
+                                <button type="button" class="text-primary" @click="compraMarcarVisibles(true)">Marcar visibles</button>
+                                <button type="button" class="text-gray-500" @click="compraMarcarVisibles(false)">Desmarcar</button>
+                            </div>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            <template x-for="i in compraInsumosVisibles()" :key="i.id">
+                                <div class="p-4 grid grid-cols-12 gap-3 items-center" :class="lin(i).check ? 'bg-green-50/60' : ''">
+                                    <div class="col-span-12 sm:col-span-4 flex items-center gap-3">
+                                        <input type="checkbox" class="rounded border-gray-300 w-5 h-5" :checked="lin(i).check" @change="setLin(i, 'check', $event.target.checked)">
+                                        <div class="min-w-0">
+                                            <p class="font-bold text-sm truncate" x-text="i.name"></p>
+                                            <p class="text-xs text-gray-500">Precio registrado: $<span x-text="formatMoney(precioRegistrado(i))"></span> / <span x-text="unidadCompraLabel(i)"></span></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-span-12 sm:col-span-3">
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase">Proveedor</label>
+                                        <select class="w-full rounded-lg border-gray-300 text-sm" :value="lin(i).proveedor" @change="cambiarProveedorLinea(i, $event)">
+                                            <option value="">— Sin proveedor —</option>
+                                            <template x-for="p in proveedoresLista()" :key="p"><option :value="p" x-text="p" :selected="p === lin(i).proveedor"></option></template>
+                                            <option value="__nuevo__">+ Agregar proveedor nuevo…</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-4 sm:col-span-2">
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase">Cantidad (<span x-text="unidadCompraLabel(i)"></span>)</label>
+                                        <input type="number" min="0" step="any" class="w-full rounded-lg border-gray-300 text-sm" :value="lin(i).qty" @input="setLin(i, 'qty', $event.target.value)">
+                                    </div>
+                                    <div class="col-span-4 sm:col-span-2">
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase">Precio unit. $</label>
+                                        <input type="number" min="0" step="any" class="w-full rounded-lg border-gray-300 text-sm" :value="lin(i).precio" @input="setLin(i, 'precio', $event.target.value)">
+                                    </div>
+                                    <div class="col-span-4 sm:col-span-1 text-right">
+                                        <label class="block text-[10px] font-bold text-gray-400 uppercase">Subtotal</label>
+                                        <p class="text-sm font-bold" x-text="'$' + formatMoney(subtotalLinea(i))"></p>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="compraInsumosVisibles().length === 0" class="p-8 text-center text-sm text-gray-400">No hay insumos que coincidan. Registra insumos en la pestaña Materia Prima.</div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen por proveedor -->
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 border-t-4 border-t-primary">
+                            <h4 class="font-bold text-primary mb-3">Total a pagar por proveedor</h4>
+                            <template x-for="g in resumenProveedores()" :key="g.proveedor">
+                                <div class="py-2 border-b border-gray-100 last:border-0">
+                                    <div class="flex justify-between items-center">
+                                        <p class="font-bold text-sm" x-text="g.proveedor"></p>
+                                        <p class="font-bold text-primary" x-text="'$' + formatMoney(g.total)"></p>
+                                    </div>
+                                    <ul class="mt-1 text-xs text-gray-500">
+                                        <template x-for="it in g.items" :key="it.insumoId">
+                                            <li class="flex justify-between"><span x-text="it.qty + ' ' + it.unidad + ' · ' + it.name"></span><span x-text="'$' + formatMoney(it.subtotal)"></span></li>
+                                        </template>
+                                    </ul>
+                                    <button type="button" class="mt-1 text-xs font-bold text-primary" @click="copiarPedido(g)">Copiar pedido</button>
+                                </div>
+                            </template>
+                            <p x-show="resumenProveedores().length === 0" class="text-sm text-gray-400">Marca insumos en la lista para ver el total.</p>
+                            <div class="mt-3 pt-3 border-t-2 border-gray-200 flex justify-between items-center">
+                                <p class="font-bold">Total general</p>
+                                <p class="text-xl font-extrabold text-primary" x-text="'$' + formatMoney(totalCompra())"></p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Nota (opcional)</label>
+                                <input type="text" x-model="compraNota" placeholder="Ej. pedido de la semana" class="w-full rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <label class="flex items-start gap-2 text-sm text-gray-600">
+                                <input type="checkbox" x-model="compraActualizaStock" class="rounded border-gray-300 mt-0.5">
+                                <span>Sumar lo comprado al inventario y recalcular el costo promedio</span>
+                            </label>
+                            <button type="button" @click="generarCompra()" :disabled="resumenProveedores().length === 0" class="w-full bg-primary text-white px-4 py-3 rounded-lg font-bold hover:bg-primary-light transition text-sm disabled:opacity-40">Generar compra</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial -->
+                <div class="mt-8">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <h4 class="font-bold">Compras generadas</h4>
+                        <div class="flex items-center gap-3">
+                            <p class="text-sm">Por pagar: <span class="font-extrabold text-amber-600" x-text="'$' + formatMoney(totalPendiente())"></span></p>
+                            <select x-model="compraHistFiltro" class="rounded-lg border-gray-300 text-sm">
+                                <option value="">Todas</option>
+                                <option value="pendientes">Con pagos pendientes</option>
+                                <option value="pagadas">Pagadas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div x-show="pendientePorProveedor().length" class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 text-xs">
+                        <p class="font-bold text-amber-800 mb-1">Pendiente por proveedor</p>
+                        <template x-for="p in pendientePorProveedor()" :key="p.proveedor">
+                            <div class="flex justify-between py-0.5"><span x-text="p.proveedor"></span><span class="font-bold" x-text="'$' + formatMoney(p.total)"></span></div>
+                        </template>
+                    </div>
+                    <div class="space-y-3">
+                        <template x-for="c in comprasFiltradas()" :key="c.id">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                                <div class="flex flex-wrap justify-between items-center gap-2">
+                                    <div>
+                                        <p class="font-bold text-sm" x-text="formatDate(c.createdAt || c.fecha)"></p>
+                                        <p class="text-xs text-gray-500" x-text="c.nota || ''"></p>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-3">
+                                        <span class="text-xs font-bold px-2 py-1 rounded-full" :class="estadoCompra(c).cls" x-text="estadoCompra(c).txt"></span>
+                                        <p class="font-extrabold text-primary" x-text="'$' + formatMoney(c.total)"></p>
+                                        <button type="button" x-show="estadoCompra(c).txt !== 'Pagada'" class="text-xs font-bold text-primary" @click="pagarTodo(c)">Marcar todo pagado</button>
+                                        <button type="button" class="text-xs font-bold text-red-600" @click="eliminarCompra(c.id)">Borrar</button>
+                                    </div>
+                                </div>
+                                <div class="mt-3 space-y-2">
+                                    <template x-for="g in (c.proveedores || [])" :key="g.proveedor">
+                                        <div class="rounded-xl border p-3 text-xs flex flex-wrap items-center gap-3" :class="g.pagado ? 'border-green-200 bg-green-50/60' : 'border-gray-100'">
+                                            <label class="flex items-center gap-2 font-bold text-sm">
+                                                <input type="checkbox" class="rounded border-gray-300 w-5 h-5" :checked="!!g.pagado" @change="marcarPago(c, g, $event.target.checked, $event.target)">
+                                                <span x-text="g.proveedor"></span>
+                                            </label>
+                                            <span class="text-gray-500" x-text="g.items.length + ' insumos'"></span>
+                                            <span class="font-bold text-sm ml-auto" x-text="'$' + formatMoney(g.total)"></span>
+                                            <div class="w-full flex flex-wrap items-center gap-2">
+                                                <input type="text" placeholder="¿Quién pagó?" :value="g.pagadoPor || ''" @change="setPagadoPor(c, g, $event.target.value)" class="rounded-lg border-gray-300 text-xs flex-1 min-w-[140px]">
+                                                <span x-show="g.pagado" class="text-green-700 font-bold" x-text="'Pagado ' + formatDate(g.fechaPago)"></span>
+                                                <span x-show="!g.pagado" class="text-amber-600 font-bold">Pendiente</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <p x-show="comprasHist.length === 0" class="text-sm text-gray-400">Aún no has generado compras.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- ===== AUDITORÍA ===== -->
             <div x-show="currentTab === 'auditoria'" x-transition>
                 <div class="flex justify-between items-center mb-6">
@@ -1430,6 +1609,19 @@
             filterInsumoTipo: '',
             filterInsumoPorProducto: '',
             insumoForm: { name: '', tipo: 'liquido', unit: 'ml', cost: '', qty: '', proveedor: '', rendimiento: '', contenido: '', densidad: '' },
+
+            // Compras / proveedores
+            proveedores: [],
+            comprasHist: [],
+            compraLineas: {},
+            compraFiltroProv: '',
+            compraBusca: '',
+            compraSoloMarcados: false,
+            compraNota: '',
+            compraActualizaStock: false,
+            nuevoProveedor: '',
+            compraHistFiltro: '',
+            ultimoPagador: '',
 
             // Fórmulas
             products: [],
@@ -1514,7 +1706,9 @@
                             this.loadCollection('products', 'vj_formulas'),
                             this.loadCollection('bases', 'vj_bases'),
                             this.loadCollection('sales', 'vj_ventas'),
-                            this.loadCollection('auditLogs', 'vj_auditoria', 100)
+                            this.loadCollection('auditLogs', 'vj_auditoria', 100),
+                            this.loadCollection('proveedores', 'vj_proveedores'),
+                            this.loadCollection('comprasHist', 'vj_compras', 100)
                         ]);
                     } catch(e) {
                         console.warn('Error cargando desde Firebase, usando localStorage:', e);
@@ -1548,6 +1742,10 @@
                     if (sales) this.sales = JSON.parse(sales);
                     if (audit) this.auditLogs = JSON.parse(audit);
                     if (cambaceo) this.cambaceoEntities = JSON.parse(cambaceo);
+                    const provs = localStorage.getItem('vj_proveedores_local');
+                    const comps = localStorage.getItem('vj_compras_local');
+                    if (provs) this.proveedores = JSON.parse(provs);
+                    if (comps) this.comprasHist = JSON.parse(comps);
                 } catch(e) { console.warn('Error leyendo localStorage:', e); }
             },
 
@@ -1558,6 +1756,8 @@
                     localStorage.setItem('vj_ventas_local', JSON.stringify(this.sales));
                     localStorage.setItem('vj_auditoria_local', JSON.stringify(this.auditLogs));
                     localStorage.setItem('vj_cambaceo_local', JSON.stringify(this.cambaceoEntities));
+                    localStorage.setItem('vj_proveedores_local', JSON.stringify(this.proveedores));
+                    localStorage.setItem('vj_compras_local', JSON.stringify(this.comprasHist));
                 } catch(e) { console.warn('Error guardando localStorage:', e); }
             },
 
@@ -1598,7 +1798,7 @@
 
             // ===== HELPERS =====
             getTabTitle() {
-                const t = { dashboard:'Resumen de Negocio', insumos:'Gestión de Materia Prima', formulas:'Fórmulas y Costos', fabricacion:'Costo de Fabricación', escenarios:'Escenarios y Análisis', sales:'Punto de Venta', cambaceo:'Control Cambaceo', auditoria:'Auditoría y Trazabilidad' };
+                const t = { dashboard:'Resumen de Negocio', insumos:'Gestión de Materia Prima', formulas:'Fórmulas y Costos', fabricacion:'Costo de Fabricación', escenarios:'Escenarios y Análisis', sales:'Punto de Venta', cambaceo:'Control Cambaceo', compras:'Compras a Proveedores', auditoria:'Auditoría y Trazabilidad' };
                 return t[this.currentTab] || 'Panel';
             },
             formatMoney(n) { return n ? parseFloat(n).toFixed(2) : '0.00'; },
@@ -2056,6 +2256,225 @@
                 this.saveToLocalStorage();
                 this.logAudit('insumo', `Insumo eliminado: ${id}`);
                 this.toast('Insumo eliminado');
+            },
+
+            // ===== COMPRAS / PROVEEDORES =====
+            proveedoresLista() {
+                const set = new Map();
+                (this.proveedores || []).forEach(p => { const n = (p.name || '').trim(); if (n) set.set(n.toLowerCase(), n); });
+                (this.inventory || []).forEach(i => { const n = (i.proveedor || '').trim(); if (n && !set.has(n.toLowerCase())) set.set(n.toLowerCase(), n); });
+                return Array.from(set.values()).sort((a, b) => a.localeCompare(b, 'es'));
+            },
+            async agregarProveedor(nombre) {
+                const name = (nombre || '').trim();
+                if (!name) return null;
+                const existente = this.proveedoresLista().find(p => p.toLowerCase() === name.toLowerCase());
+                if (existente) { this.toast('Ese proveedor ya existe'); return existente; }
+                const data = { name, createdAt: new Date() };
+                if (this.db) {
+                    try {
+                        const ref = await this.db.collection('vj_proveedores').add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        data.id = ref.id;
+                    } catch (e) { data.id = 'local_' + Date.now(); }
+                } else { data.id = 'local_' + Date.now(); }
+                this.proveedores.unshift(data);
+                this.saveToLocalStorage();
+                this.logAudit('insumo', `Proveedor agregado: ${name}`);
+                this.toast('Proveedor agregado');
+                return name;
+            },
+            async cambiarProveedorLinea(i, ev) {
+                let val = ev.target.value;
+                if (val === '__nuevo__') {
+                    const nombre = prompt('Nombre del nuevo proveedor:');
+                    val = (await this.agregarProveedor(nombre)) || '';
+                    ev.target.value = val;
+                }
+                this.setLin(i, 'proveedor', val);
+            },
+            unidadCompraLabel(i) { return i.unidadCompra || i.unit || 'pz'; },
+            // Precio registrado por unidad de compra (kg, litro, pieza, etc.)
+            precioRegistrado(i) {
+                if (i.costoBase != null) return (i.costoBase || 0) * (i.factor || 1);
+                return i.qty > 0 ? (i.cost || 0) / i.qty : 0;
+            },
+            lin(i) {
+                const l = this.compraLineas[i.id];
+                if (l) return l;
+                return { check: false, qty: '', precio: +this.precioRegistrado(i).toFixed(2), proveedor: i.proveedor || '' };
+            },
+            setLin(i, campo, valor) {
+                const actual = this.compraLineas[i.id] || this.lin(i);
+                this.compraLineas = { ...this.compraLineas, [i.id]: { ...actual, [campo]: valor } };
+            },
+            subtotalLinea(i) {
+                const l = this.lin(i);
+                return (parseFloat(l.qty) || 0) * (parseFloat(l.precio) || 0);
+            },
+            compraInsumosVisibles() {
+                const q = (this.compraBusca || '').toLowerCase();
+                return (this.inventory || []).filter(i => {
+                    const l = this.lin(i);
+                    if (q && !(i.name || '').toLowerCase().includes(q)) return false;
+                    if (this.compraSoloMarcados && !l.check) return false;
+                    if (this.compraFiltroProv === '__sin__') return !l.proveedor;
+                    if (this.compraFiltroProv && l.proveedor !== this.compraFiltroProv) return false;
+                    return true;
+                });
+            },
+            compraMarcarVisibles(v) {
+                const nuevo = { ...this.compraLineas };
+                this.compraInsumosVisibles().forEach(i => { nuevo[i.id] = { ...(nuevo[i.id] || this.lin(i)), check: v }; });
+                this.compraLineas = nuevo;
+            },
+            lineasMarcadas() {
+                return (this.inventory || [])
+                    .map(i => ({ i, l: this.lin(i) }))
+                    .filter(x => x.l.check && (parseFloat(x.l.qty) || 0) > 0);
+            },
+            resumenProveedores() {
+                const grupos = {};
+                this.lineasMarcadas().forEach(({ i, l }) => {
+                    const prov = l.proveedor || 'Sin proveedor';
+                    const qty = parseFloat(l.qty) || 0;
+                    const precio = parseFloat(l.precio) || 0;
+                    if (!grupos[prov]) grupos[prov] = { proveedor: prov, items: [], total: 0 };
+                    const subtotal = +(qty * precio).toFixed(2);
+                    grupos[prov].items.push({ insumoId: i.id, name: i.name, qty, unidad: this.unidadCompraLabel(i), precio, subtotal });
+                    grupos[prov].total += subtotal;
+                });
+                return Object.values(grupos).sort((a, b) => a.proveedor.localeCompare(b.proveedor, 'es'));
+            },
+            totalCompra() { return this.resumenProveedores().reduce((t, g) => t + g.total, 0); },
+            async copiarPedido(g) {
+                const lineas = g.items.map(it => `- ${it.qty} ${it.unidad} ${it.name}`).join('\n');
+                const texto = `Pedido para ${g.proveedor}:\n${lineas}`;
+                try { await navigator.clipboard.writeText(texto); this.toast('Pedido copiado'); }
+                catch (e) { prompt('Copia el pedido:', texto); }
+            },
+            async generarCompra() {
+                const grupos = this.resumenProveedores();
+                if (!grupos.length) { alert('Marca al menos un insumo y escribe la cantidad.'); return; }
+                const total = +grupos.reduce((t, g) => t + g.total, 0).toFixed(2);
+                const data = {
+                    nota: this.compraNota || '',
+                    proveedores: grupos.map(g => ({ ...g, total: +g.total.toFixed(2), pagado: false, pagadoPor: '', fechaPago: null })),
+                    total,
+                    stockActualizado: !!this.compraActualizaStock,
+                    fecha: new Date(),
+                    createdAt: new Date()
+                };
+                if (this.db) {
+                    try {
+                        const ref = await this.db.collection('vj_compras').add({ ...data, fecha: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        data.id = ref.id;
+                    } catch (e) { data.id = 'local_' + Date.now(); }
+                } else { data.id = 'local_' + Date.now(); }
+
+                let omitidos = 0;
+                if (this.compraActualizaStock) {
+                    for (const g of grupos) {
+                        for (const it of g.items) {
+                            const inv = this.inventory.find(x => x.id === it.insumoId);
+                            if (!inv || inv.costoBase == null) { omitidos++; continue; }
+                            const addBase = it.qty * (inv.factor || 1);
+                            const prev = Math.max(0, inv.qty || 0);
+                            if (prev + addBase > 0) inv.costoBase = (prev * (inv.costoBase || 0) + it.subtotal) / (prev + addBase);
+                            inv.qty = (inv.qty || 0) + addBase;
+                            inv.cost = (inv.cost || 0) + it.subtotal;
+                            if (this.db) {
+                                try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, cost: inv.cost, costoBase: inv.costoBase, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
+                            }
+                        }
+                    }
+                }
+                this.comprasHist.unshift(data);
+                this.saveToLocalStorage();
+                this.logAudit('insumo', `Compra generada: $${total.toFixed(2)} (${grupos.length} proveedor(es))`);
+                this.compraLineas = {};
+                this.compraNota = '';
+                this.toast(omitidos ? `Compra generada (${omitidos} insumo(s) sin convertir no sumaron stock)` : 'Compra generada');
+            },
+            async eliminarCompra(id) {
+                if (!confirm('¿Borrar esta compra del historial? (no revierte el inventario)')) return;
+                if (this.db && !String(id).startsWith('local_')) {
+                    try { await this.db.collection('vj_compras').doc(id).delete(); } catch (e) {}
+                }
+                this.comprasHist = this.comprasHist.filter(c => c.id !== id);
+                this.saveToLocalStorage();
+                this.toast('Compra eliminada');
+            },
+
+            // ===== PAGOS DE COMPRAS =====
+            estadoCompra(c) {
+                const gs = c.proveedores || [];
+                const pagados = gs.filter(g => g.pagado).length;
+                if (gs.length && pagados === gs.length) return { txt: 'Pagada', cls: 'bg-green-100 text-green-700' };
+                if (pagados > 0) return { txt: 'Pago parcial', cls: 'bg-amber-100 text-amber-700' };
+                return { txt: 'Pendiente', cls: 'bg-red-100 text-red-700' };
+            },
+            comprasFiltradas() {
+                const f = this.compraHistFiltro;
+                return (this.comprasHist || []).filter(c => {
+                    const t = this.estadoCompra(c).txt;
+                    if (f === 'pendientes') return t !== 'Pagada';
+                    if (f === 'pagadas') return t === 'Pagada';
+                    return true;
+                });
+            },
+            pendientePorProveedor() {
+                const m = {};
+                (this.comprasHist || []).forEach(c => (c.proveedores || []).forEach(g => {
+                    if (!g.pagado) m[g.proveedor] = (m[g.proveedor] || 0) + (g.total || 0);
+                }));
+                return Object.entries(m).map(([proveedor, total]) => ({ proveedor, total })).sort((a, b) => a.proveedor.localeCompare(b.proveedor, 'es'));
+            },
+            totalPendiente() { return this.pendientePorProveedor().reduce((t, p) => t + p.total, 0); },
+            async guardarCompraDoc(c) {
+                if (this.db && !String(c.id).startsWith('local_')) {
+                    try { await this.db.collection('vj_compras').doc(c.id).update({ proveedores: c.proveedores, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); }
+                    catch (e) { console.warn('No se pudo guardar el pago:', e); this.toast('No se pudo guardar en la nube'); }
+                }
+                this.saveToLocalStorage();
+            },
+            async marcarPago(c, g, checked, el) {
+                if (checked) {
+                    let quien = g.pagadoPor;
+                    if (!quien) {
+                        quien = prompt(`¿Quién pagó a ${g.proveedor}?`, this.ultimoPagador || '');
+                        if (quien === null) { if (el) el.checked = false; return; }
+                    }
+                    g.pagado = true;
+                    g.pagadoPor = (quien || '').trim();
+                    g.fechaPago = new Date();
+                    if (g.pagadoPor) this.ultimoPagador = g.pagadoPor;
+                    this.logAudit('insumo', `Pago registrado a ${g.proveedor}: $${(g.total || 0).toFixed(2)}${g.pagadoPor ? ' (pagó ' + g.pagadoPor + ')' : ''}`);
+                } else {
+                    g.pagado = false;
+                    g.fechaPago = null;
+                    this.logAudit('insumo', `Pago desmarcado a ${g.proveedor}: $${(g.total || 0).toFixed(2)}`);
+                }
+                await this.guardarCompraDoc(c);
+            },
+            async setPagadoPor(c, g, valor) {
+                g.pagadoPor = (valor || '').trim();
+                if (g.pagadoPor) this.ultimoPagador = g.pagadoPor;
+                await this.guardarCompraDoc(c);
+            },
+            async pagarTodo(c) {
+                const quien = prompt('¿Quién pagó? (aplica a todos los proveedores pendientes de esta compra)', this.ultimoPagador || '');
+                if (quien === null) return;
+                const nombre = (quien || '').trim();
+                (c.proveedores || []).forEach(g => {
+                    if (g.pagado) return;
+                    g.pagado = true;
+                    g.pagadoPor = nombre;
+                    g.fechaPago = new Date();
+                });
+                if (nombre) this.ultimoPagador = nombre;
+                this.logAudit('insumo', `Compra marcada como pagada: $${(c.total || 0).toFixed(2)}${nombre ? ' (pagó ' + nombre + ')' : ''}`);
+                await this.guardarCompraDoc(c);
+                this.toast('Compra marcada como pagada');
             },
 
             // ===== UNIDADES BASE (gr / ml / pz) =====
