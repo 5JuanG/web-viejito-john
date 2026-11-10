@@ -294,11 +294,11 @@ document.addEventListener('alpine:init', () => {
             const ahora = new Date().toISOString();
             if (!o.codigo) o.codigo = this.nuevoCodigo();
             const upd = { ...cambios, codigo: o.codigo, actualizado: ahora };
-            // Inventario: se descuenta una sola vez al pasar a "pagado" y se devuelve si se cancela
+            // Inventario: se descuenta una sola vez al pasar a pagado/enviado/entregado y se devuelve si el pedido se cancela o regresa a un estado sin pago
             let mov = 0;
             if ('estado' in cambios && cambios.estado !== o._estadoGuardado) {
-                if (cambios.estado === 'pagado' && !o.inventarioDescontado) mov = -1;
-                else if (cambios.estado === 'cancelado' && o.inventarioDescontado) mov = 1;
+                if (VENDIDOS.includes(cambios.estado) && !o.inventarioDescontado) mov = -1;
+                else if (!VENDIDOS.includes(cambios.estado) && o.inventarioDescontado) mov = 1;
             }
             if (mov) upd.inventarioDescontado = mov < 0;
             let hist = Array.isArray(o.historial) ? o.historial.slice() : [];
@@ -357,8 +357,9 @@ document.addEventListener('alpine:init', () => {
                 try {
                     const st = (await this.db.collection('vj_formulas').doc(fid).get()).data().stockPz;
                     for (const c of this.catalogo.filter(x => x.formulaId === fid)) {
-                        const disp = Math.floor(st / (c.tipo === 'caja' ? (parseInt(c.piezas) || 1) : 1)) > 0;
-                        if (c.disponible !== disp) { c.disponible = disp; await this.db.collection('productos').doc(c.id).update({ disponible: disp }); }
+                        const quedan = Math.max(0, Math.floor(st / (c.tipo === 'caja' ? (parseInt(c.piezas) || 1) : 1)));
+                        const disp = quedan > 0;
+                        if (c.disponible !== disp || c.stockDisp !== quedan) { c.disponible = disp; c.stockDisp = quedan; await this.db.collection('productos').doc(c.id).update({ disponible: disp, stockDisp: quedan }); }
                     }
                 } catch (e) { console.error(e); }
             }
