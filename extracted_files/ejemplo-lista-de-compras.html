@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lista de compras - Viejito John</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f3f4f6;color:#1f2937}
+header{background:#1f3b2d;color:#fff;padding:16px}
+header h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;font-size:13px;opacity:.85}
+.barra{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.barra b{font-size:16px}
+main{padding:12px;max-width:760px;margin:0 auto}
+.prov{background:#fff;border-radius:14px;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.provh{display:flex;justify-content:space-between;align-items:center;background:#e8f0ea;padding:10px 14px}
+.provh h2{margin:0;font-size:16px}
+.provh span{font-size:13px;font-weight:700;color:#1f3b2d}
+.item{padding:12px 14px;border-top:1px solid #eee}
+.item.ok{background:#f0fdf4}
+.nm{display:flex;gap:12px;align-items:center;font-weight:700;font-size:16px}
+.nm input{width:28px;height:28px;flex:none}
+.plan{font-size:13px;color:#6b7280;margin:4px 0 8px 40px}
+.campos{display:flex;flex-wrap:wrap;gap:10px;margin-left:40px;align-items:flex-end}
+.campos label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;display:block}
+.campos input[type=number]{display:block;width:110px;margin-top:2px;padding:8px;font-size:16px;border:1px solid #d1d5db;border-radius:8px}
+.sub{font-size:13px;color:#374151}
+.sub b{display:block;font-size:16px}
+.tag{display:block;margin:6px 0 0 40px;font-size:12px;font-weight:700;color:#b45309;min-height:0}
+.acciones{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0 40px}
+.acciones button{flex:1;min-width:150px;padding:14px;font-size:15px;font-weight:700;border:0;border-radius:12px;background:#1f3b2d;color:#fff;cursor:pointer}
+.acciones button.sec{background:#fff;color:#1f3b2d;border:2px solid #1f3b2d}
+.nota{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+@media print{
+  body{background:#fff}
+  .acciones,.barra .ayuda{display:none}
+  .barra{position:static}
+  .prov{box-shadow:none;border:1px solid #999;break-inside:avoid}
+  .item{break-inside:avoid}
+}
+</style></head><body>
+<header><h1>Lista de compras</h1><p id="sub"></p></header>
+<div class="barra"><span id="prog"></span><span>Total comprado: <b id="tot"></b></span></div>
+<main>
+<div class="nota ayuda">Palomea cada insumo cuando lo compres. Si compraste m&aacute;s o menos, o si cost&oacute; distinto, corrige la cantidad y el precio. Tu avance se guarda solo en este celular. Al terminar, toca <b>Enviar resultado por WhatsApp</b>.</div>
+<div id="app"></div>
+<div class="acciones">
+<button id="bwa">Enviar resultado por WhatsApp</button>
+<button id="bcop" class="sec">Copiar resultado</button>
+<button id="bpdf" class="sec">Imprimir / guardar PDF</button>
+</div>
+</main>
+<script>var PLAN = {"id":"abc123","nota":"pedido semana","fecha":"10 de noviembre de 2026","total":1200,"whatsapp":"5218113160143","proveedores":[{"proveedor":"Química \"Norte\" \u003cSA>","items":[{"insumoId":"i1","name":"Salicilato de metilo","qty":5,"unidad":"kg","precio":120},{"insumoId":"i2","name":"Alcohol isopropílico","qty":2,"unidad":"galón","precio":300}]},{"proveedor":"Envases del Centro","items":[{"insumoId":"i3","name":"Envase 90g","qty":100,"unidad":"pz","precio":4.5}]}]};
+(function(){
+var KEY = 'vjc_' + PLAN.id;
+var estado = {};
+try { estado = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { estado = {}; }
+function guardar(){ try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch (e) {} }
+function num(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function money(n){ return '$' + num(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function dato(pi, ii){
+  var it = PLAN.proveedores[pi].items[ii], e = estado[pi + '_' + ii] || {};
+  return { it: it, check: !!e.check, qty: e.qty != null ? e.qty : it.qty, precio: e.precio != null ? e.precio : it.precio };
+}
+function cambio(pi, ii, campo, valor){
+  var k = pi + '_' + ii;
+  estado[k] = estado[k] || {};
+  estado[k][campo] = valor;
+  guardar(); refrescar();
+}
+function render(){
+  var h = '';
+  PLAN.proveedores.forEach(function(g, pi){
+    h += '<section class="prov"><div class="provh"><h2>' + esc(g.proveedor) + '</h2><span id="pt' + pi + '"></span></div>';
+    g.items.forEach(function(it, ii){
+      var k = pi + '_' + ii, at = ' data-p="' + pi + '" data-i="' + ii + '"';
+      h += '<div class="item" id="r' + k + '">' +
+        '<label class="nm"><input type="checkbox" class="c"' + at + '><span>' + esc(it.name) + '</span></label>' +
+        '<div class="plan">Pedir: <b>' + esc(it.qty) + ' ' + esc(it.unidad) + '</b> &middot; estimado ' + money(it.precio) + ' c/u</div>' +
+        '<div class="campos">' +
+        '<label>Compr&eacute; (' + esc(it.unidad) + ')<input type="number" inputmode="decimal" step="any" min="0" class="q"' + at + '></label>' +
+        '<label>Precio unit. $<input type="number" inputmode="decimal" step="any" min="0" class="p"' + at + '></label>' +
+        '<div class="sub">Subtotal<b id="s' + k + '"></b></div>' +
+        '</div><span class="tag" id="t' + k + '"></span></div>';
+    });
+    h += '</section>';
+  });
+  document.getElementById('app').innerHTML = h;
+  PLAN.proveedores.forEach(function(g, pi){
+    g.items.forEach(function(it, ii){
+      var d = dato(pi, ii), sel = '[data-p="' + pi + '"][data-i="' + ii + '"]';
+      document.querySelector('.c' + sel).checked = d.check;
+      document.querySelector('.q' + sel).value = d.qty;
+      document.querySelector('.p' + sel).value = d.precio;
+    });
+  });
+}
+function refrescar(){
+  var total = 0, hechos = 0, cuenta = 0;
+  PLAN.proveedores.forEach(function(g, pi){
+    var pt = 0;
+    g.items.forEach(function(it, ii){
+      var d = dato(pi, ii), sub = num(d.qty) * num(d.precio), msg = '';
+      cuenta++;
+      document.getElementById('r' + pi + '_' + ii).className = 'item' + (d.check ? ' ok' : '');
+      document.getElementById('s' + pi + '_' + ii).textContent = money(sub);
+      if (d.check) {
+        hechos++; pt += sub;
+        if (num(d.qty) !== num(it.qty)) msg += 'Cantidad distinta (se pidio ' + it.qty + '). ';
+        if (num(d.precio) !== num(it.precio)) msg += 'Precio distinto (estimado ' + money(it.precio) + ').';
+      }
+      document.getElementById('t' + pi + '_' + ii).textContent = msg;
+    });
+    total += pt;
+    document.getElementById('pt' + pi).textContent = 'Comprado: ' + money(pt);
+  });
+  document.getElementById('prog').textContent = hechos + ' de ' + cuenta + ' comprados';
+  document.getElementById('tot').textContent = money(total);
+}
+function faltan(){
+  var n = 0;
+  PLAN.proveedores.forEach(function(g, pi){ g.items.forEach(function(it, ii){ if (!dato(pi, ii).check) n++; }); });
+  return n;
+}
+function resultado(){
+  var items = [], total = 0;
+  var txt = 'RESULTADO DE COMPRAS - Viejito John\nLista del ' + PLAN.fecha + '\n';
+  PLAN.proveedores.forEach(function(g, pi){
+    txt += '\n' + g.proveedor + '\n';
+    g.items.forEach(function(it, ii){
+      var d = dato(pi, ii), sub = num(d.qty) * num(d.precio);
+      items.push({ i: it.insumoId, c: d.check ? 1 : 0, q: num(d.qty), p: num(d.precio) });
+      if (d.check) { total += sub; txt += 'OK ' + d.qty + ' ' + it.unidad + ' ' + it.name + ' a ' + money(d.precio) + ' = ' + money(sub) + '\n'; }
+      else { txt += 'NO COMPRADO: ' + it.name + '\n'; }
+    });
+  });
+  var code = 'VJC1:' + btoa(unescape(encodeURIComponent(JSON.stringify({ v: 1, id: PLAN.id, items: items }))));
+  txt += '\nTotal comprado: ' + money(total) + ' (estimado ' + money(PLAN.total) + ')\n\nCodigo para registrar en el sistema:\n' + code;
+  return { texto: txt, codigo: code };
+}
+function confirmarEnvio(){
+  var f = faltan();
+  return !f || confirm('Faltan ' + f + ' insumo(s) sin palomear. Se registraran como NO comprados. Enviar de todos modos?');
+}
+document.getElementById('sub').textContent = PLAN.fecha + (PLAN.nota ? ' - ' + PLAN.nota : '') + ' - Total estimado ' + money(PLAN.total);
+render(); refrescar();
+document.addEventListener('change', function(ev){
+  var t = ev.target, pi = t.getAttribute && t.getAttribute('data-p');
+  if (pi == null) return;
+  var ii = t.getAttribute('data-i');
+  if (t.className === 'c') cambio(pi, ii, 'check', t.checked);
+});
+document.addEventListener('input', function(ev){
+  var t = ev.target, pi = t.getAttribute && t.getAttribute('data-p');
+  if (pi == null) return;
+  var ii = t.getAttribute('data-i');
+  if (t.className === 'q') cambio(pi, ii, 'qty', t.value);
+  if (t.className === 'p') cambio(pi, ii, 'precio', t.value);
+});
+document.getElementById('bpdf').onclick = function(){ window.print(); };
+document.getElementById('bwa').onclick = function(){
+  if (!confirmarEnvio()) return;
+  var r = resultado();
+  if (PLAN.whatsapp) { window.open('https://wa.me/' + PLAN.whatsapp + '?text=' + encodeURIComponent(r.texto), '_blank'); }
+  else if (navigator.share) { navigator.share({ text: r.texto }).catch(function(){}); }
+  else { window.prompt('Copia este resultado y mandalo por WhatsApp:', r.texto); }
+};
+document.getElementById('bcop').onclick = function(){
+  if (!confirmarEnvio()) return;
+  var r = resultado();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(r.texto).then(function(){ alert('Resultado copiado. Pegalo en WhatsApp.'); }, function(){ window.prompt('Copia este resultado:', r.texto); });
+  } else { window.prompt('Copia este resultado:', r.texto); }
+};
+})();
+</script></body></html>

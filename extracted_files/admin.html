@@ -1482,7 +1482,9 @@
                                 <input type="checkbox" x-model="compraActualizaStock" class="rounded border-gray-300 mt-0.5">
                                 <span>Sumar lo comprado al inventario y recalcular el costo promedio</span>
                             </label>
-                            <button type="button" @click="generarCompra()" :disabled="resumenProveedores().length === 0" class="w-full bg-primary text-white px-4 py-3 rounded-lg font-bold hover:bg-primary-light transition text-sm disabled:opacity-40">Generar compra</button>
+                            <button type="button" @click="guardarListaCompra()" :disabled="resumenProveedores().length === 0" class="w-full bg-primary text-white px-4 py-3 rounded-lg font-bold hover:bg-primary-light transition text-sm disabled:opacity-40">Guardar y descargar lista para el comprador</button>
+                            <p class="text-xs text-gray-500">Descarga un checklist (HTML) que el comprador abre en su celular: palomea, corrige cantidad y precio, y te manda el resultado por WhatsApp. Se puede guardar como PDF desde ese mismo checklist. El inventario se suma cuando registras el resultado.</p>
+                            <button type="button" @click="generarCompra()" :disabled="resumenProveedores().length === 0" class="w-full bg-white text-primary border border-primary px-4 py-2 rounded-lg font-bold hover:bg-gray-50 transition text-xs disabled:opacity-40">Registrar compra ya hecha (sin lista)</button>
                         </div>
                     </div>
                 </div>
@@ -1497,6 +1499,7 @@
                                 <option value="">Todas</option>
                                 <option value="pendientes">Con pagos pendientes</option>
                                 <option value="pagadas">Pagadas</option>
+                                <option value="porcomprar">Por comprar (con el comprador)</option>
                             </select>
                         </div>
                     </div>
@@ -1517,11 +1520,20 @@
                                     <div class="flex flex-wrap items-center gap-3">
                                         <span class="text-xs font-bold px-2 py-1 rounded-full" :class="estadoCompra(c).cls" x-text="estadoCompra(c).txt"></span>
                                         <p class="font-extrabold text-primary" x-text="'$' + formatMoney(c.total)"></p>
-                                        <button type="button" x-show="estadoCompra(c).txt !== 'Pagada'" class="text-xs font-bold text-primary" @click="pagarTodo(c)">Marcar todo pagado</button>
+                                        <button type="button" x-show="c.estado === 'por_comprar'" class="text-xs font-bold text-gray-600" @click="descargarListaCompra(c)">Descargar lista</button>
+                                        <button type="button" x-show="c.estado === 'por_comprar'" class="text-xs font-bold bg-primary text-white px-3 py-1.5 rounded-lg" @click="abrirResultado(c)">Registrar resultado</button>
+                                        <button type="button" x-show="estadoCompra(c).txt !== 'Pagada' && c.estado !== 'por_comprar'" class="text-xs font-bold text-primary" @click="pagarTodo(c)">Marcar todo pagado</button>
                                         <button type="button" class="text-xs font-bold text-red-600" @click="eliminarCompra(c.id)">Borrar</button>
                                     </div>
                                 </div>
-                                <div class="mt-3 space-y-2">
+                                <p x-show="c.planificado" class="mt-2 text-xs text-gray-500">Estimado $<span x-text="formatMoney(c.planificado ? c.planificado.total : 0)"></span> &middot; Real $<span x-text="formatMoney(c.total)"></span> &middot; Diferencia <b :class="(c.total - (c.planificado ? c.planificado.total : 0)) > 0 ? 'text-red-600' : 'text-green-700'" x-text="((c.total - (c.planificado ? c.planificado.total : 0)) >= 0 ? '+' : '-') + '$' + formatMoney(Math.abs(c.total - (c.planificado ? c.planificado.total : 0)))"></b></p>
+                                <div x-show="c.estado === 'por_comprar'" class="mt-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-xs text-gray-600">
+                                    <p class="font-bold text-blue-800 mb-1">Esperando el resultado del comprador (estimado, aún no es gasto real)</p>
+                                    <template x-for="g in (c.proveedores || [])" :key="g.proveedor">
+                                        <p><b x-text="g.proveedor"></b> · <span x-text="g.items.length + ' insumos'"></span> · <span x-text="'$' + formatMoney(g.total)"></span></p>
+                                    </template>
+                                </div>
+                                <div class="mt-3 space-y-2" x-show="c.estado !== 'por_comprar'">
                                     <template x-for="g in (c.proveedores || [])" :key="g.proveedor">
                                         <div class="rounded-xl border p-3 text-xs flex flex-wrap items-center gap-3" :class="g.pagado ? 'border-green-200 bg-green-50/60' : 'border-gray-100'">
                                             <label class="flex items-center gap-2 font-bold text-sm">
@@ -1541,6 +1553,61 @@
                             </div>
                         </template>
                         <p x-show="comprasHist.length === 0" class="text-sm text-gray-400">Aún no has generado compras.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registrar resultado de una lista de compras -->
+            <div x-show="resCompra" x-cloak class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-3" @keydown.escape.window="cerrarResultado()">
+                <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-xl">
+                    <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-start gap-3">
+                        <div>
+                            <h4 class="font-bold text-lg">Registrar resultado de la compra</h4>
+                            <p class="text-xs text-gray-500">Pega el mensaje que mandó el comprador, o palomea y corrige a mano lo que sí se compró.</p>
+                        </div>
+                        <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl leading-none" @click="cerrarResultado()">&times;</button>
+                    </div>
+                    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row gap-2">
+                        <textarea x-model="resCodigo" rows="2" placeholder="Pega aquí el resultado que mandó el comprador por WhatsApp (incluye la línea VJC1:...)" class="flex-1 rounded-lg border-gray-300 text-xs"></textarea>
+                        <button type="button" @click="importarCodigoResultado()" :disabled="!resCodigo.trim()" class="bg-primary text-white px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-40">Cargar resultado</button>
+                    </div>
+                    <div class="px-5 py-2 flex gap-4 text-xs font-bold">
+                        <button type="button" class="text-primary" @click="resMarcarTodos(true)">Marcar todo como comprado</button>
+                        <button type="button" class="text-gray-500" @click="resMarcarTodos(false)">Desmarcar todo</button>
+                    </div>
+                    <div class="overflow-y-auto flex-1 divide-y divide-gray-100 px-5">
+                        <template x-for="f in resFilas" :key="f.insumoId">
+                            <div class="py-3 grid grid-cols-12 gap-3 items-center" :class="f.check ? 'bg-green-50/60' : ''">
+                                <label class="col-span-12 sm:col-span-5 flex items-center gap-3">
+                                    <input type="checkbox" class="rounded border-gray-300 w-5 h-5" x-model="f.check">
+                                    <span>
+                                        <span class="block font-bold text-sm" x-text="f.name"></span>
+                                        <span class="block text-xs text-gray-500" x-text="f.proveedor + ' · pedido: ' + f.planQty + ' ' + f.unidad + ' a $' + formatMoney(f.planPrecio)"></span>
+                                    </span>
+                                </label>
+                                <div class="col-span-5 sm:col-span-2">
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Compró (<span x-text="f.unidad"></span>)</label>
+                                    <input type="number" min="0" step="any" x-model="f.qty" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div class="col-span-4 sm:col-span-2">
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Precio unit. $</label>
+                                    <input type="number" min="0" step="any" x-model="f.precio" class="w-full rounded-lg border-gray-300 text-sm">
+                                </div>
+                                <div class="col-span-3 sm:col-span-3 text-right">
+                                    <p class="text-sm font-bold" x-text="f.check ? '$' + formatMoney((parseFloat(f.qty) || 0) * (parseFloat(f.precio) || 0)) : '—'"></p>
+                                    <p x-show="f.check && (parseFloat(f.qty) !== parseFloat(f.planQty) || parseFloat(f.precio) !== parseFloat(f.planPrecio))" class="text-[10px] font-bold text-amber-600">Distinto a lo pedido</p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="px-5 py-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                        <div class="text-sm">
+                            <p>Real: <span class="font-extrabold text-primary text-lg" x-text="'$' + formatMoney(resTotal())"></span> <span class="text-gray-500 text-xs" x-text="'(estimado $' + formatMoney(resCompra ? resCompra.total : 0) + ' · ' + resComprados() + ' de ' + resFilas.length + ' comprados)'"></span></p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 text-sm font-bold" @click="cerrarResultado()">Cancelar</button>
+                            <button type="button" class="px-5 py-2 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-40" :disabled="resComprados() === 0" @click="registrarResultado()">Registrar compra</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1590,6 +1657,184 @@
     </div>
 
     <script>
+    // Plantilla del checklist que se le entrega a quien hace las compras
+    const VJ_LISTA_A = String.raw`<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lista de compras - Viejito John</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f3f4f6;color:#1f2937}
+header{background:#1f3b2d;color:#fff;padding:16px}
+header h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;font-size:13px;opacity:.85}
+.barra{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.barra b{font-size:16px}
+main{padding:12px;max-width:760px;margin:0 auto}
+.prov{background:#fff;border-radius:14px;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.provh{display:flex;justify-content:space-between;align-items:center;background:#e8f0ea;padding:10px 14px}
+.provh h2{margin:0;font-size:16px}
+.provh span{font-size:13px;font-weight:700;color:#1f3b2d}
+.item{padding:12px 14px;border-top:1px solid #eee}
+.item.ok{background:#f0fdf4}
+.nm{display:flex;gap:12px;align-items:center;font-weight:700;font-size:16px}
+.nm input{width:28px;height:28px;flex:none}
+.plan{font-size:13px;color:#6b7280;margin:4px 0 8px 40px}
+.campos{display:flex;flex-wrap:wrap;gap:10px;margin-left:40px;align-items:flex-end}
+.campos label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;display:block}
+.campos input[type=number]{display:block;width:110px;margin-top:2px;padding:8px;font-size:16px;border:1px solid #d1d5db;border-radius:8px}
+.sub{font-size:13px;color:#374151}
+.sub b{display:block;font-size:16px}
+.tag{display:block;margin:6px 0 0 40px;font-size:12px;font-weight:700;color:#b45309;min-height:0}
+.acciones{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0 40px}
+.acciones button{flex:1;min-width:150px;padding:14px;font-size:15px;font-weight:700;border:0;border-radius:12px;background:#1f3b2d;color:#fff;cursor:pointer}
+.acciones button.sec{background:#fff;color:#1f3b2d;border:2px solid #1f3b2d}
+.nota{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+@media print{
+  body{background:#fff}
+  .acciones,.barra .ayuda{display:none}
+  .barra{position:static}
+  .prov{box-shadow:none;border:1px solid #999;break-inside:avoid}
+  .item{break-inside:avoid}
+}
+</style></head><body>
+<header><h1>Lista de compras</h1><p id="sub"></p></header>
+<div class="barra"><span id="prog"></span><span>Total comprado: <b id="tot"></b></span></div>
+<main>
+<div class="nota ayuda">Palomea cada insumo cuando lo compres. Si compraste m&aacute;s o menos, o si cost&oacute; distinto, corrige la cantidad y el precio. Tu avance se guarda solo en este celular. Al terminar, toca <b>Enviar resultado por WhatsApp</b>.</div>
+<div id="app"></div>
+<div class="acciones">
+<button id="bwa">Enviar resultado por WhatsApp</button>
+<button id="bcop" class="sec">Copiar resultado</button>
+<button id="bpdf" class="sec">Imprimir / guardar PDF</button>
+</div>
+</main>
+`;
+    const VJ_LISTA_JS = String.raw`
+(function(){
+var KEY = 'vjc_' + PLAN.id;
+var estado = {};
+try { estado = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { estado = {}; }
+function guardar(){ try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch (e) {} }
+function num(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function money(n){ return '$' + num(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function dato(pi, ii){
+  var it = PLAN.proveedores[pi].items[ii], e = estado[pi + '_' + ii] || {};
+  return { it: it, check: !!e.check, qty: e.qty != null ? e.qty : it.qty, precio: e.precio != null ? e.precio : it.precio };
+}
+function cambio(pi, ii, campo, valor){
+  var k = pi + '_' + ii;
+  estado[k] = estado[k] || {};
+  estado[k][campo] = valor;
+  guardar(); refrescar();
+}
+function render(){
+  var h = '';
+  PLAN.proveedores.forEach(function(g, pi){
+    h += '<section class="prov"><div class="provh"><h2>' + esc(g.proveedor) + '</h2><span id="pt' + pi + '"></span></div>';
+    g.items.forEach(function(it, ii){
+      var k = pi + '_' + ii, at = ' data-p="' + pi + '" data-i="' + ii + '"';
+      h += '<div class="item" id="r' + k + '">' +
+        '<label class="nm"><input type="checkbox" class="c"' + at + '><span>' + esc(it.name) + '</span></label>' +
+        '<div class="plan">Pedir: <b>' + esc(it.qty) + ' ' + esc(it.unidad) + '</b> &middot; estimado ' + money(it.precio) + ' c/u</div>' +
+        '<div class="campos">' +
+        '<label>Compr&eacute; (' + esc(it.unidad) + ')<input type="number" inputmode="decimal" step="any" min="0" class="q"' + at + '></label>' +
+        '<label>Precio unit. $<input type="number" inputmode="decimal" step="any" min="0" class="p"' + at + '></label>' +
+        '<div class="sub">Subtotal<b id="s' + k + '"></b></div>' +
+        '</div><span class="tag" id="t' + k + '"></span></div>';
+    });
+    h += '</section>';
+  });
+  document.getElementById('app').innerHTML = h;
+  PLAN.proveedores.forEach(function(g, pi){
+    g.items.forEach(function(it, ii){
+      var d = dato(pi, ii), sel = '[data-p="' + pi + '"][data-i="' + ii + '"]';
+      document.querySelector('.c' + sel).checked = d.check;
+      document.querySelector('.q' + sel).value = d.qty;
+      document.querySelector('.p' + sel).value = d.precio;
+    });
+  });
+}
+function refrescar(){
+  var total = 0, hechos = 0, cuenta = 0;
+  PLAN.proveedores.forEach(function(g, pi){
+    var pt = 0;
+    g.items.forEach(function(it, ii){
+      var d = dato(pi, ii), sub = num(d.qty) * num(d.precio), msg = '';
+      cuenta++;
+      document.getElementById('r' + pi + '_' + ii).className = 'item' + (d.check ? ' ok' : '');
+      document.getElementById('s' + pi + '_' + ii).textContent = money(sub);
+      if (d.check) {
+        hechos++; pt += sub;
+        if (num(d.qty) !== num(it.qty)) msg += 'Cantidad distinta (se pidio ' + it.qty + '). ';
+        if (num(d.precio) !== num(it.precio)) msg += 'Precio distinto (estimado ' + money(it.precio) + ').';
+      }
+      document.getElementById('t' + pi + '_' + ii).textContent = msg;
+    });
+    total += pt;
+    document.getElementById('pt' + pi).textContent = 'Comprado: ' + money(pt);
+  });
+  document.getElementById('prog').textContent = hechos + ' de ' + cuenta + ' comprados';
+  document.getElementById('tot').textContent = money(total);
+}
+function faltan(){
+  var n = 0;
+  PLAN.proveedores.forEach(function(g, pi){ g.items.forEach(function(it, ii){ if (!dato(pi, ii).check) n++; }); });
+  return n;
+}
+function resultado(){
+  var items = [], total = 0;
+  var txt = 'RESULTADO DE COMPRAS - Viejito John\nLista del ' + PLAN.fecha + '\n';
+  PLAN.proveedores.forEach(function(g, pi){
+    txt += '\n' + g.proveedor + '\n';
+    g.items.forEach(function(it, ii){
+      var d = dato(pi, ii), sub = num(d.qty) * num(d.precio);
+      items.push({ i: it.insumoId, c: d.check ? 1 : 0, q: num(d.qty), p: num(d.precio) });
+      if (d.check) { total += sub; txt += 'OK ' + d.qty + ' ' + it.unidad + ' ' + it.name + ' a ' + money(d.precio) + ' = ' + money(sub) + '\n'; }
+      else { txt += 'NO COMPRADO: ' + it.name + '\n'; }
+    });
+  });
+  var code = 'VJC1:' + btoa(unescape(encodeURIComponent(JSON.stringify({ v: 1, id: PLAN.id, items: items }))));
+  txt += '\nTotal comprado: ' + money(total) + ' (estimado ' + money(PLAN.total) + ')\n\nCodigo para registrar en el sistema:\n' + code;
+  return { texto: txt, codigo: code };
+}
+function confirmarEnvio(){
+  var f = faltan();
+  return !f || confirm('Faltan ' + f + ' insumo(s) sin palomear. Se registraran como NO comprados. Enviar de todos modos?');
+}
+document.getElementById('sub').textContent = PLAN.fecha + (PLAN.nota ? ' - ' + PLAN.nota : '') + ' - Total estimado ' + money(PLAN.total);
+render(); refrescar();
+document.addEventListener('change', function(ev){
+  var t = ev.target, pi = t.getAttribute && t.getAttribute('data-p');
+  if (pi == null) return;
+  var ii = t.getAttribute('data-i');
+  if (t.className === 'c') cambio(pi, ii, 'check', t.checked);
+});
+document.addEventListener('input', function(ev){
+  var t = ev.target, pi = t.getAttribute && t.getAttribute('data-p');
+  if (pi == null) return;
+  var ii = t.getAttribute('data-i');
+  if (t.className === 'q') cambio(pi, ii, 'qty', t.value);
+  if (t.className === 'p') cambio(pi, ii, 'precio', t.value);
+});
+document.getElementById('bpdf').onclick = function(){ window.print(); };
+document.getElementById('bwa').onclick = function(){
+  if (!confirmarEnvio()) return;
+  var r = resultado();
+  if (PLAN.whatsapp) { window.open('https://wa.me/' + PLAN.whatsapp + '?text=' + encodeURIComponent(r.texto), '_blank'); }
+  else if (navigator.share) { navigator.share({ text: r.texto }).catch(function(){}); }
+  else { window.prompt('Copia este resultado y mandalo por WhatsApp:', r.texto); }
+};
+document.getElementById('bcop').onclick = function(){
+  if (!confirmarEnvio()) return;
+  var r = resultado();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(r.texto).then(function(){ alert('Resultado copiado. Pegalo en WhatsApp.'); }, function(){ window.prompt('Copia este resultado:', r.texto); });
+  } else { window.prompt('Copia este resultado:', r.texto); }
+};
+})();
+`;
     document.addEventListener('alpine:init', () => {
         Alpine.data('erpSystem', () => ({
             // ===== STATE =====
@@ -1619,6 +1864,9 @@
             compraSoloMarcados: false,
             compraNota: '',
             compraActualizaStock: false,
+            resCompra: null,
+            resFilas: [],
+            resCodigo: '',
             nuevoProveedor: '',
             compraHistFiltro: '',
             ultimoPagador: '',
@@ -2372,22 +2620,7 @@
                 } else { data.id = 'local_' + Date.now(); }
 
                 let omitidos = 0;
-                if (this.compraActualizaStock) {
-                    for (const g of grupos) {
-                        for (const it of g.items) {
-                            const inv = this.inventory.find(x => x.id === it.insumoId);
-                            if (!inv || inv.costoBase == null) { omitidos++; continue; }
-                            const addBase = it.qty * (inv.factor || 1);
-                            const prev = Math.max(0, inv.qty || 0);
-                            if (prev + addBase > 0) inv.costoBase = (prev * (inv.costoBase || 0) + it.subtotal) / (prev + addBase);
-                            inv.qty = (inv.qty || 0) + addBase;
-                            inv.cost = (inv.cost || 0) + it.subtotal;
-                            if (this.db) {
-                                try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, cost: inv.cost, costoBase: inv.costoBase, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
-                            }
-                        }
-                    }
-                }
+                if (this.compraActualizaStock) omitidos = await this.aplicarStockCompra(grupos);
                 this.comprasHist.unshift(data);
                 this.saveToLocalStorage();
                 this.logAudit('insumo', `Compra generada: $${total.toFixed(2)} (${grupos.length} proveedor(es))`);
@@ -2405,8 +2638,154 @@
                 this.toast('Compra eliminada');
             },
 
+            // ===== LISTA PARA EL COMPRADOR + REGISTRO DEL RESULTADO =====
+            async aplicarStockCompra(grupos) {
+                let omitidos = 0;
+                for (const g of grupos) {
+                    for (const it of g.items) {
+                        const inv = this.inventory.find(x => x.id === it.insumoId);
+                        if (!inv || inv.costoBase == null) { omitidos++; continue; }
+                        const addBase = it.qty * (inv.factor || 1);
+                        const prev = Math.max(0, inv.qty || 0);
+                        if (prev + addBase > 0) inv.costoBase = (prev * (inv.costoBase || 0) + it.subtotal) / (prev + addBase);
+                        inv.qty = (inv.qty || 0) + addBase;
+                        inv.cost = (inv.cost || 0) + it.subtotal;
+                        if (this.db) {
+                            try { await this.db.collection('vj_insumos').doc(inv.id).update({ qty: inv.qty, cost: inv.cost, costoBase: inv.costoBase, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); } catch (e) {}
+                        }
+                    }
+                }
+                return omitidos;
+            },
+            async guardarListaCompra() {
+                const grupos = this.resumenProveedores();
+                if (!grupos.length) { alert('Marca al menos un insumo y escribe la cantidad.'); return; }
+                const total = +grupos.reduce((t, g) => t + g.total, 0).toFixed(2);
+                const data = {
+                    nota: this.compraNota || '',
+                    proveedores: grupos.map(g => ({ ...g, total: +g.total.toFixed(2), pagado: false, pagadoPor: '', fechaPago: null })),
+                    total,
+                    estado: 'por_comprar',
+                    stockActualizado: false,
+                    sumarAlRegistrar: !!this.compraActualizaStock,
+                    fecha: new Date(),
+                    createdAt: new Date()
+                };
+                if (this.db) {
+                    try {
+                        const ref = await this.db.collection('vj_compras').add({ ...data, fecha: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        data.id = ref.id;
+                    } catch (e) { data.id = 'local_' + Date.now(); }
+                } else { data.id = 'local_' + Date.now(); }
+                this.comprasHist.unshift(data);
+                this.saveToLocalStorage();
+                this.logAudit('insumo', `Lista de compras creada: $${total.toFixed(2)} estimado (${grupos.length} proveedor(es))`);
+                this.compraLineas = {};
+                this.compraNota = '';
+                this.descargarListaCompra(data);
+                this.toast('Lista guardada y descargada. Cuando el comprador termine, usa "Registrar resultado".');
+            },
+            htmlListaCompra(c) {
+                const f = c.createdAt || c.fecha;
+                const d = f && f.toDate ? f.toDate() : (f ? new Date(f) : new Date());
+                const plan = {
+                    id: c.id,
+                    nota: c.nota || '',
+                    fecha: d.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' }),
+                    total: c.total || 0,
+                    whatsapp: '5218113160143',
+                    proveedores: (c.proveedores || []).map(g => ({
+                        proveedor: g.proveedor,
+                        items: (g.items || []).map(it => ({ insumoId: it.insumoId, name: it.name, qty: it.qty, unidad: it.unidad, precio: it.precio }))
+                    }))
+                };
+                const json = JSON.stringify(plan).replace(/</g, '\\u003c').replace(/\u2028|\u2029/g, '');
+                return VJ_LISTA_A + '<scr' + 'ipt>var PLAN = ' + json + ';' + VJ_LISTA_JS + '</scr' + 'ipt></body></html>';
+            },
+            descargarListaCompra(c) {
+                const blob = new Blob([this.htmlListaCompra(c)], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'lista-de-compras-' + new Date().toISOString().slice(0, 10) + '.html';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+            },
+            abrirResultado(c) {
+                this.resCompra = c;
+                this.resCodigo = '';
+                this.resFilas = [];
+                (c.proveedores || []).forEach(g => (g.items || []).forEach(it => this.resFilas.push({
+                    insumoId: it.insumoId, name: it.name, unidad: it.unidad, proveedor: g.proveedor,
+                    planQty: it.qty, planPrecio: it.precio, check: false, qty: it.qty, precio: it.precio
+                })));
+            },
+            cerrarResultado() { this.resCompra = null; this.resFilas = []; this.resCodigo = ''; },
+            resMarcarTodos(v) { this.resFilas.forEach(f => { f.check = v; }); },
+            resTotal() { return this.resFilas.reduce((t, f) => t + (f.check ? (parseFloat(f.qty) || 0) * (parseFloat(f.precio) || 0) : 0), 0); },
+            resComprados() { return this.resFilas.filter(f => f.check && (parseFloat(f.qty) || 0) > 0).length; },
+            importarCodigoResultado() {
+                const m = /VJC1:([A-Za-z0-9+\/=_-]+)/.exec(this.resCodigo || '');
+                if (!m) { alert('No encontré un código válido. Pega el mensaje completo que mandó el comprador (trae una línea que empieza con VJC1:).'); return; }
+                let obj;
+                try { obj = JSON.parse(decodeURIComponent(escape(atob(m[1])))); }
+                catch (e) { alert('El código está incompleto o dañado. Pídele al comprador que lo envíe de nuevo.'); return; }
+                if (obj.id !== this.resCompra.id && !confirm('Este resultado parece ser de otra lista de compras. ¿Aplicarlo de todos modos?')) return;
+                let n = 0;
+                (obj.items || []).forEach(r => {
+                    const f = this.resFilas.find(x => x.insumoId === r.i);
+                    if (!f) return;
+                    f.check = !!r.c; f.qty = r.q; f.precio = r.p;
+                    if (r.c) n++;
+                });
+                this.resCodigo = '';
+                this.toast(`Resultado cargado: ${n} insumo(s) comprados. Revísalo y presiona Registrar compra.`);
+            },
+            async registrarResultado() {
+                const c = this.resCompra;
+                if (!c) return;
+                const marcadas = this.resFilas.filter(f => f.check && (parseFloat(f.qty) || 0) > 0);
+                if (!marcadas.length) { alert('No hay insumos marcados como comprados.'); return; }
+                const sinComprar = this.resFilas.length - marcadas.length;
+                const totalReal = +this.resTotal().toFixed(2);
+                if (!confirm(`¿Registrar la compra real por $${this.formatMoney(totalReal)} (estimado $${this.formatMoney(c.total)})?\n${marcadas.length} comprados, ${sinComprar} sin comprar.`)) return;
+                const grupos = {};
+                marcadas.forEach(f => {
+                    const qty = parseFloat(f.qty);
+                    const precio = parseFloat(f.precio) || 0;
+                    const subtotal = +(qty * precio).toFixed(2);
+                    if (!grupos[f.proveedor]) grupos[f.proveedor] = { proveedor: f.proveedor, items: [], total: 0, pagado: false, pagadoPor: '', fechaPago: null };
+                    grupos[f.proveedor].items.push({ insumoId: f.insumoId, name: f.name, qty, unidad: f.unidad, precio, subtotal });
+                    grupos[f.proveedor].total += subtotal;
+                });
+                const lista = Object.values(grupos).map(g => ({ ...g, total: +g.total.toFixed(2) }));
+                c.planificado = { total: c.total, proveedores: c.proveedores };
+                c.proveedores = lista;
+                c.total = +lista.reduce((t, g) => t + g.total, 0).toFixed(2);
+                c.estado = 'comprada';
+                c.fechaCompra = new Date();
+                let omitidos = 0;
+                if (c.sumarAlRegistrar && !c.stockActualizado) { omitidos = await this.aplicarStockCompra(lista); c.stockActualizado = true; }
+                if (this.db && !String(c.id).startsWith('local_')) {
+                    try {
+                        await this.db.collection('vj_compras').doc(c.id).update({
+                            proveedores: c.proveedores, total: c.total, estado: c.estado, planificado: c.planificado,
+                            stockActualizado: !!c.stockActualizado, fechaCompra: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } catch (e) { console.warn('No se pudo guardar el resultado:', e); this.toast('No se pudo guardar en la nube'); }
+                }
+                this.saveToLocalStorage();
+                this.logAudit('insumo', `Compra registrada: $${c.total.toFixed(2)} real vs $${(c.planificado.total || 0).toFixed(2)} estimado`);
+                this.cerrarResultado();
+                this.toast(omitidos ? `Compra registrada (${omitidos} insumo(s) sin convertir no sumaron stock)` : 'Compra registrada');
+            },
+
             // ===== PAGOS DE COMPRAS =====
             estadoCompra(c) {
+                if (c.estado === 'por_comprar') return { txt: 'Por comprar', cls: 'bg-blue-100 text-blue-700' };
                 const gs = c.proveedores || [];
                 const pagados = gs.filter(g => g.pagado).length;
                 if (gs.length && pagados === gs.length) return { txt: 'Pagada', cls: 'bg-green-100 text-green-700' };
@@ -2417,14 +2796,15 @@
                 const f = this.compraHistFiltro;
                 return (this.comprasHist || []).filter(c => {
                     const t = this.estadoCompra(c).txt;
-                    if (f === 'pendientes') return t !== 'Pagada';
+                    if (f === 'porcomprar') return t === 'Por comprar';
+                    if (f === 'pendientes') return t !== 'Pagada' && t !== 'Por comprar';
                     if (f === 'pagadas') return t === 'Pagada';
                     return true;
                 });
             },
             pendientePorProveedor() {
                 const m = {};
-                (this.comprasHist || []).forEach(c => (c.proveedores || []).forEach(g => {
+                (this.comprasHist || []).filter(c => c.estado !== 'por_comprar').forEach(c => (c.proveedores || []).forEach(g => {
                     if (!g.pagado) m[g.proveedor] = (m[g.proveedor] || 0) + (g.total || 0);
                 }));
                 return Object.entries(m).map(([proveedor, total]) => ({ proveedor, total })).sort((a, b) => a.proveedor.localeCompare(b.proveedor, 'es'));
