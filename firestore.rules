@@ -8,10 +8,18 @@ service cloud.firestore {
         && request.auth.token.email == 'viejitojohn@gmail.com';
     }
 
-    // Distribuidores autorizados: el documento se llama como su correo (en minúsculas).
-    function esDistribuidor() {
+    // Cuentas con precio especial (mayorista, medio mayorista, distribuidor, cambaceo):
+    // el documento se llama como su correo (en minúsculas) y trae el campo "nivel".
+    // Las cuentas anteriores sin "nivel" cuentan como distribuidor.
+    function tieneCuenta() {
       return request.auth != null && request.auth.token.email != null
         && exists(/databases/$(database)/documents/distribuidores/$(request.auth.token.email.lower()));
+    }
+    function nivelCuenta() {
+      return get(/databases/$(database)/documents/distribuidores/$(request.auth.token.email.lower())).data.get('nivel', 'distribuidores');
+    }
+    function esDistribuidor() {
+      return tieneCuenta() && nivelCuenta() == 'distribuidores';
     }
 
     // Pedidos: cualquier visitante puede crear uno desde el checkout,
@@ -22,9 +30,10 @@ service cloud.firestore {
         && request.resource.data.nombre is string && request.resource.data.nombre.size() < 200
         && request.resource.data.telefono is string && request.resource.data.telefono.size() < 50
         && request.resource.data.direccion is string && request.resource.data.direccion.size() < 500
-        // Un pedido a precio distribuidor solo lo puede crear un distribuidor autorizado
-        && (request.resource.data.get('nivelPrecio', '') != 'distribuidores'
-            || (esDistribuidor() && request.resource.data.get('distribuidorCorreo', '') == request.auth.token.email.lower()));
+        // Un pedido con precio especial solo lo puede crear la cuenta autorizada de ese mismo nivel
+        && (request.resource.data.get('nivelPrecio', 'publico') == 'publico'
+            || (tieneCuenta() && nivelCuenta() == request.resource.data.get('nivelPrecio', '')
+                && request.resource.data.get('distribuidorCorreo', '') == request.auth.token.email.lower()));
       allow read, update, delete: if isAdmin();
     }
 
@@ -57,6 +66,13 @@ service cloud.firestore {
     // Precio de distribuidor: privado. Solo lo leen los distribuidores autorizados y el administrador.
     match /preciosDistribuidor/{id} {
       allow read: if isAdmin() || esDistribuidor();
+      allow write: if isAdmin();
+    }
+
+    // Precios de mayorista, medio mayorista y cambaceo: privados por nivel.
+    // Cada cuenta solo lee los precios de SU nivel; solo el administrador los escribe.
+    match /preciosNivel/{nivel}/items/{id} {
+      allow read: if isAdmin() || (tieneCuenta() && nivelCuenta() == nivel);
       allow write: if isAdmin();
     }
 

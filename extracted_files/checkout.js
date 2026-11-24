@@ -36,23 +36,17 @@ function getPriceForTier(product, tier) {
     const base = Number(product.ofertaActiva ? (product.precioOferta ?? product.precio ?? product.precioNormal ?? 0)
                                              : (product.precio ?? product.precioNormal ?? 0));
     if (key === 'publico') return base;
-    if (key === 'distribuidores') {
-        // El precio de distribuidor es privado: solo existe para un distribuidor autorizado
-        const d = window.VJDistribuidor;
-        const v = (d && d.activo && product.tipo !== 'mayoreo') ? Number(d.precios[product.id] || 0) : 0;
-        return v > 0 ? Math.min(v, base) : base;
-    }
-    const tierPrice = product[key];
-    return Number(tierPrice !== undefined && tierPrice !== null ? tierPrice : base);
+    // Los precios especiales son privados: solo existen para la cuenta autorizada de ese nivel
+    const d = window.VJDistribuidor;
+    const v = (d && d.activo && d.nivel === key && product.tipo !== 'mayoreo') ? Number(d.precios[product.id] || 0) : 0;
+    return v > 0 ? Math.min(v, base) : base;
 }
 
-// Un distribuidor autorizado siempre paga su precio; para cualquier otra persona
-// el nivel "distribuidores" de la URL se ignora.
-function tierEfectivo(t) {
+// Solo una cuenta autorizada (mayorista, distribuidor, cambaceo) paga su precio especial;
+// el nivel que venga en la URL se ignora: para cualquier otra persona es siempre "publico".
+function tierEfectivo() {
     const d = window.VJDistribuidor;
-    if (d && d.activo) return 'distribuidores';
-    const n = String(t || 'publico').toLowerCase();
-    return (n === 'distribuidores' || n === 'distributor') ? 'publico' : (t || 'publico');
+    return (d && d.activo) ? d.nivel : 'publico';
 }
 
 function getPriceTierLabel(tier) {
@@ -153,7 +147,7 @@ async function renderCarrito() {
     carritoCalc = c;
     currentProduct = { id: 'carrito', nombre: 'Carrito', descripcion: '', tipo: 'menudeo', origen: 'checkout-carrito' };
     bloque.className = 'mb-8 pb-6 border-b border-outline-variant/30';
-    bloque.innerHTML = (c.nivel ? `<p class="text-xs font-bold text-primary mb-3">✓ Precio ${esc(c.nivel.etiqueta)} aplicado (${c.piezas} piezas)</p>` : '') +
+    bloque.innerHTML = (c.nivel ? `<p class="text-xs font-bold text-primary mb-3">✓ Precio ${esc(c.nivel.etiqueta)} aplicado</p>` : '') +
         c.lineas.map(l => `<div class="flex items-center gap-3 mb-4">
             <div class="w-16 h-16 rounded-lg bg-white border border-outline-variant/20 flex items-center justify-center overflow-hidden shrink-0"><img src="${esc(l.imagen)}" alt="" class="max-h-full object-contain" onerror="this.src='producto.webp'"></div>
             <div class="flex-1 min-w-0"><p class="font-bold text-primary leading-tight">${esc(l.nombre)}</p><p class="text-xs text-on-surface-variant">${l.cantidad} × ${fmt(l.precioUnitario)}</p></div>
@@ -189,6 +183,14 @@ async function renderProduct() {
         return;
     }
 
+    // Las cajas de mayoreo son solo para cuentas autorizadas (mayoristas / distribuidores)
+    if (currentProduct.tipo === 'mayoreo' && !(window.VJDistribuidor && VJDistribuidor.activo)) {
+        document.getElementById('co-product-name').textContent = currentProduct.nombre + ' — SOLO MAYORISTAS';
+        document.getElementById('co-product-desc').innerHTML = 'Esta caja es solo para mayoristas y distribuidores. <a href="#" data-distribuidor class="text-primary font-bold underline">Inicia sesión</a> o escríbenos por WhatsApp al 8113160143.';
+        document.querySelectorAll('form button[type="submit"], form button:not([type])').forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-not-allowed'); });
+        return;
+    }
+
     const isMayoreo = currentProduct.tipo === 'mayoreo';
     const precioFinal = getPriceForTier(currentProduct, tier);
 
@@ -198,8 +200,7 @@ async function renderProduct() {
     document.getElementById('co-product-desc').textContent = currentProduct.descripcion;
     const tierEl = document.getElementById('co-price-tier');
     if (tierEl) {
-        const tierKey = ({ wholesale: 'mayoreo', mediomayoreo: 'medioMayoreo', midwholesale: 'medioMayoreo', distributor: 'distribuidores' })[String(tier).toLowerCase()] || tier;
-        tierEl.textContent = `Precio ${getPriceTierLabel(tier)}${VJCatalogo.textoMinimo(NIVELES, tierKey)}`;
+        tierEl.textContent = `Precio ${getPriceTierLabel(tier)}`;
     }
 
     const hasCarousel = currentProduct.imagenFrente && currentProduct.imagenLado;
@@ -330,7 +331,7 @@ function initForm() {
             codigo: codigoPedido,
             productoId: currentProduct.id,
             nivelPrecio: esCarrito ? (carritoCalc.nivel ? carritoCalc.nivel.clave : 'publico') : tierActual,
-            ...(((esCarrito && carritoCalc.distribuidor) || (!esCarrito && tierActual === 'distribuidores')) && window.VJDistribuidor && VJDistribuidor.activo
+            ...(((esCarrito && carritoCalc.distribuidor) || (!esCarrito && tierActual !== 'publico')) && window.VJDistribuidor && VJDistribuidor.activo
                 ? { distribuidorCorreo: VJDistribuidor.correo, distribuidorNombre: VJDistribuidor.nombre } : {}),
             precioUnitario,
             envio,

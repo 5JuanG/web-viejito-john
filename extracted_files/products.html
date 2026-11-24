@@ -98,12 +98,9 @@
             </div>
             <div class="hidden md:flex items-center gap-8">
                 <a class="text-primary font-bold transition-colors font-body-md" href="products.html">Catálogo Completo</a>
-                <button id="btn-mayoristas-nav" class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1">
-                    <span class="material-symbols-outlined text-sm">lock</span> Acceso Mayoristas
-                </button>
                 <a href="rastreo.html" class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1"><span class="material-symbols-outlined text-sm">local_shipping</span> Rastrear pedido</a>
                 <button id="btn-distribuidores-nav" data-distribuidor class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1">
-                    <span class="material-symbols-outlined text-sm">badge</span> Distribuidores
+                    <span class="material-symbols-outlined text-sm">badge</span> Mayoristas y distribuidores
                 </button>
             </div>
             <a href="https://wa.me/528113160143?text=Hola,%20deseo%20información%20sobre%20precios%20de%20mayoreo." target="_blank" class="bg-primary text-on-primary px-4 py-2 rounded-full font-bold text-sm hover:bg-primary-container transition-all flex items-center gap-2">
@@ -116,12 +113,9 @@
             <div class="flex flex-col px-6 py-4 space-y-4">
                 <a href="products.html" class="font-bold text-primary text-lg">Catálogo Completo</a>
                 <hr class="border-outline-variant/30">
-                <button id="btn-mayoristas-mobile" class="text-left text-on-surface-variant hover:text-primary font-body-md flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">lock</span> Acceso Mayoristas
-                </button>
                 <a href="rastreo.html" class="text-on-surface-variant hover:text-primary font-body-md flex items-center gap-2"><span class="material-symbols-outlined text-sm">local_shipping</span> Rastrear pedido</a>
                 <button id="btn-distribuidores-mobile" data-distribuidor class="text-left text-on-surface-variant hover:text-primary font-body-md flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">badge</span> Distribuidores
+                    <span class="material-symbols-outlined text-sm">badge</span> Mayoristas y distribuidores
                 </button>
             </div>
         </div>
@@ -219,25 +213,16 @@
             const { fmt, esc, precioFinal, precioNivel, textoMinimo, videoHTML, ICONOS } = VJCatalogo;
             const { productos, niveles, origen } = await VJCatalogo.cargar();
             if (window.VJDistribuidor) await VJDistribuidor.listo;
-            const mayorista = safeParseJSON(sessionStorage.getItem('vj_current_mayorista'), null);
+            // Cuenta autorizada (mayorista, distribuidor, cambaceo) que entró con correo y contraseña
+            const D = window.VJDistribuidor;
+            const mayorista = (D && D.activo) ? { name: D.nombre, type: D.nivel } : null;
             const menudeo = productos.filter(p => p.tipo !== 'caja');
             const cajas = productos.filter(p => p.tipo === 'caja');
 
-            const TIPOS = { mayoreo: ['mayoreo'], medioMayoreo: ['medioMayoreo'], distribuidor: ['distribuidores'], cambaceo: ['cambaceo'] };
-            const filasNivel = p => {
-                if (!mayorista) return '';
-                const claves = TIPOS[mayorista.type] || ['mayoreo', 'medioMayoreo', 'cambaceo', 'distribuidores'];
-                return `<div class="tier-prices mt-3 pt-3 border-t border-outline-variant/30 space-y-1 text-[11px] sm:text-xs">
-                    <div class="text-primary font-bold mb-2">Precios Especiales (${esc(mayorista.name)}):</div>
-                    ${claves.map(k => `<div class="flex items-center justify-between gap-2 text-on-surface-variant">
-                        <span class="font-semibold">${esc(niveles[k].etiqueta)}${textoMinimo(niveles, k)}</span>
-                        <span class="font-bold text-primary">${fmt(precioNivel(p, k))}</span></div>`).join('')}
-                </div>`;
-            };
+            const filasNivel = () => '';
 
-            const D = window.VJDistribuidor;
             const miPrecio = p => (D && D.activo && D.precios[p.id] > 0)
-                ? `<div class="text-xs font-bold text-primary mt-1">Tu precio: ${fmt(Math.min(D.precios[p.id], precioFinal(p)))}</div>` : '';
+                ? `<div class="text-xs font-bold text-primary mt-1">Tu precio ${esc(D.etiqueta)}: ${fmt(Math.min(D.precios[p.id], precioFinal(p)))}</div>` : '';
             const tarjeta = p => {
                 const verMayoreo = mayorista && p.imagenMayoreo;
                 const img = verMayoreo ? p.imagenMayoreo : p.imagen;
@@ -305,22 +290,6 @@
                     caja.innerHTML = '';
                 }
             }
-
-            // Acceso a mayoristas (un solo manejador)
-            const checkWholesaleAccess = () => {
-                const pass = prompt("Ingrese su clave de acceso para mayoristas:");
-                if (!pass) return;
-                const lista = safeParseJSON(localStorage.getItem('vj_mayoristas'), []);
-                const found = lista.find(m => m.key === pass && m.active !== false);
-                if (found) {
-                    alert(`¡Bienvenido ${found.name}! Precios de ${found.type} activados.`);
-                    sessionStorage.setItem('vj_current_mayorista', JSON.stringify(found));
-                    location.reload();
-                } else {
-                    alert("Clave incorrecta o cuenta inactiva. Comunícate al 8113160143.");
-                }
-            };
-            ['btn-mayoristas-nav', 'btn-mayoristas-mobile'].forEach(id => document.getElementById(id)?.addEventListener('click', checkWholesaleAccess));
         });
 
         // Mobile Menu Toggle (independiente de precios)

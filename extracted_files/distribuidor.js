@@ -1,14 +1,15 @@
 // ============================================================
-// DISTRIBUIDOR.JS — Acceso de distribuidores (correo y contraseña de Firebase).
+// DISTRIBUIDOR.JS — Acceso con precio especial (mayorista, medio mayorista, distribuidor, cambaceo).
 // El administrador crea la cuenta en Firebase y la autoriza en
-// admin-distribuidores.html. Solo un distribuidor autorizado puede leer la
-// colección privada "preciosDistribuidor" (lo exigen las reglas de Firestore);
-// para el resto de los visitantes ese precio simplemente no existe.
+// admin-distribuidores.html, donde le asigna su nivel. Solo esa cuenta puede leer los
+// precios privados de su nivel (lo exigen las reglas de Firestore); para el resto de los
+// visitantes esos precios simplemente no existen.
 //
-// window.VJDistribuidor = { activo, correo, nombre, precios{id:precio}, listo, abrir(), salir() }
+// window.VJDistribuidor = { activo, correo, nombre, nivel, etiqueta, precios{id:precio}, listo, abrir(), salir() }
 // ============================================================
 (function () {
-    const API = { activo: false, correo: '', nombre: '', precios: {}, listo: null, abrir: () => {}, salir: () => {} };
+    const API = { activo: false, correo: '', nombre: '', nivel: '', etiqueta: '', precios: {}, listo: null, abrir: () => {}, salir: () => {} };
+    const ETIQUETAS = { mayoreo: 'Mayorista', medioMayoreo: 'Medio mayorista', distribuidores: 'Distribuidor', cambaceo: 'Cambaceo' };
     window.VJDistribuidor = API;
 
     let resolverListo;
@@ -21,7 +22,7 @@
     // Carga el estado del usuario actual: ¿está autorizado como distribuidor? ¿qué precios tiene?
     async function cargarEstado(user) {
         const mia = ++version;
-        let activo = false, correo = '', nombre = '', precios = {};
+        let activo = false, correo = '', nombre = '', nivel = '', precios = {};
         if (user && user.email) {
             correo = user.email.toLowerCase();
             try {
@@ -30,16 +31,20 @@
                 if (d.exists) {
                     activo = true;
                     nombre = (d.data() && d.data().nombre) || correo;
-                    const snap = await dbx.collection('preciosDistribuidor').get();
+                    nivel = (d.data() && d.data().nivel) || 'distribuidores';
+                    // distribuidores conserva su colección; los demás niveles tienen la suya
+                    const ref = nivel === 'distribuidores' ? dbx.collection('preciosDistribuidor') : dbx.collection('preciosNivel').doc(nivel).collection('items');
+                    const snap = await ref.get();
                     snap.forEach(x => { const v = Number(x.data().precio); if (v > 0) precios[x.id] = v; });
                 }
             } catch (e) {
                 console.warn('No se pudo verificar el acceso de distribuidor:', e);
-                activo = false; precios = {};
+                activo = false; nivel = ''; precios = {};
             }
         }
         if (mia !== version) return; // llegó un cambio más reciente
         API.activo = activo; API.correo = activo ? correo : ''; API.nombre = nombre; API.precios = precios;
+        API.nivel = activo ? nivel : ''; API.etiqueta = activo ? (ETIQUETAS[nivel] || nivel) : '';
         pintarPastilla();
         window.dispatchEvent(new Event('vj-distribuidor'));
     }
@@ -65,8 +70,8 @@
         if (document.getElementById('vjd-fondo')) return;
         const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
         fondo = document.createElement('div'); fondo.id = 'vjd-fondo';
-        fondo.innerHTML = `<div id="vjd-caja" role="dialog" aria-modal="true" aria-label="Acceso de distribuidores">
-            <h2>Acceso de distribuidores</h2>
+        fondo.innerHTML = `<div id="vjd-caja" role="dialog" aria-modal="true" aria-label="Acceso mayoristas y distribuidores">
+            <h2>Acceso mayoristas y distribuidores</h2>
             <p class="s">Entra con el correo y la contraseña que te dio VJ.Lab para ver tus precios.</p>
             <input id="vjd-correo" type="email" placeholder="Correo" autocomplete="username">
             <input id="vjd-clave" type="password" placeholder="Contraseña" autocomplete="current-password">
@@ -76,7 +81,7 @@
                 <button type="button" class="l" id="vjd-olvide">Olvidé mi contraseña</button>
                 <button type="button" class="l" id="vjd-cerrar">Cancelar</button>
             </div></div>`;
-        pill = document.createElement('div'); pill.id = 'vjd-pill'; pill.title = 'Cerrar sesión de distribuidor';
+        pill = document.createElement('div'); pill.id = 'vjd-pill'; pill.title = 'Cerrar sesión';
         document.body.append(fondo, pill);
         msg = fondo.querySelector('#vjd-msg');
 
@@ -85,14 +90,14 @@
         fondo.querySelector('#vjd-entrar').addEventListener('click', entrar);
         fondo.querySelector('#vjd-olvide').addEventListener('click', olvide);
         fondo.querySelector('#vjd-clave').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
-        pill.addEventListener('click', () => { if (confirm('¿Cerrar la sesión de distribuidor?')) API.salir(); });
+        pill.addEventListener('click', () => { if (confirm('¿Cerrar tu sesión?')) API.salir(); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(); });
         pintarPastilla();
     }
 
     function pintarPastilla() {
         if (!pill) return;
-        if (API.activo) { pill.textContent = '✓ Distribuidor: ' + API.nombre + ' · Salir'; pill.classList.add('on'); }
+        if (API.activo) { pill.textContent = '✓ ' + API.etiqueta + ': ' + API.nombre + ' · Salir'; pill.classList.add('on'); }
         else pill.classList.remove('on');
     }
 
@@ -122,7 +127,7 @@
             await cargarEstado(cred.user);
             if (!API.activo) {
                 await firebase.auth().signOut();
-                aviso('Esta cuenta no tiene acceso de distribuidor. Comunícate al 8113160143.');
+                aviso('Esta cuenta no tiene precios especiales. Comunícate al 8113160143.');
                 btn.disabled = false;
                 return;
             }

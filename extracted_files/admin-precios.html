@@ -74,7 +74,7 @@
 
         <div class="max-w-7xl mx-auto px-6 pt-6">
             <div class="flex gap-2 border-b border-gray-200 overflow-x-auto">
-                <template x-for="t in [['menudeo','shopping_bag','Productos (menudeo)'],['cajas','inventory_2','Cajas de mayoreo'],['niveles','stacked_bar_chart','Niveles de mayoreo'],['timer','timer','Ofertas & Timer']]" :key="t[0]">
+                <template x-for="t in [['menudeo','shopping_bag','Productos (menudeo)'],['cajas','inventory_2','Cajas de mayoreo'],['niveles','stacked_bar_chart','Niveles especiales'],['timer','timer','Ofertas & Timer']]" :key="t[0]">
                     <button @click="activeTab = t[0]" :class="activeTab === t[0] ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-3 font-bold text-sm transition-colors whitespace-nowrap">
                         <span class="material-symbols-outlined text-sm align-middle mr-1" x-text="t[1]"></span><span x-text="t[2]"></span>
                     </button>
@@ -207,11 +207,11 @@
                             </div>
                             <p x-show="prod.ofertaActiva" class="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">Con la oferta activa, el catálogo muestra el precio de oferta y tacha el precio normal. Para que se vea otro precio, cámbialo en “oferta” o desactívala.</p>
                             <div x-show="prod.tipo !== 'caja'" class="bg-gray-50 rounded-lg p-3">
-                                <div class="text-xs font-bold text-gray-500 mb-2">Precio por pieza según nivel (la cantidad mínima se define en “Niveles de mayoreo”)</div>
+                                <div class="text-xs font-bold text-gray-500 mb-2">Precios especiales por pieza (privados: solo los ve la cuenta de ese nivel que autorizas en Distribuidores; el público siempre paga el precio normal)</div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <template x-for="k in ['medioMayoreo','mayoreo','distribuidores','cambaceo']" :key="k">
                                         <div>
-                                            <label class="text-xs text-gray-500" x-text="k === 'distribuidores' ? niveles[k].etiqueta + ' (privado, sin mínimo)' : niveles[k].etiqueta + (niveles[k].minimo ? ' (desde ' + niveles[k].minimo + ' pzas)' : '')"></label>
+                                            <label class="text-xs text-gray-500" x-text="niveles[k].etiqueta + ' (privado)'"></label>
                                             <input type="number" step="0.01" min="0" x-model.number="prod[k]" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
                                         </div>
                                     </template>
@@ -234,21 +234,16 @@
         <div x-show="activeTab === 'niveles'" class="max-w-3xl mx-auto px-6 py-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="font-bold text-gray-700">Niveles de precio y cantidad mínima</h2>
+                    <h2 class="font-bold text-gray-700">Nombres de los niveles de precio especial</h2>
                     <button @click="guardarNiveles()" class="bg-primary text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-primary-light flex items-center gap-2"><span class="material-symbols-outlined text-sm">save</span> Guardar niveles</button>
                 </div>
                 <div class="p-6 space-y-4">
-                    <p class="text-sm text-gray-500">Escribe desde cuántas piezas aplica cada nivel. Se muestra al mayorista en el catálogo y en el pedido junto al precio (ej. “Mayoreo (desde 100 pzas)”). Déjalo vacío si no quieres mostrar cantidad.</p>
-                    <p class="text-sm text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2"><b>Distribuidores</b> no usa cantidad mínima: su precio se aplica siempre a las cuentas de distribuidor autorizadas (ver <a href="admin-distribuidores.html" class="underline font-bold">Distribuidores</a>). El precio de ese nivel es privado y no lo ve el público.</p>
+                    <p class="text-sm text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">Los precios especiales ya <b>no dependen de la cantidad</b>: el público siempre paga el precio normal aunque compre muchas piezas. Cada mayorista, distribuidor o vendedor de cambaceo entra con su correo y contraseña (ver <a href="admin-distribuidores.html" class="underline font-bold">Distribuidores</a>) y paga el precio de su nivel, sin importar la cantidad. Aquí solo puedes cambiar el nombre de cada nivel.</p>
                     <template x-for="k in ['medioMayoreo','mayoreo','distribuidores','cambaceo']" :key="k">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="text-xs text-gray-500">Nombre del nivel</label>
                                 <input type="text" x-model="niveles[k].etiqueta" class="w-full px-3 py-2 rounded-lg border-gray-300 text-sm">
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-500">Cantidad mínima (piezas)</label>
-                                <input type="number" min="1" x-model.number="niveles[k].minimo" placeholder="Ej. 12" class="w-full px-3 py-2 rounded-lg border-gray-300 text-sm">
                             </div>
                         </div>
                     </template>
@@ -420,6 +415,13 @@
                             sn.forEach(d => { privados[d.id] = Number(d.data().precio || 0); });
                             this.productos.forEach(p => { if (privados[p.id] !== undefined) p.distribuidores = privados[p.id]; });
                         } catch (e) { console.warn('No se pudieron leer los precios de distribuidor.', e); }
+                        // Mayoreo, medio mayoreo y cambaceo también son privados (uno por nivel)
+                        for (const nv of ['mayoreo', 'medioMayoreo', 'cambaceo']) {
+                            try {
+                                const sn2 = await this.db.collection('preciosNivel').doc(nv).collection('items').get();
+                                sn2.forEach(d => { const pr = this.productos.find(x => x.id === d.id); if (pr) pr[nv] = Number(d.data().precio || 0); });
+                            } catch (e) { console.warn('No se pudieron leer los precios de ' + nv + '.', e); }
+                        }
                         this.sucio = false;
                         window.addEventListener('beforeunload', ev => { if (this.sucio) { ev.preventDefault(); ev.returnValue = ''; } });
                         if (this.db) {
@@ -515,7 +517,12 @@
                     });
                     this.guardando = true;
                     try {
-                        const batch = this.db.batch();
+                        // Se guarda en lotes de 400 operaciones (el límite de Firestore es 500)
+                        const lotes = [];
+                        let lote = this.db.batch(), nOps = 0;
+                        const cerrar = () => { if (++nOps >= 400) { lotes.push(lote); lote = this.db.batch(); nOps = 0; } };
+                        const batch = { set: (...a) => { lote.set(...a); cerrar(); }, delete: (...a) => { lote.delete(...a); cerrar(); } };
+                        const NIV_PRIV = ['mayoreo', 'medioMayoreo', 'cambaceo'];
                         const ahora = new Date().toISOString();
                         this.productos.forEach((p, i) => {
                             const { _k, _nuevo, ...datos } = p;
@@ -525,21 +532,27 @@
                             // El precio de distribuidor no se guarda en el documento público
                             const precioDist = datos.tipo === 'caja' ? 0 : Number(datos.distribuidores || 0);
                             delete datos.distribuidores;
+                            // Mayoreo, medio mayoreo y cambaceo: se guardan aparte (privados) y se borran del documento público
+                            const privados = {};
+                            NIV_PRIV.forEach(nv => { privados[nv] = datos.tipo === 'caja' ? 0 : Number(datos[nv] || 0); datos[nv] = firebase.firestore.FieldValue.delete(); });
                             datos.actualizado = ahora;
                             batch.set(this.db.collection('productos').doc(p.id), datos, { merge: true });
                             // Copia de precios para las tarjetas fijas del inicio
                             batch.set(this.db.collection(p.tipo === 'caja' ? 'preciosMayoreo' : 'preciosMenudeo').doc(p.id), {
                                 id: p.id, nombre: datos.nombre, precio: datos.precio, ofertaActiva: !!datos.ofertaActiva, precioOferta: datos.precioOferta, publico: datos.precio,
-                                mayoreo: datos.mayoreo, medioMayoreo: datos.medioMayoreo, distribuidores: firebase.firestore.FieldValue.delete(), cambaceo: datos.cambaceo, actualizado: ahora
+                                mayoreo: firebase.firestore.FieldValue.delete(), medioMayoreo: firebase.firestore.FieldValue.delete(), distribuidores: firebase.firestore.FieldValue.delete(), cambaceo: firebase.firestore.FieldValue.delete(), actualizado: ahora
                             }, { merge: true });
                             batch.set(this.db.collection('preciosDistribuidor').doc(p.id), { id: p.id, nombre: datos.nombre, precio: precioDist, actualizado: ahora });
+                            NIV_PRIV.forEach(nv => batch.set(this.db.collection('preciosNivel').doc(nv).collection('items').doc(p.id), { id: p.id, nombre: datos.nombre, precio: privados[nv], actualizado: ahora }));
                         });
                         this.eliminados.forEach(e => {
                             batch.delete(this.db.collection('productos').doc(e.id));
                             batch.delete(this.db.collection('preciosDistribuidor').doc(e.id));
+                            NIV_PRIV.forEach(nv => batch.delete(this.db.collection('preciosNivel').doc(nv).collection('items').doc(e.id)));
                             batch.delete(this.db.collection(e.tipo === 'caja' ? 'preciosMayoreo' : 'preciosMenudeo').doc(e.id));
                         });
-                        await batch.commit();
+                        lotes.push(lote);
+                        for (const l of lotes) await l.commit();
                         this.eliminados = []; this.productos.forEach(p => { p._nuevo = false; });
                         this.origen = 'firestore';
                         let total = this.productos.length;

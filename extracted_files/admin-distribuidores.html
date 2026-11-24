@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Distribuidores | El Viejito John</title>
+    <title>Mayoristas y distribuidores | El Viejito John</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -26,7 +26,7 @@
         <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-primary text-2xl">badge</span>
-                <h1 class="text-lg font-extrabold">Distribuidores</h1>
+                <h1 class="text-lg font-extrabold">Mayoristas y distribuidores</h1>
             </div>
             <div class="flex items-center gap-4 text-sm font-medium">
                 <a href="admin-precios.html" class="text-gray-500 hover:text-primary">Precios</a>
@@ -39,18 +39,18 @@
     <main class="max-w-4xl mx-auto px-4 py-6 space-y-6">
 
         <section class="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-900">
-            <h2 class="font-bold mb-2">Cómo dar de alta a un distribuidor</h2>
+            <h2 class="font-bold mb-2">Cómo dar de alta a un mayorista, distribuidor o vendedor de cambaceo</h2>
             <ol class="list-decimal ml-5 space-y-1">
                 <li>En la consola de Firebase entra a <b>Authentication → Users → Add user</b>, escribe su correo y una contraseña, y guarda. <b>Hazlo primero</b>.</li>
-                <li>Aquí abajo agrega ese mismo correo (y su nombre). Desde ese momento ve y paga su precio de distribuidor, sin importar cuántas piezas compre.</li>
-                <li>Mándale por WhatsApp el enlace del catálogo, su correo y su contraseña. Entra con “Distribuidores” en el menú del catálogo.</li>
+                <li>Aquí abajo agrega ese mismo correo, su nombre y elige su <b>nivel de precio</b> (mayorista, medio mayorista, distribuidor o cambaceo). Desde ese momento ve y paga el precio de su nivel, sin importar cuántas piezas compre. El público en general siempre paga el precio normal.</li>
+                <li>Mándale por WhatsApp el enlace del catálogo, su correo y su contraseña. Entra con “Mayoristas y distribuidores” en el menú del catálogo.</li>
             </ol>
-            <p class="mt-2 text-xs">El precio de distribuidor de cada producto se edita en <a href="admin-precios.html" class="underline font-bold">Precios</a>, y solo lo pueden leer las cuentas que estén en esta lista.</p>
+            <p class="mt-2 text-xs">Los precios de cada nivel se editan en <a href="admin-precios.html" class="underline font-bold">Precios</a>, y cada cuenta solo puede leer los de su propio nivel.</p>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 class="font-bold mb-3">Agregar distribuidor</h2>
-            <div class="grid md:grid-cols-3 gap-3">
+            <h2 class="font-bold mb-3">Agregar cuenta con precio especial</h2>
+            <div class="grid md:grid-cols-4 gap-3">
                 <label class="text-xs font-bold text-gray-500">Correo
                     <input type="email" x-model="nuevo.correo" placeholder="vendedor@correo.com" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
                 </label>
@@ -60,15 +60,23 @@
                 <label class="text-xs font-bold text-gray-500">Teléfono (opcional)
                     <input type="tel" x-model="nuevo.telefono" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
                 </label>
+                <label class="text-xs font-bold text-gray-500">Nivel de precio
+                    <select x-model="nuevo.nivel" class="mt-1 w-full rounded-lg border-gray-300 text-sm">
+                        <option value="mayoreo">Mayorista</option>
+                        <option value="medioMayoreo">Medio mayorista</option>
+                        <option value="distribuidores">Distribuidor</option>
+                        <option value="cambaceo">Cambaceo</option>
+                    </select>
+                </label>
             </div>
-            <button @click="agregar()" :disabled="guardando" class="mt-4 bg-primary text-white text-sm font-bold px-5 py-2 rounded-full disabled:opacity-60">Autorizar distribuidor</button>
+            <button @click="agregar()" :disabled="guardando" class="mt-4 bg-primary text-white text-sm font-bold px-5 py-2 rounded-full disabled:opacity-60">Autorizar cuenta</button>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 class="font-bold mb-3">Distribuidores autorizados <span class="text-gray-400 font-medium" x-text="'(' + lista.length + ')'"></span></h2>
+            <h2 class="font-bold mb-3">Cuentas autorizadas <span class="text-gray-400 font-medium" x-text="'(' + lista.length + ')'"></span></h2>
             <p x-show="cargando" class="text-gray-500 text-sm">Cargando…</p>
             <p x-show="!cargando && error" class="bg-red-50 text-red-700 rounded-xl p-3 text-sm" x-text="error"></p>
-            <p x-show="!cargando && !error && lista.length === 0" class="text-gray-500 text-sm">Todavía no hay distribuidores autorizados.</p>
+            <p x-show="!cargando && !error && lista.length === 0" class="text-gray-500 text-sm">Todavía no hay cuentas autorizadas.</p>
             <div class="divide-y divide-gray-100">
                 <template x-for="d in lista" :key="d.id">
                     <div class="py-3 flex items-center justify-between gap-3">
@@ -76,11 +84,19 @@
                             <p class="font-bold" x-text="d.nombre || d.id"></p>
                             <p class="text-sm text-gray-500 truncate" x-text="d.id + (d.telefono ? ' · ' + d.telefono : '')"></p>
                         </div>
-                        <button @click="quitar(d)" class="text-sm text-red-600 hover:underline whitespace-nowrap">Quitar acceso</button>
+                        <div class="flex items-center gap-3">
+                            <select :value="d.nivel || 'distribuidores'" @change="cambiarNivel(d, $event.target.value)" class="text-xs rounded-lg border-gray-300">
+                                <option value="mayoreo">Mayorista</option>
+                                <option value="medioMayoreo">Medio mayorista</option>
+                                <option value="distribuidores">Distribuidor</option>
+                                <option value="cambaceo">Cambaceo</option>
+                            </select>
+                            <button @click="quitar(d)" class="text-sm text-red-600 hover:underline whitespace-nowrap">Quitar acceso</button>
+                        </div>
                     </div>
                 </template>
             </div>
-            <p class="text-xs text-gray-400 mt-3">“Quitar acceso” le quita el precio de distribuidor al instante. Su cuenta de Firebase sigue existiendo; si quieres borrarla, hazlo en Authentication → Users.</p>
+            <p class="text-xs text-gray-400 mt-3">“Quitar acceso” le quita el precio especial al instante. Su cuenta de Firebase sigue existiendo; si quieres borrarla, hazlo en Authentication → Users.</p>
         </section>
     </main>
 
@@ -91,7 +107,7 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('distribuidoresAdmin', () => ({
         authenticated: false, db: null, cargando: true, guardando: false, error: '', mensaje: '',
-        lista: [], nuevo: { correo: '', nombre: '', telefono: '' },
+        lista: [], nuevo: { correo: '', nombre: '', telefono: '', nivel: 'mayoreo' },
 
         aviso(t) { this.mensaje = t; setTimeout(() => { this.mensaje = ''; }, 3500); },
 
@@ -122,9 +138,9 @@ document.addEventListener('alpine:init', () => {
             if (!nombre) { this.aviso('Escribe el nombre del distribuidor.'); return; }
             this.guardando = true;
             try {
-                await this.db.collection('distribuidores').doc(correo).set({ nombre, telefono: String(this.nuevo.telefono || '').trim(), correo, alta: new Date().toISOString() });
-                this.nuevo = { correo: '', nombre: '', telefono: '' };
-                this.aviso('Distribuidor autorizado.');
+                await this.db.collection('distribuidores').doc(correo).set({ nombre, telefono: String(this.nuevo.telefono || '').trim(), correo, nivel: this.nuevo.nivel || 'mayoreo', alta: new Date().toISOString() });
+                this.nuevo = { correo: '', nombre: '', telefono: '', nivel: this.nuevo.nivel };
+                this.aviso('Cuenta autorizada.');
                 await this.cargar();
             } catch (e) {
                 console.error(e);
@@ -133,8 +149,19 @@ document.addEventListener('alpine:init', () => {
             this.guardando = false;
         },
 
+        async cambiarNivel(d, nivel) {
+            try {
+                await this.db.collection('distribuidores').doc(d.id).update({ nivel });
+                this.aviso('Nivel actualizado. La cuenta lo verá la próxima vez que cargue la página.');
+                await this.cargar();
+            } catch (e) {
+                console.error(e);
+                this.aviso('No se pudo cambiar el nivel: ' + (e.code || e.message));
+            }
+        },
+
         async quitar(d) {
-            if (!confirm('¿Quitar el acceso de distribuidor a ' + (d.nombre || d.id) + '?')) return;
+            if (!confirm('¿Quitar el acceso a precios especiales a ' + (d.nombre || d.id) + '?')) return;
             try {
                 await this.db.collection('distribuidores').doc(d.id).delete();
                 this.aviso('Acceso quitado.');
