@@ -170,7 +170,13 @@
 
         function pintarRelacionados() {
             const ids = new Set(grupoDe(actual).map(x => x.id));
-            const rel = visibles.filter(x => !ids.has(x.id) && x.categoria && x.categoria === actual.categoria).slice(0, 4);
+            // Relacionados = misma familia (Viejito John, Vari-Spa, Keratex...); primero los de la misma categoría.
+            // La familia se puede fijar en el panel de precios; si está vacía se deduce del nombre y de la línea.
+            const familia = x => (x.familia || '').trim().toLowerCase() || (/vari[\s-]?spa/i.test(x.nombre) ? 'vari-spa' : String(x.linea || x.categoria || '').toLowerCase());
+            const fam = familia(actual);
+            const rel = visibles.filter(x => !ids.has(x.id) && familia(x) === fam)
+                .sort((a, b) => (b.categoria === actual.categoria) - (a.categoria === actual.categoria))
+                .slice(0, 4);
             const sec = document.getElementById('relacionados');
             sec.classList.toggle('hidden', !rel.length);
             document.getElementById('rel-lista').innerHTML = rel.map(x => `

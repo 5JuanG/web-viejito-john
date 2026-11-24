@@ -179,6 +179,10 @@
                                 </div>
                             </div>
                             <div x-show="prod.tipo !== 'caja'">
+                                <label class="text-xs text-gray-500">Familia para “Productos relacionados” (opcional; ej. viejito-john, vari-spa, keratex)</label>
+                                <input type="text" x-model="prod.familia" placeholder="Si lo dejas vacío se deduce solo" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <div x-show="prod.tipo !== 'caja'">
                                 <label class="text-xs text-gray-500">Información adicional (modo de uso, ingredientes, precauciones)</label>
                                 <textarea x-model="prod.info" rows="2" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm"></textarea>
                             </div>
@@ -403,7 +407,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             let contador = 0;
-            const BLANCO = { tipo: 'menudeo', linea: 'viejito', categoria: '', nombre: '', descripcion: '', imagen: '', imagenFrente: '', imagenLado: '', imagenMayoreo: '', video: '', precio: 0, ofertaActiva: false, precioOferta: 0, mayoreo: 0, medioMayoreo: 0, distribuidores: 0, cambaceo: 0, piezas: 1, textoPromo: '', productoBase: '', grupo: '', presentacion: '', info: '', costoEnvio: 0, pesoKg: 0, barcode: '', activo: true };
+            const BLANCO = { tipo: 'menudeo', linea: 'viejito', categoria: '', nombre: '', descripcion: '', imagen: '', imagenFrente: '', imagenLado: '', imagenMayoreo: '', video: '', precio: 0, ofertaActiva: false, precioOferta: 0, mayoreo: 0, medioMayoreo: 0, distribuidores: 0, cambaceo: 0, piezas: 1, textoPromo: '', productoBase: '', grupo: '', familia: '', presentacion: '', info: '', costoEnvio: 0, pesoKg: 0, barcode: '', activo: true };
             const slug = t => String(t || 'producto').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'producto';
             const num = v => (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
 
