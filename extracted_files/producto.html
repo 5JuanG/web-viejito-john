@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Producto | VJ.Lab</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta name="theme-color" content="#154212">
+    <meta name="description" content="Producto VJ.Lab: herbolaria tradicional, envíos a todo México.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: { "primary": "#154212", "primary-container": "#2d5a27", "primary-fixed": "#bcf0ae", "surface": "#fcf9f4", "on-surface": "#1c1c19", "on-surface-variant": "#42493e", "surface-variant": "#e5e2dd", "outline-variant": "#c2c9bb" },
+                fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] }
+            } }
+        }
+    </script>
+    <style>
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] .chev { transform: rotate(180deg); }
+        .chev { transition: transform .2s; }
+    </style>
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="distribuidor.js"></script>
+    <script src="catalogo-seed.js"></script>
+    <script src="catalogo.js"></script>
+    <script src="envio.js"></script>
+    <script src="carrito.js"></script>
+</head>
+<body class="bg-surface text-on-surface font-sans selection:bg-primary-fixed selection:text-primary">
+
+    <nav class="sticky top-0 z-50 bg-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
+        <div class="flex flex-wrap justify-between items-center gap-x-6 gap-y-2 py-3 px-4 md:px-6 max-w-6xl mx-auto">
+            <a href="index.html"><img src="logo.webp" alt="VJ.Lab" class="h-10 md:h-12 w-auto object-contain" style="mix-blend-mode:multiply"></a>
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm font-semibold text-on-surface-variant">
+                <a href="products.html" class="hover:text-primary">Catálogo completo</a>
+                <a href="rastreo.html" class="hover:text-primary">Rastrear pedido</a>
+                <button type="button" data-distribuidor class="hover:text-primary">Mayoristas y distribuidores</button>
+                <a href="https://wa.me/528113160143?text=Hola,%20deseo%20información%20de%20sus%20productos." target="_blank" rel="noopener" class="bg-primary text-white px-4 py-2 rounded-full font-bold">WhatsApp</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-surface-variant/50 border-b border-outline-variant/30">
+        <p id="migas" class="max-w-6xl mx-auto px-4 md:px-6 py-3 text-sm font-semibold text-on-surface-variant">
+            <a href="products.html" class="hover:text-primary">Catálogo</a>
+        </p>
+    </div>
+
+    <main id="producto" class="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <p class="text-center text-on-surface-variant py-16">Cargando producto…</p>
+    </main>
+
+    <section id="relacionados" class="max-w-6xl mx-auto px-4 md:px-6 pb-16 hidden">
+        <h2 class="text-2xl font-extrabold text-primary text-center mb-8">Productos relacionados</h2>
+        <div id="rel-lista" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"></div>
+    </section>
+
+    <footer class="bg-surface-variant py-8 border-t border-outline-variant/50 text-center text-sm text-on-surface-variant">
+        <p>Productos cosméticos elaborados con ingredientes naturales para uso tópico externo. No sustituyen consulta médica.</p>
+        <p class="mt-2">© VJ.Lab. Envíos a todo el país.</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { fmt, esc, precioFinal, videoHTML } = VJCatalogo;
+        const root = document.getElementById('producto');
+        const { productos } = await VJCatalogo.cargar();
+        if (window.VJDistribuidor) { try { await VJDistribuidor.listo; } catch (e) {} }
+        const D = window.VJDistribuidor;
+
+        const visibles = productos.filter(p => p.tipo !== 'caja');
+        const pid = new URLSearchParams(location.search).get('p') || '';
+        let actual = visibles.find(p => p.id === pid);
+        if (!actual) {
+            root.innerHTML = '<div class="text-center py-16"><p class="text-lg font-bold text-primary mb-2">No encontramos este producto.</p><a href="products.html" class="text-primary underline font-bold">Ver el catálogo completo</a></div>';
+            return;
+        }
+        let cantidad = 1, imgIdx = 0;
+
+        const grupoDe = p => (p.grupo ? visibles.filter(x => x.grupo === p.grupo) : [p]);
+        const fotos = p => [...new Set([p.imagen, p.imagenFrente, p.imagenLado].filter(Boolean))];
+        const pesoTxt = kg => { kg = Number(kg || 0); return kg <= 0 ? '' : (kg < 1 ? Math.round(kg * 1000) + ' g' : kg + ' kg'); };
+
+        function precioHTML(p) {
+            const lista = precioFinal(p);
+            const esp = (D && D.activo && D.precios[p.id] > 0) ? Math.min(D.precios[p.id], lista) : 0;
+            let h = p.ofertaActiva
+                ? `<span class="text-lg text-on-surface-variant line-through mr-2">${fmt(p.precio)}</span><span class="text-3xl font-extrabold text-primary">${fmt(p.precioOferta)}</span>`
+                : `<span class="text-3xl font-extrabold text-primary">${fmt(p.precio)}</span>`;
+            if (esp) h += `<div class="text-sm font-bold text-primary mt-1">Tu precio ${esc(D.etiqueta)}: ${fmt(esp)}</div>`;
+            return h;
+        }
+
+        function acordeon(titulo, cuerpo, abierto) {
+            return `<details class="border-t border-outline-variant/40 py-3" ${abierto ? 'open' : ''}>
+                <summary class="flex items-center justify-between text-sm font-bold text-on-surface-variant"><span>${titulo}</span><span class="material-symbols-outlined chev">expand_more</span></summary>
+                <div class="pt-3 text-sm text-on-surface leading-relaxed">${cuerpo}</div></details>`;
+        }
+
+        function pintar() {
+            const p = actual, grupo = grupoDe(p), imgs = fotos(p);
+            if (imgIdx >= imgs.length) imgIdx = 0;
+            document.title = p.nombre + ' | VJ.Lab';
+            document.getElementById('migas').innerHTML = `<a href="products.html" class="hover:text-primary">Catálogo</a>${p.categoria ? ' › ' + esc(p.categoria) : ''} › <span class="text-primary">${esc(p.nombre)}</span>`;
+
+            const selector = grupo.length > 1 ? `
+                <div class="mb-5"><div class="text-sm font-bold mb-2">Presentación</div>
+                <div class="flex flex-wrap gap-2">${grupo.map(x => `
+                    <button type="button" data-pres="${esc(x.id)}" class="px-4 py-2 rounded-xl border text-sm font-bold ${x.id === p.id ? 'bg-primary text-white border-primary' : 'bg-white text-primary border-outline-variant hover:border-primary'}">
+                        ${esc(x.presentacion || x.nombre)}<span class="block text-xs font-semibold ${x.id === p.id ? 'text-white/80' : 'text-on-surface-variant'}">${fmt(precioFinal(x))}</span></button>`).join('')}
+                </div></div>` : '';
+
+            const info = [];
+            if (p.presentacion) info.push(['Presentación', esc(p.presentacion)]);
+            if (pesoTxt(p.pesoKg)) info.push(['Peso aproximado', esc(pesoTxt(p.pesoKg))]);
+            if (Number(p.piezas) > 1) info.push(['Piezas', esc(p.piezas)]);
+            if (p.categoria) info.push(['Línea', esc(p.categoria)]);
+            const infoHTML = (info.length ? `<table class="w-full mb-2">${info.map(r => `<tr><td class="py-1 pr-4 font-semibold text-on-surface-variant">${r[0]}</td><td class="py-1">${r[1]}</td></tr>`).join('')}</table>` : '')
+                + (p.info ? `<p style="white-space:pre-line">${esc(p.info)}</p>` : '');
+
+            const url = encodeURIComponent(location.href), txt = encodeURIComponent(p.nombre + ' - VJ.Lab');
+            const agotado = p.disponible === false;
+
+            root.innerHTML = `
+            <div class="grid md:grid-cols-2 gap-8 md:gap-12">
+                <div>
+                    <div class="bg-white rounded-2xl border border-outline-variant/30 flex items-center justify-center overflow-hidden" style="aspect-ratio:1/1">
+                        <img src="${esc(imgs[imgIdx] || 'producto.webp')}" alt="${esc(p.nombre)}" class="max-h-full max-w-full object-contain p-4" onerror="this.src='producto.webp'">
+                    </div>
+                    ${imgs.length > 1 ? `<div class="flex gap-2 mt-3">${imgs.map((src, i) => `<button type="button" data-img="${i}" class="w-16 h-16 rounded-lg bg-white border-2 ${i === imgIdx ? 'border-primary' : 'border-outline-variant/40'} overflow-hidden"><img src="${esc(src)}" alt="" class="w-full h-full object-contain"></button>`).join('')}</div>` : ''}
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-primary mb-3">${esc(p.nombre)}</h1>
+                    <div class="mb-5 pb-4 border-b border-outline-variant/40">${precioHTML(p)}</div>
+                    ${selector}
+                    ${agotado
+                        ? '<div class="w-full text-center bg-gray-200 text-gray-500 font-bold py-3 rounded-xl mb-5">Agotado · no hay en inventario</div>'
+                        : `<div class="flex items-center gap-3 mb-5">
+                            <div class="inline-flex items-center border border-outline-variant rounded-lg bg-white">
+                                <button type="button" data-qty="-1" class="w-10 h-11 text-xl font-bold text-primary" aria-label="Menos">−</button>
+                                <input id="qty" type="number" min="1" max="99" value="${cantidad}" class="w-14 h-11 text-center border-0 font-bold focus:ring-0">
+                                <button type="button" data-qty="1" class="w-10 h-11 text-xl font-bold text-primary" aria-label="Más">+</button>
+                            </div>
+                            <button type="button" id="btn-agregar" class="flex-1 bg-primary text-white font-bold py-3 rounded-lg hover:opacity-90 flex items-center justify-center gap-2"><span class="material-symbols-outlined text-base">add_shopping_cart</span> Añadir al carrito</button>
+                        </div>`}
+                    ${acordeon('Descripción', esc(p.descripcion || 'Producto VJ.Lab.'), true)}
+                    ${acordeon('Información adicional', infoHTML || 'Sin información adicional por ahora.', false)}
+                    ${p.video ? acordeon('Video', videoHTML(p.video), false) : ''}
+                    <div class="border-t border-b border-outline-variant/40 py-3 flex items-center justify-between text-sm">
+                        <span class="font-semibold text-on-surface-variant">Compartir</span>
+                        <span class="flex items-center gap-4 font-bold text-primary">
+                            <a href="https://wa.me/?text=${txt}%20${url}" target="_blank" rel="noopener" class="hover:underline">WhatsApp</a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank" rel="noopener" class="hover:underline">Facebook</a>
+                            <button type="button" id="btn-copiar" class="hover:underline">Copiar enlace</button>
+                        </span>
+                    </div>
+                </div>
+            </div>`;
+            pintarRelacionados();
+        }
+
+        function pintarRelacionados() {
+            const ids = new Set(grupoDe(actual).map(x => x.id));
+            const rel = visibles.filter(x => !ids.has(x.id) && x.categoria && x.categoria === actual.categoria).slice(0, 4);
+            const sec = document.getElementById('relacionados');
+            sec.classList.toggle('hidden', !rel.length);
+            document.getElementById('rel-lista').innerHTML = rel.map(x => `
+                <a href="producto.html?p=${esc(x.id)}" class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <img loading="lazy" src="${esc(x.imagen || 'producto.webp')}" alt="${esc(x.nombre)}" class="w-full h-40 object-contain p-3 bg-white" onerror="this.src='producto.webp'">
+                    <div class="p-4"><h3 class="font-bold text-primary text-sm leading-tight mb-1">${esc(x.nombre)}</h3><span class="text-sm font-bold">${fmt(precioFinal(x))}</span></div>
+                </a>`).join('');
+        }
+
+        root.addEventListener('click', e => {
+            const pres = e.target.closest('[data-pres]');
+            if (pres) { actual = visibles.find(x => x.id === pres.dataset.pres) || actual; imgIdx = 0; history.replaceState(null, '', '?p=' + encodeURIComponent(actual.id)); pintar(); return; }
+            const im = e.target.closest('[data-img]');
+            if (im) { imgIdx = Number(im.dataset.img); pintar(); return; }
+            const q = e.target.closest('[data-qty]');
+            if (q) { cantidad = Math.max(1, Math.min(99, cantidad + Number(q.dataset.qty))); document.getElementById('qty').value = cantidad; return; }
+            if (e.target.closest('#btn-agregar')) {
+                const n = Math.max(1, Math.min(99, Math.floor(Number(document.getElementById('qty').value) || 1)));
+                VJCarrito.agregar(actual.id, n);
+                VJCarrito.abrir();
+                return;
+            }
+            if (e.target.closest('#btn-copiar')) {
+                const b = e.target.closest('#btn-copiar');
+                (navigator.clipboard ? navigator.clipboard.writeText(location.href) : Promise.reject()).then(() => { b.textContent = '¡Enlace copiado!'; }).catch(() => { prompt('Copia este enlace:', location.href); });
+            }
+        });
+        root.addEventListener('input', e => { if (e.target.id === 'qty') cantidad = Math.max(1, Math.min(99, Math.floor(Number(e.target.value) || 1))); });
+
+        pintar();
+    });
+    </script>
+</body>
+</html>

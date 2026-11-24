@@ -231,10 +231,10 @@
                     : `<span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">${fmt(p.precio)}</span>`;
                 const video = p.video ? `<details class="mb-3"><summary class="cursor-pointer text-primary text-sm font-bold">▶ Ver video</summary><div class="mt-2">${videoHTML(p.video)}</div></details>` : '';
                 return `<div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-                    <img loading="lazy" decoding="async" src="${esc(img)}" alt="${esc(p.nombre)}" class="w-full h-48 object-contain p-4 bg-white" onerror="this.src='producto.webp'">
+                    <a href="producto.html?p=${esc(p.id)}" class="block"><img loading="lazy" decoding="async" src="${esc(img)}" alt="${esc(p.nombre)}" class="w-full h-48 object-contain p-4 bg-white" onerror="this.src='producto.webp'"></a>
                     <div class="p-6 flex flex-col flex-grow">
                         <div class="flex justify-between items-start gap-2 mb-2">
-                            <h3 class="text-xl font-bold text-primary">${esc(p.nombre)}</h3>
+                            <h3 class="text-xl font-bold text-primary"><a href="producto.html?p=${esc(p.id)}" class="hover:underline">${esc(p.nombre)}</a></h3>
                             <div class="text-right whitespace-nowrap">${precio}${miPrecio(p)}</div>
                         </div>
                         <p class="text-on-surface-variant text-sm mb-4 flex-grow">${esc(p.descripcion)}</p>

@@ -185,8 +185,8 @@
         if (!btn) return;
         const n = cantidadTotal();
         badge.textContent = n;
-        // En el catálogo el botón siempre se ve; en otras páginas solo si hay algo en el carrito
-        btn.classList.toggle('on', n > 0 || /products/i.test(location.pathname));
+        // En el catálogo y en la página de producto el botón siempre se ve; en otras páginas solo si hay algo en el carrito
+        btn.classList.toggle('on', n > 0 || /product/i.test(location.pathname));
         if (panel.classList.contains('on')) pintar();
     }
 
