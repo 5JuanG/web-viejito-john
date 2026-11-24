@@ -18,6 +18,13 @@ service cloud.firestore {
     function nivelCuenta() {
       return get(/databases/$(database)/documents/distribuidores/$(request.auth.token.email.lower())).data.get('nivel', 'distribuidores');
     }
+    // Compra mínima por pedido de un nivel (config/niveles, campo minimoCompra); 0 si no está definida
+    function minimoNivel(n) {
+      return exists(/databases/$(database)/documents/config/niveles)
+        && (n in get(/databases/$(database)/documents/config/niveles).data)
+        && get(/databases/$(database)/documents/config/niveles).data[n].get('minimoCompra', 0) is number
+        ? get(/databases/$(database)/documents/config/niveles).data[n].get('minimoCompra', 0) : 0;
+    }
     function esDistribuidor() {
       return tieneCuenta() && nivelCuenta() == 'distribuidores';
     }
@@ -33,7 +40,8 @@ service cloud.firestore {
         // Un pedido con precio especial solo lo puede crear la cuenta autorizada de ese mismo nivel
         && (request.resource.data.get('nivelPrecio', 'publico') == 'publico'
             || (tieneCuenta() && nivelCuenta() == request.resource.data.get('nivelPrecio', '')
-                && request.resource.data.get('distribuidorCorreo', '') == request.auth.token.email.lower()));
+                && request.resource.data.get('distribuidorCorreo', '') == request.auth.token.email.lower()
+                && request.resource.data.get('subtotalNumero', 0) >= minimoNivel(request.resource.data.get('nivelPrecio', ''))));
       allow read, update, delete: if isAdmin();
     }
 

@@ -5,10 +5,10 @@
 // ============================================================
 (function () {
     const NIVELES_DEFAULT = {
-        medioMayoreo:   { etiqueta: 'Medio mayoreo',  minimo: null },
-        mayoreo:        { etiqueta: 'Mayoreo',        minimo: null },
-        distribuidores: { etiqueta: 'Distribuidores', minimo: null },
-        cambaceo:       { etiqueta: 'Cambaceo',       minimo: null }
+        medioMayoreo:   { etiqueta: 'Medio mayoreo',  minimo: null, minimoCompra: null },
+        mayoreo:        { etiqueta: 'Mayoreo',        minimo: null, minimoCompra: null },
+        distribuidores: { etiqueta: 'Distribuidores', minimo: null, minimoCompra: null },
+        cambaceo:       { etiqueta: 'Cambaceo',       minimo: null, minimoCompra: null }
     };
     const ICONOS = { 'Línea de Alivio Muscular': 'fitness_center', 'Cuidado Respiratorio': 'air', 'Cuidado Facial': 'face', 'Cuidado de Pies y Piel (Keratex)': 'spa' };
 

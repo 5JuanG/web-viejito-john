@@ -49,6 +49,14 @@ function tierEfectivo() {
     return (d && d.activo) ? d.nivel : 'publico';
 }
 
+// Compra mínima por pedido del nivel de la cuenta: devuelve cuánto falta (0 si ya cumple o es público)
+function minimoFaltante(subtotal) {
+    const d = window.VJDistribuidor;
+    if (!d || !d.activo) return 0;
+    const m = Number((NIVELES[d.nivel] || {}).minimoCompra || 0);
+    return m > subtotal ? m - subtotal : 0;
+}
+
 function getPriceTierLabel(tier) {
     const labels = {
         publico: 'Público',
@@ -155,6 +163,10 @@ async function renderCarrito() {
         '<a href="products.html" class="text-xs text-primary underline">Seguir comprando</a>' +
         '<p class="text-on-surface-variant/60 text-xs mt-3 italic leading-tight">Productos cosméticos elaborados con ingredientes naturales para uso tópico externo. No sustituyen consulta médica.</p>';
 
+    if (c.faltaMinimo > 0) {
+        bloque.insertAdjacentHTML('afterbegin', `<p class="text-sm font-bold text-red-700 bg-red-50 rounded-lg p-3 mb-3">Tu compra mínima como ${esc(c.distribuidor.etiqueta)} es de ${fmt(c.minimoCompra)} por pedido. Te faltan ${fmt(c.faltaMinimo)} en productos. <a href="products.html" class="underline">Seguir comprando</a></p>`);
+        document.getElementById('submit-btn').disabled = true;
+    }
     document.getElementById('label-subtotal').textContent = 'Subtotal';
     document.getElementById('co-subtotal').textContent = fmt(c.subtotal);
     subtotalActual = c.subtotal;
@@ -193,6 +205,15 @@ async function renderProduct() {
 
     const isMayoreo = currentProduct.tipo === 'mayoreo';
     const precioFinal = getPriceForTier(currentProduct, tier);
+
+    // Compra mínima del nivel: si este producto solo no la alcanza, hay que juntar más en el carrito
+    const faltaMin = minimoFaltante(precioFinal);
+    if (faltaMin > 0) {
+        document.getElementById('co-product-name').textContent = currentProduct.nombre;
+        document.getElementById('co-product-desc').innerHTML = `Tu compra mínima como ${VJCatalogo.esc(VJDistribuidor.etiqueta)} es de ${fmt(Number(NIVELES[VJDistribuidor.nivel].minimoCompra))} por pedido y este producto cuesta ${fmt(precioFinal)}. <a href="products.html" class="text-primary font-bold underline">Agrega más productos al carrito</a> para completar el mínimo.`;
+        document.querySelectorAll('form button[type="submit"], form button:not([type])').forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-not-allowed'); });
+        return;
+    }
 
     document.title = `Tu pedido - ${currentProduct.nombre} | VJ.Lab`;
     document.getElementById('summary-title').textContent = isMayoreo ? 'Pedido de Mayoreo' : 'Resumen del Pedido';
@@ -324,6 +345,8 @@ function initForm() {
         const tierActual = tierEfectivo(new URLSearchParams(window.location.search).get('tier') || new URLSearchParams(window.location.search).get('t') || 'publico');
         const esCarrito = !!carritoCalc;
         const precioUnitario = esCarrito ? 0 : getPriceForTier(currentProduct, tierActual);
+        const subtotalPedido = esCarrito ? carritoCalc.subtotal : precioUnitario;
+        if (minimoFaltante(subtotalPedido) > 0) { alert('Tu pedido no alcanza la compra mínima de tu nivel. Agrega más productos al carrito.'); return; }
         const envio = envioMonto();
         const resumenCarrito = esCarrito ? ('Carrito: ' + carritoCalc.lineas.map(l => `${l.cantidad}× ${l.nombre}`).join(', ')).slice(0, 190) : '';
         const codigoPedido = nuevoCodigoPedido();
@@ -334,6 +357,7 @@ function initForm() {
             ...(((esCarrito && carritoCalc.distribuidor) || (!esCarrito && tierActual !== 'publico')) && window.VJDistribuidor && VJDistribuidor.activo
                 ? { distribuidorCorreo: VJDistribuidor.correo, distribuidorNombre: VJDistribuidor.nombre } : {}),
             precioUnitario,
+            subtotalNumero: subtotalPedido,
             envio,
             envioPorConfirmar: envioPorConfirmar(),
             envioDetalle: envioInfo ? { tipo: envioInfo.tipo, zona: envioInfo.zona || '', estado: envioInfo.estado || '', caja: envioInfo.caja || '', pesoKg: envioInfo.pesoKg || 0, pesoCobrado: envioInfo.pesoCobrado || 0 } : null,

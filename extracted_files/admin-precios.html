@@ -238,12 +238,16 @@
                     <button @click="guardarNiveles()" class="bg-primary text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-primary-light flex items-center gap-2"><span class="material-symbols-outlined text-sm">save</span> Guardar niveles</button>
                 </div>
                 <div class="p-6 space-y-4">
-                    <p class="text-sm text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">Los precios especiales ya <b>no dependen de la cantidad</b>: el público siempre paga el precio normal aunque compre muchas piezas. Cada mayorista, distribuidor o vendedor de cambaceo entra con su correo y contraseña (ver <a href="admin-distribuidores.html" class="underline font-bold">Distribuidores</a>) y paga el precio de su nivel, sin importar la cantidad. Aquí solo puedes cambiar el nombre de cada nivel.</p>
+                    <p class="text-sm text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">Los precios especiales ya <b>no dependen de la cantidad</b>: el público siempre paga el precio normal aunque compre muchas piezas. Cada mayorista, distribuidor o vendedor de cambaceo entra con su correo y contraseña (ver <a href="admin-distribuidores.html" class="underline font-bold">Distribuidores</a>) y paga el precio de su nivel. Para que la compra se autorice, el total de productos del pedido (sin envío) debe alcanzar la <b>compra mínima</b> de su nivel. Aquí cambias el nombre y la compra mínima de cada nivel; déjala vacía o en 0 si no quieres mínimo.</p>
                     <template x-for="k in ['medioMayoreo','mayoreo','distribuidores','cambaceo']" :key="k">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="text-xs text-gray-500">Nombre del nivel</label>
                                 <input type="text" x-model="niveles[k].etiqueta" class="w-full px-3 py-2 rounded-lg border-gray-300 text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Compra mínima por pedido ($)</label>
+                                <input type="number" min="0" step="1" x-model.number="niveles[k].minimoCompra" placeholder="Ej. 1000" class="w-full px-3 py-2 rounded-lg border-gray-300 text-sm">
                             </div>
                         </div>
                     </template>
@@ -569,7 +573,7 @@
                 async guardarNiveles() {
                     const data = {};
                     ['medioMayoreo', 'mayoreo', 'distribuidores', 'cambaceo'].forEach(k => {
-                        data[k] = { etiqueta: String(this.niveles[k].etiqueta || '').trim() || VJCatalogo.NIVELES_DEFAULT[k].etiqueta, minimo: num(this.niveles[k].minimo) };
+                        data[k] = { etiqueta: String(this.niveles[k].etiqueta || '').trim() || VJCatalogo.NIVELES_DEFAULT[k].etiqueta, minimo: null, minimoCompra: Number(this.niveles[k].minimoCompra || 0) };
                     });
                     try { await this.db.collection('config').doc('niveles').set(data); this.toast('¡Niveles guardados!'); }
                     catch (e) { console.error(e); this.toast('No se pudieron guardar los niveles.'); }

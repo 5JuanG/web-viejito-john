@@ -53,7 +53,7 @@
 
     // Calcula líneas, nivel de precio aplicado, envío y total con los datos actuales de Firestore.
     async function calcular() {
-        const { productos } = await VJCatalogo.cargar();
+        const { productos, niveles } = await VJCatalogo.cargar();
         const cfgEnvio = window.VJEnvio ? await VJEnvio.cargar() : null;
         const dist = window.VJDistribuidor;
         if (dist) { try { await dist.listo; } catch (e) { /* sigue como público */ } }
@@ -82,6 +82,9 @@
             l.subtotal = unit * l.cantidad;
         });
         const subtotal = lineas.reduce((s, l) => s + l.subtotal, 0);
+        // Compra mínima por pedido del nivel de la cuenta (se edita en admin-precios.html → Niveles especiales)
+        const minimoCompra = esDist ? Number((niveles && niveles[dist.nivel] && niveles[dist.nivel].minimoCompra) || 0) : 0;
+        const faltaMinimo = minimoCompra > subtotal ? minimoCompra - subtotal : 0;
         let envio, envioInfo = null, pesoTotal = 0;
         if (cfgEnvio) {
             pesoTotal = Math.round(lineas.reduce((s, l) => s + VJEnvio.pesoDe(l.p, l.cantidad, cfgEnvio), 0) * 1000) / 1000;
@@ -90,7 +93,7 @@
         } else {
             envio = lineas.reduce((s, l) => s + l.costoEnvio, 0);
         }
-        return { lineas, piezas, nivel, distribuidor: esDist ? { correo: dist.correo, nombre: dist.nombre, nivel: dist.nivel, etiqueta: dist.etiqueta } : null, siguiente: null, faltan: 0, subtotal, envio, envioInfo, pesoTotal, total: subtotal + envio, noDisponibles };
+        return { lineas, piezas, nivel, distribuidor: esDist ? { correo: dist.correo, nombre: dist.nombre, nivel: dist.nivel, etiqueta: dist.etiqueta } : null, siguiente: null, faltan: 0, minimoCompra, faltaMinimo, subtotal, envio, envioInfo, pesoTotal, total: subtotal + envio, noDisponibles };
     }
 
     // ---------------- Interfaz (botón flotante + panel) ----------------
@@ -201,6 +204,7 @@
 
         let aviso = '';
         if (c.distribuidor) aviso += `<div class="vjc-aviso">✓ Precio <b>${esc(c.distribuidor.etiqueta)}</b> aplicado.</div>`;
+        if (c.faltaMinimo > 0) aviso += `<div class="vjc-aviso hint">Tu compra mínima como <b>${esc(c.distribuidor.etiqueta)}</b> es de <b>${dinero(c.minimoCompra)}</b> por pedido. Te faltan <b>${dinero(c.faltaMinimo)}</b> en productos.</div>`;
 
         cuerpo.innerHTML = aviso + c.lineas.map(l => `
             <div class="vjc-l">
@@ -219,7 +223,7 @@
             ${c.envioInfo ? `<div class="vjc-cp"><input id="vjc-cp" type="text" inputmode="numeric" maxlength="5" placeholder="Tu código postal (5 dígitos)" value="${esc(VJEnvio.cpGuardado())}"><small>${esc(c.envioInfo.mensaje)}</small></div>` : ''}
             <div class="vjc-r"><span>Envío</span><span>${c.envioInfo && c.envioInfo.monto === null ? (c.envioInfo.tipo === 'consultar' ? 'Por confirmar' : 'Con tu C.P.') : (c.envio ? dinero(c.envio) : 'GRATIS')}</span></div>
             <div class="vjc-r t"><span>Total</span><span>${dinero(c.total)}</span></div>
-            <a class="vjc-ir" href="checkout.html?carrito=1">Finalizar pedido</a>` +
+            ${c.faltaMinimo > 0 ? `<div class="vjc-ir" style="background:#d1d5db;color:#6b7280;cursor:not-allowed">Faltan ${dinero(c.faltaMinimo)} para el mínimo</div>` : '<a class="vjc-ir" href="checkout.html?carrito=1">Finalizar pedido</a>'}` +
             ((window.VJDistribuidor && !c.distribuidor) ? '<p style="text-align:center;font-size:12px;margin:12px 0 0"><a href="#" data-distribuidor style="color:#154212;text-decoration:underline">¿Eres mayorista o distribuidor? Inicia sesión</a></p>' : '');
     }
 
