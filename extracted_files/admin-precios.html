@@ -135,10 +135,7 @@
                                 </div>
                                 <div>
                                     <label class="text-xs text-gray-500">Línea</label>
-                                    <select x-model="prod.linea" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
-                                        <option value="viejito">Viejito John</option>
-                                        <option value="keratex">Keratex</option>
-                                    </select>
+                                    <input type="text" x-model="prod.linea" list="lista-lineas" placeholder="Ej. viejito, keratex, vari-spa" class="w-full px-2 py-1.5 rounded-lg border-gray-300 text-sm">
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2" x-show="prod.tipo === 'caja'">
@@ -246,6 +243,7 @@
                     </template>
                     <p x-show="!listaActual.length" class="text-sm text-gray-400 col-span-full text-center py-8">No hay elementos. Usa “Agregar”.</p>
                 </div>
+                <datalist id="lista-lineas"><template x-for="l in lineas" :key="l"><option :value="l"></option></template></datalist>
                 <datalist id="lista-categorias"><template x-for="c in categorias" :key="c"><option :value="c"></option></template></datalist>
             </div>
         </div>
@@ -419,6 +417,7 @@
                 timerActive: false, timerEndDate: '', timerMessage: '¡Oferta especial por tiempo limitado!',
 
                 get listaActual() { return this.productos.filter(p => this.activeTab === 'cajas' ? p.tipo === 'caja' : p.tipo !== 'caja'); },
+                get lineas() { return [...new Set(['viejito', 'keratex', 'vari-spa', ...this.productos.filter(p => p.tipo !== 'caja' && p.linea).map(p => p.linea)])]; },
                 get categorias() { return [...new Set(this.productos.filter(p => p.tipo !== 'caja' && p.categoria).map(p => p.categoria))]; },
 
                 toast(msg) { this.toastMessage = msg; this.showToast = true; setTimeout(() => { this.showToast = false; }, 5000); },
