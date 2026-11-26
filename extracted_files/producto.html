@@ -172,13 +172,17 @@
             const ids = new Set(grupoDe(actual).map(x => x.id));
             // Relacionados = misma familia (Viejito John, Vari-Spa, Keratex...); primero los de la misma categoría.
             // La familia se puede fijar en el panel de precios; si está vacía se deduce del nombre y de la línea.
-            const familia = x => (x.familia || '').trim().toLowerCase() || (/vari[\s-]?spa/i.test(x.nombre) ? 'vari-spa' : String(x.linea || x.categoria || '').toLowerCase());
+            const familia = x => (x.familia || '').trim().toLowerCase() || (/vari[\s-]*spa/i.test(x.nombre + ' ' + x.id) ? 'vari-spa' : String(x.linea || x.categoria || '').toLowerCase());
             const fam = familia(actual);
             const rel = visibles.filter(x => !ids.has(x.id) && familia(x) === fam)
                 .sort((a, b) => (b.categoria === actual.categoria) - (a.categoria === actual.categoria))
                 .slice(0, 4);
             const sec = document.getElementById('relacionados');
             sec.classList.toggle('hidden', !rel.length);
+            if (/[?&]diag/.test(location.search)) {
+                sec.classList.remove('hidden');
+                sec.insertAdjacentHTML('afterbegin', `<p class="text-xs font-mono bg-yellow-100 p-2 rounded mb-4">DIAGNÓSTICO — producto: ${esc(actual.id)} · familia: ${esc(fam)} · relacionados: ${esc(rel.map(r => r.id + '(' + familia(r) + ')').join(', ') || 'ninguno')} · familias en el catálogo: ${esc([...new Set(visibles.map(familia))].join(', '))}</p>`);
+            }
             document.getElementById('rel-lista').innerHTML = rel.map(x => `
                 <a href="producto.html?p=${esc(x.id)}" class="bg-white rounded-2xl border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                     <img loading="lazy" src="${esc(x.imagen || 'producto.webp')}" alt="${esc(x.nombre)}" class="w-full h-40 object-contain p-3 bg-white" onerror="this.src='producto.webp'">
