@@ -60,6 +60,16 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+    // Contenido de la página de inicio (textos y fotos que edita admin-inicio.html):
+    // lo ve cualquiera, solo el administrador lo cambia.
+    match /inicio/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /inicioImg/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     match /config/{id} {
       allow read: if true;
       allow write: if isAdmin();

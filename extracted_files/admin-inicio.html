@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Inicio | El Viejito John</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { primary: '#154212', surface: '#f3f4f6', accent: '#059669' }, fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] } } } };
+    </script>
+    <script src="vendor/firebase-app-compat.js"></script>
+    <script src="vendor/firebase-firestore-compat.js"></script>
+    <script src="vendor/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="admin-auth.js"></script>
+    <script src="catalogo-seed.js"></script>
+    <script src="catalogo.js"></script>
+    <script src="inicio-config.js"></script>
+    <style>
+        .tab-on { border-bottom: 2px solid #154212; color: #154212; }
+        .tab-off { color: #6b7280; }
+        .caja { background:#fff; border:1px solid #f3f4f6; border-radius:16px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+        .lbl { display:block; font-size:12px; color:#6b7280; margin-bottom:2px; }
+        .cuadro { width:88px; height:88px; border:1px solid #e5e7eb; border-radius:12px; background:#fff; object-fit:contain; flex:none; }
+    </style>
+</head>
+<body class="bg-surface font-sans text-gray-800 antialiased min-h-screen">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100">
+        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-2xl">home</span>
+                <h1 class="text-lg font-extrabold">Página de inicio</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-bold">
+                <a href="admin-precios.html" class="text-primary hover:underline">Productos y precios</a>
+                <a href="admin-pedidos.html" class="text-primary hover:underline">Pedidos</a>
+                <a href="index.html" target="_blank" class="text-primary hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm">open_in_new</span> Ver inicio</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-5xl mx-auto px-6 pt-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-800 mb-4">
+            Aquí cambias los textos y las fotos de la página principal. Las fotos pueden ser <b>de tus productos</b> (elige de la lista) o <b>las que subas tú</b>. Presiona <b>Guardar</b> para publicar los cambios.
+        </div>
+        <div id="tabs" class="flex gap-1 border-b border-gray-200 overflow-x-auto"></div>
+    </div>
+
+    <div id="panel" class="max-w-5xl mx-auto px-6 py-6 pb-32"><p class="text-gray-400">Cargando…</p></div>
+
+    <datalist id="enlaces"></datalist>
+
+    <div id="barra" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-4">
+        <span class="text-sm">Tienes cambios <b>sin guardar</b>.</span>
+        <button id="btn-guardar" class="bg-accent text-white px-4 py-2 rounded-lg font-bold text-sm">Guardar</button>
+    </div>
+    <div id="toast" class="hidden fixed top-6 right-6 z-50 bg-accent text-white px-6 py-3 rounded-xl shadow-lg font-bold text-sm"></div>
+
+<script>
+(async function () {
+    await window.vjAuthReady;
+
+    const TABS = [['banners', 'image', 'Banner principal'], ['lineas', 'view_carousel', 'Líneas'], ['favoritos', 'star', 'Favoritos'], ['alivio', 'grid_view', 'Alivio para'], ['contienen', 'science', '¿Qué contienen?'], ['ingredientes', 'eco', 'Ingredientes'], ['historia', 'history_edu', 'Historia'], ['final', 'call_to_action', 'Cierre y pie']];
+    const LIMITES = { banners: 6, 'lineas.items': 8, 'alivio.items': 7, 'contienen.items': 4, 'ingredientes.items': 9, 'favoritos.ids': 9 };
+    const BLANCOS = {
+        banners: { activo: true, etiqueta: '', titulo: 'Nuevo banner', texto: '', boton: 'Ver más', enlace: 'products.html', imagen: '', fondo: '#e6f2de', fondo2: '#c9e3bb' },
+        'lineas.items': { titulo: 'Nueva línea', imagen: '', enlace: 'products.html', color: '#dcedd2' },
+        'alivio.items': { titulo: 'Nuevo apartado', imagen: '', enlace: 'products.html', color: '#dcedd2' },
+        'contienen.items': { titulo: 'NUEVO', texto: '', boton: 'Conoce más', enlace: 'products.html', imagen: '', color: '#d3e8c8' },
+        'ingredientes.items': { icono: 'eco', titulo: 'Ingrediente', texto: '' },
+        'favoritos.ids': ''
+    };
+
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const $ = id => document.getElementById(id);
+
+    const [guardado, cat] = await Promise.all([VJInicio.leerGuardado(), VJCatalogo.cargar(true, true)]);
+    let S = VJInicio.combinar(guardado);
+    const PRODS = (cat.productos || []).filter(p => p.tipo !== 'caja');
+    const PEND = {};          // fotos subidas todavía sin guardar: id -> data URL
+    let tab = 'banners', sucio = false;
+
+    const refsImg = obj => { const r = new Set(); (function w(o) { if (o && typeof o === 'object') Object.values(o).forEach(w); else if (typeof o === 'string' && o.startsWith('img:')) r.add(o.slice(4)); })(obj); return r; };
+    let refsIniciales = refsImg(S);
+    await Promise.all([...refsIniciales].map(id => VJInicio.foto('img:' + id, PRODS)));
+
+    $('enlaces').innerHTML = ['products.html', 'index.html#lineas', ...PRODS.map(p => 'producto.html?p=' + p.id)].map(v => `<option value="${esc(v)}">`).join('');
+
+    // ---- acceso por ruta "a.b.0.c" ----
+    const partes = p => p.split('.').map(x => /^\d+$/.test(x) ? Number(x) : x);
+    const leer = p => partes(p).reduce((o, k) => (o == null ? o : o[k]), S);
+    const poner = (p, v) => { const k = partes(p); const ult = k.pop(); const o = k.reduce((a, x) => a[x], S); o[ult] = v; };
+    const marcar = () => { sucio = true; $('barra').classList.remove('hidden'); };
+
+    const prevSrc = ref => {
+        ref = String(ref || '');
+        if (!ref) return '';
+        if (ref.startsWith('prod:')) { const p = PRODS.find(x => x.id === ref.slice(5)); return (p && p.imagen) || ''; }
+        if (ref.startsWith('img:')) { const id = ref.slice(4); return PEND[id] || VJInicio.cacheImg[id] || ''; }
+        return ref;
+    };
+
+    // ---- piezas de formulario ----
+    const fld = (path, label, o = {}) => {
+        const v = leer(path);
+        const a = o.area ? `<textarea data-path="${path}" rows="${o.rows || 3}" class="w-full rounded-lg border-gray-300 text-sm">${esc(v)}</textarea>`
+            : `<input data-path="${path}" ${o.list ? 'list="enlaces"' : ''} value="${esc(v)}" class="w-full rounded-lg border-gray-300 text-sm">`;
+        return `<div class="${o.cls || ''}"><label class="lbl">${label}</label>${a}</div>`;
+    };
+    const colorf = (path, label) => `<div><label class="lbl">${label}</label><input type="color" data-path="${path}" value="${esc(leer(path) || '#e6f2de')}" class="h-9 w-16 rounded border-gray-300 p-0"></div>`;
+    const imgf = (path, label) => {
+        const ref = leer(path) || '';
+        const src = prevSrc(ref);
+        const sel = ref.startsWith('prod:') ? ref : '';
+        return `<div class="flex gap-3 items-start"><img class="cuadro" src="${esc(src) || 'producto.webp'}" onerror="this.src='producto.webp'" alt="">
+          <div class="flex-1 space-y-1"><label class="lbl">${label}</label>
+            <select data-pick="${path}" class="w-full rounded-lg border-gray-300 text-sm"><option value="">— Elegir foto de un producto —</option>${PRODS.map(p => `<option value="prod:${esc(p.id)}" ${sel === 'prod:' + p.id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select>
+            <div class="flex items-center gap-2"><input type="file" accept="image/*" data-file="${path}" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-700">
+            ${ref ? `<button data-clear="${path}" class="text-xs text-red-500 whitespace-nowrap">Quitar</button>` : ''}</div>
+            <p class="text-[11px] text-gray-400">${ref.startsWith('img:') ? 'Foto subida por ti' : ref.startsWith('prod:') ? 'Foto de un producto del catálogo' : ref ? 'Archivo del sitio' : 'Sin foto'}</p></div></div>`;
+    };
+    const barra = (lista, i, n) => `<div class="flex items-center gap-1 text-gray-400">
+        <button data-mv="${lista}:${i}:-1" ${i === 0 ? 'disabled' : ''} class="disabled:opacity-30 hover:text-primary" title="Subir"><span class="material-symbols-outlined text-lg">arrow_upward</span></button>
+        <button data-mv="${lista}:${i}:1" ${i === n - 1 ? 'disabled' : ''} class="disabled:opacity-30 hover:text-primary" title="Bajar"><span class="material-symbols-outlined text-lg">arrow_downward</span></button>
+        <button data-del="${lista}:${i}" class="hover:text-red-500" title="Quitar"><span class="material-symbols-outlined text-lg">delete</span></button></div>`;
+    const agregar = (lista, texto) => { const n = (leer(lista) || []).length; return n >= LIMITES[lista] ? `<p class="text-xs text-gray-400">Máximo ${LIMITES[lista]}.</p>` : `<button data-add="${lista}" class="text-sm font-bold text-primary flex items-center gap-1"><span class="material-symbols-outlined text-base">add_circle</span> ${texto}</button>`; };
+    const titulos = (base) => `<div class="caja grid grid-cols-2 gap-3">${fld(base + '.titulo', 'Título')}${fld(base + '.resaltado', 'Parte en negritas')}</div>`;
+
+    // ---- pestañas ----
+    const VISTAS = {
+        banners: () => `<p class="text-sm text-gray-500 mb-3">Los banners rotan arriba de la página. Quita la palomita de "Mostrar" para ocultar uno sin borrarlo.</p>` +
+            S.banners.map((b, i) => `<div class="caja mb-4 space-y-3"><div class="flex items-center justify-between"><label class="flex items-center gap-2 font-bold text-sm"><input type="checkbox" data-path="banners.${i}.activo" ${b.activo !== false ? 'checked' : ''} class="rounded"> Mostrar · Banner ${i + 1}</label>${barra('banners', i, S.banners.length)}</div>
+              <div class="grid md:grid-cols-2 gap-3">${fld(`banners.${i}.etiqueta`, 'Etiqueta pequeña (opcional)')}${fld(`banners.${i}.titulo`, 'Título')}${fld(`banners.${i}.texto`, 'Texto', { area: 1, cls: 'md:col-span-2' })}${fld(`banners.${i}.boton`, 'Texto del botón')}${fld(`banners.${i}.enlace`, 'Enlace del botón', { list: 1 })}</div>
+              ${imgf(`banners.${i}.imagen`, 'Foto del banner')}<div class="flex gap-4">${colorf(`banners.${i}.fondo`, 'Fondo (inicio)')}${colorf(`banners.${i}.fondo2`, 'Fondo (final)')}</div></div>`).join('') + agregar('banners', 'Agregar banner'),
+        lineas: () => titulos('lineas') + `<div class="mt-4">` + S.lineas.items.map((it, i) => `<div class="caja mb-3 space-y-3"><div class="flex items-center justify-between"><b class="text-sm">Tarjeta ${i + 1}</b>${barra('lineas.items', i, S.lineas.items.length)}</div>
+              <div class="grid md:grid-cols-2 gap-3">${fld(`lineas.items.${i}.titulo`, 'Nombre')}${fld(`lineas.items.${i}.enlace`, 'Enlace', { list: 1 })}</div>${imgf(`lineas.items.${i}.imagen`, 'Foto')}${colorf(`lineas.items.${i}.color`, 'Color de fondo')}</div>`).join('') + agregar('lineas.items', 'Agregar tarjeta') + `</div>`,
+        favoritos: () => titulos('favoritos') + `<div class="caja mt-4 space-y-2"><p class="text-sm text-gray-500">Elige los productos favoritos. Se muestran con su precio y botón de carrito, siempre actualizados desde tu catálogo.</p>` +
+            S.favoritos.ids.map((id, i) => `<div class="flex items-center gap-2"><select data-path="favoritos.ids.${i}" class="flex-1 rounded-lg border-gray-300 text-sm"><option value="">— Elegir producto —</option>${PRODS.map(p => `<option value="${esc(p.id)}" ${p.id === id ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select>${barra('favoritos.ids', i, S.favoritos.ids.length)}</div>`).join('') + agregar('favoritos.ids', 'Agregar producto') + `</div>`,
+        alivio: () => titulos('alivio') + `<p class="text-sm text-gray-500 my-3">La primera tarjeta se muestra grande. Puedes usar fotos de tus productos o subir fotos tuyas (por ejemplo, de personas usando el producto).</p>` + S.alivio.items.map((it, i) => `<div class="caja mb-3 space-y-3"><div class="flex items-center justify-between"><b class="text-sm">Tarjeta ${i + 1}</b>${barra('alivio.items', i, S.alivio.items.length)}</div>
+              <div class="grid md:grid-cols-2 gap-3">${fld(`alivio.items.${i}.titulo`, 'Texto')}${fld(`alivio.items.${i}.enlace`, 'Enlace', { list: 1 })}</div>${imgf(`alivio.items.${i}.imagen`, 'Foto')}${colorf(`alivio.items.${i}.color`, 'Color de fondo')}</div>`).join('') + agregar('alivio.items', 'Agregar tarjeta'),
+        contienen: () => titulos('contienen') + `<div class="mt-4">` + S.contienen.items.map((it, i) => `<div class="caja mb-3 space-y-3"><div class="flex items-center justify-between"><b class="text-sm">Tarjeta ${i + 1}</b>${barra('contienen.items', i, S.contienen.items.length)}</div>
+              <div class="grid md:grid-cols-2 gap-3">${fld(`contienen.items.${i}.titulo`, 'Título')}${fld(`contienen.items.${i}.boton`, 'Texto del botón')}${fld(`contienen.items.${i}.texto`, 'Explicación del producto', { area: 1, rows: 4, cls: 'md:col-span-2' })}${fld(`contienen.items.${i}.enlace`, 'Enlace del botón', { list: 1 })}</div>${imgf(`contienen.items.${i}.imagen`, 'Foto')}${colorf(`contienen.items.${i}.color`, 'Color de fondo')}</div>`).join('') + agregar('contienen.items', 'Agregar tarjeta') + `</div>`,
+        ingredientes: () => `<div class="caja grid gap-3">${fld('ingredientes.titulo', 'Título')}${fld('ingredientes.texto', 'Texto', { area: 1 })}</div><div class="mt-4">` + S.ingredientes.items.map((it, i) => `<div class="caja mb-3 space-y-3"><div class="flex items-center justify-between"><b class="text-sm">Ingrediente ${i + 1}</b>${barra('ingredientes.items', i, S.ingredientes.items.length)}</div>
+              <div class="grid md:grid-cols-3 gap-3">${fld(`ingredientes.items.${i}.titulo`, 'Nombre')}${fld(`ingredientes.items.${i}.icono`, 'Ícono (nombre de Material Symbols)')}${fld(`ingredientes.items.${i}.texto`, 'Descripción', { area: 1, rows: 2, cls: 'md:col-span-3' })}</div></div>`).join('') + agregar('ingredientes.items', 'Agregar ingrediente') + `</div>`,
+        historia: () => `<div class="caja space-y-3">${fld('historia.titulo', 'Título')}${fld('historia.texto1', 'Primer párrafo', { area: 1 })}${fld('historia.texto2', 'Segundo párrafo', { area: 1 })}
+              <div><label class="lbl">Puntos a destacar (uno por línea)</label><textarea data-path="historia.puntos" data-lines="1" rows="3" class="w-full rounded-lg border-gray-300 text-sm">${esc((S.historia.puntos || []).join('\n'))}</textarea></div>
+              <div class="grid md:grid-cols-2 gap-3">${fld('historia.boton', 'Texto del botón')}${fld('historia.enlace', 'Enlace del botón', { list: 1 })}</div>${imgf('historia.imagen', 'Foto')}</div>`,
+        final: () => `<div class="caja space-y-3 mb-4"><b class="text-sm">Llamado final</b>${fld('cta.titulo', 'Título')}${fld('cta.texto', 'Texto', { area: 1 })}<div class="grid md:grid-cols-2 gap-3">${fld('cta.boton', 'Texto del botón')}${fld('cta.enlace', 'Enlace', { list: 1 })}</div></div>
+              <div class="caja space-y-3"><b class="text-sm">Pie de página</b>${fld('pie.descripcion', 'Descripción de la marca', { area: 1 })}${fld('pie.aviso', 'Aviso legal', { area: 1, rows: 4 })}</div>
+              <button id="btn-restaurar" class="mt-6 text-sm text-red-600 font-bold underline">Restaurar todo el inicio a los valores originales</button>`
+    };
+
+    function render() {
+        $('tabs').innerHTML = TABS.map(t => `<button data-tab="${t[0]}" class="px-4 py-3 font-bold text-sm whitespace-nowrap ${tab === t[0] ? 'tab-on' : 'tab-off'}"><span class="material-symbols-outlined text-sm align-middle mr-1">${t[1]}</span>${t[2]}</button>`).join('');
+        const y = window.scrollY;
+        $('panel').innerHTML = VISTAS[tab]();
+        window.scrollTo(0, y);
+        const r = $('btn-restaurar');
+        if (r) r.onclick = () => { if (confirm('¿Restaurar todo el inicio a los valores originales? (Se aplica al presionar Guardar)')) { S = VJInicio.copia(VJInicio.DEFAULTS); marcar(); render(); } };
+    }
+
+    function aviso(msg, error) {
+        const t = $('toast'); t.textContent = msg; t.className = 'fixed top-6 right-6 z-50 px-6 py-3 rounded-xl shadow-lg font-bold text-sm text-white ' + (error ? 'bg-red-600' : 'bg-accent');
+        setTimeout(() => t.classList.add('hidden'), 5000);
+    }
+
+    // ---- eventos ----
+    document.addEventListener('input', e => {
+        const el = e.target; const p = el.dataset && el.dataset.path;
+        if (!p || el.tagName === 'SELECT') return;
+        const v = el.type === 'checkbox' ? el.checked : el.dataset.lines ? el.value.split('\n').map(s => s.trim()).filter(Boolean) : el.value;
+        poner(p, v); marcar();
+    });
+    document.addEventListener('change', e => {
+        const el = e.target;
+        if (el.tagName === 'SELECT' && el.dataset.path) { poner(el.dataset.path, el.value); marcar(); return; }
+        if (el.dataset && el.dataset.pick) { if (el.value) { poner(el.dataset.pick, el.value); marcar(); render(); } return; }
+        if (el.dataset && el.dataset.file && el.files && el.files[0]) subir(el.dataset.file, el.files[0]);
+    });
+    document.addEventListener('click', e => {
+        const b = e.target.closest('button'); if (!b) return;
+        const d = b.dataset;
+        if (d.tab) { tab = d.tab; render(); return; }
+        if (d.clear) { poner(d.clear, ''); marcar(); render(); return; }
+        if (d.add) { const l = leer(d.add); const bl = BLANCOS[d.add]; l.push(typeof bl === 'object' ? { ...bl } : bl); marcar(); render(); return; }
+        if (d.del) { const [l, i] = d.del.split(':'); leer(l).splice(Number(i), 1); marcar(); render(); return; }
+        if (d.mv) { const [l, i, s] = d.mv.split(':'); const a = leer(l), k = Number(i), j = k + Number(s); if (j < 0 || j >= a.length) return; [a[k], a[j]] = [a[j], a[k]]; marcar(); render(); }
+    });
+
+    // ---- subir foto: se reduce y se guarda en la base de datos (sin Storage) ----
+    function subir(path, file) {
+        const im = new Image(), url = URL.createObjectURL(file);
+        im.onload = () => {
+            let lado = 1000, calidad = 0.82, data = '';
+            do {
+                const esc2 = Math.min(1, lado / Math.max(im.width, im.height));
+                const c = document.createElement('canvas');
+                c.width = Math.round(im.width * esc2); c.height = Math.round(im.height * esc2);
+                const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+                data = c.toDataURL('image/webp', calidad);
+                lado *= 0.85; calidad = Math.max(0.5, calidad - 0.08);
+            } while (data.length > 380000 && lado > 240);
+            URL.revokeObjectURL(url);
+            if (data.length > 600000) { aviso('La foto es demasiado pesada aun reducida. Prueba con otra.', true); return; }
+            const id = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+            PEND[id] = data; poner(path, 'img:' + id); marcar(); render();
+        };
+        im.onerror = () => aviso('No se pudo leer esa foto.', true);
+        im.src = url;
+    }
+
+    // ---- guardar ----
+    $('btn-guardar').onclick = async () => {
+        const b = $('btn-guardar'); b.disabled = true; b.textContent = 'Guardando…';
+        try {
+            const actuales = refsImg(S);
+            for (const id of actuales) if (PEND[id]) await db.collection('inicioImg').doc(id).set({ data: PEND[id], updatedAt: new Date().toISOString() });
+            const limpio = JSON.parse(JSON.stringify(S));
+            limpio.updatedAt = new Date().toISOString();
+            await db.collection('inicio').doc('main').set(limpio);
+            for (const id of refsIniciales) if (!actuales.has(id)) { try { await db.collection('inicioImg').doc(id).delete(); } catch (e) { } }
+            actuales.forEach(id => { if (PEND[id]) { VJInicio.cacheImg[id] = PEND[id]; delete PEND[id]; } });
+            refsIniciales = actuales;
+            sucio = false; $('barra').classList.add('hidden');
+            aviso('Guardado. Ya se ve en la página de inicio.');
+        } catch (e) {
+            console.error(e);
+            aviso('No se pudo guardar: ' + (e.code === 'permission-denied' ? 'faltan publicar las reglas de Firestore (ejecuta DESPLEGAR.bat).' : (e.message || e)), true);
+        }
+        b.disabled = false; b.textContent = 'Guardar';
+    };
+    window.addEventListener('beforeunload', ev => { if (sucio) { ev.preventDefault(); ev.returnValue = ''; } });
+
+    render();
+})();
+</script>
+</body>
+</html>
