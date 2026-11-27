@@ -73,6 +73,12 @@
             opacity: 1;
             transform: translateY(0);
         }
+        .vj-img { mix-blend-mode: multiply; object-fit: contain; }
+        .vj-chip { border:1.5px solid #c2c9bb; color:#154212; background:#fff; padding:6px 14px; border-radius:9999px; font-size:13px; font-weight:700; white-space:nowrap; transition:all .2s; }
+        .vj-chip:hover { border-color:#154212; }
+        .vj-chip.on { background:#154212; color:#fff; border-color:#154212; }
+        .vj-scrollx { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; }
+        .vj-scrollx::-webkit-scrollbar { display:none; }
     </style>
     <script src="vendor/firebase-app-compat.js"></script>
     <script src="vendor/firebase-firestore-compat.js"></script>
@@ -97,6 +103,7 @@
                 </a>
             </div>
             <div class="hidden md:flex items-center gap-8">
+                <a class="text-on-surface-variant hover:text-primary transition-colors font-body-md" href="index.html">Inicio</a>
                 <a class="text-primary font-bold transition-colors font-body-md" href="products.html">Catálogo Completo</a>
                 <a href="rastreo.html" class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1"><span class="material-symbols-outlined text-sm">local_shipping</span> Rastrear pedido</a>
                 <button id="btn-distribuidores-nav" data-distribuidor class="text-on-surface-variant hover:text-primary transition-colors font-body-md flex items-center gap-1">
@@ -111,6 +118,7 @@
         <!-- Mobile Menu Dropdown -->
         <div id="mobile-menu" class="hidden md:hidden bg-surface border-b border-outline-variant/30">
             <div class="flex flex-col px-6 py-4 space-y-4">
+                <a href="index.html" class="text-on-surface-variant hover:text-primary font-body-md">Inicio</a>
                 <a href="products.html" class="font-bold text-primary text-lg">Catálogo Completo</a>
                 <hr class="border-outline-variant/30">
                 <a href="rastreo.html" class="text-on-surface-variant hover:text-primary font-body-md flex items-center gap-2"><span class="material-symbols-outlined text-sm">local_shipping</span> Rastrear pedido</a>
@@ -121,24 +129,45 @@
         </div>
     </nav>
 
-    <!-- Header Section -->
-    <header class="pt-20 pb-16 bg-surface-cream border-b border-outline-variant/30 text-center px-gutter">
-        <h1 class="text-4xl md:text-5xl font-extrabold text-primary mb-4">Catálogo de Productos</h1>
-        <p class="text-lg text-on-surface-variant max-w-2xl mx-auto">Soluciones naturales de herbolaria tradicional para el cuidado de la piel, alivio muscular y bienestar integral.</p>
+    <!-- Encabezado -->
+    <header class="bg-primary text-white">
+        <div class="max-w-container-max mx-auto px-gutter py-10 md:py-14">
+            <nav class="text-xs text-white/70 mb-3"><a href="index.html" class="hover:text-white">Inicio</a> › <span class="text-white">Catálogo</span></nav>
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-2">Catálogo de productos</h1>
+            <p class="text-white/80 max-w-2xl">Herbolaria tradicional para el cuidado de la piel y el confort muscular. Envíos a todo México.</p>
+        </div>
     </header>
 
-    <!-- WhatsApp Banner -->
+    <!-- Mayoreo por WhatsApp -->
     <div class="bg-primary/10 border-b border-primary/20 py-3 text-center px-4">
         <p class="text-primary font-bold text-sm flex flex-wrap items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-base">storefront</span> 
+            <span class="material-symbols-outlined text-base">storefront</span>
             ¿Deseas precio de mayoreo? Comunícate vía WhatsApp al 8113160143
             <a href="https://wa.me/528113160143?text=Hola,%20deseo%20información%20sobre%20precios%20de%20mayoreo." target="_blank" class="bg-primary text-white px-3 py-1 rounded-full text-xs hover:bg-primary-container">Contactar</a>
         </p>
     </div>
 
-    <main class="max-w-container-max mx-auto px-gutter py-12 space-y-16">
+    <main class="max-w-container-max mx-auto px-gutter py-8 md:py-10">
 
-        <div id="catalogo-dinamico" class="space-y-16"><p class="text-center text-on-surface-variant py-12">Cargando catálogo…</p></div>
+        <!-- Buscador, categorías y orden -->
+        <div class="sticky top-20 z-30 bg-surface/95 backdrop-blur-md -mx-gutter px-gutter py-3 border-b border-outline-variant/30 mb-6">
+            <div class="flex flex-col md:flex-row gap-3 md:items-center">
+                <div class="relative md:w-80">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                    <input id="buscar" type="search" placeholder="Buscar producto…" class="w-full pl-10 pr-3 py-2.5 rounded-full border border-outline-variant bg-white text-sm focus:border-primary focus:ring-primary">
+                </div>
+                <div id="chips" class="vj-scrollx flex-1"></div>
+                <select id="orden" class="rounded-full border border-outline-variant bg-white text-sm py-2.5 pl-4 pr-8 focus:border-primary focus:ring-primary">
+                    <option value="orden">Orden del catálogo</option>
+                    <option value="menor">Precio: menor a mayor</option>
+                    <option value="mayor">Precio: mayor a menor</option>
+                    <option value="nombre">Nombre A-Z</option>
+                </select>
+            </div>
+            <p id="conteo" class="text-xs text-on-surface-variant mt-2"></p>
+        </div>
+
+        <div id="catalogo-dinamico"><p class="text-center text-on-surface-variant py-12">Cargando catálogo…</p></div>
 
         <section id="wholesale-catalog" class="reveal bg-primary/5 p-8 md:p-12 rounded-3xl border border-primary/20 mt-12 hidden">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-outline-variant/30 pb-6">
@@ -158,59 +187,30 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-surface-variant w-full py-12 border-t border-outline-variant/50">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-gutter max-w-container-max mx-auto">
-            <div>
-                <div class="font-bold text-xl text-primary mb-4">VJ.Lab</div>
-                <p class="text-on-surface-variant text-sm mb-6 max-w-xs">
-                    Herbolaria tradicional y productos especializados para el cuidado de la piel y alivio muscular.
-                </p>
-            </div>
-            <div class="md:col-span-2 grid grid-cols-2 gap-8">
-                <div>
-                    <h4 class="font-bold text-primary mb-4">Categorías</h4>
-                    <ul class="space-y-2 text-sm text-on-surface-variant">
-                        <li><a href="#" class="hover:text-primary">Alivio Muscular</a></li>
-                        <li><a href="#" class="hover:text-primary">Cuidado de Pies</a></li>
-                        <li><a href="#" class="hover:text-primary">Cuidado Facial</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-primary mb-4">Contacto</h4>
-                    <ul class="space-y-2 text-sm text-on-surface-variant">
-                        <li>Ventas por Mayoreo</li>
-                        <li>Atención al Cliente</li>
-                        <li>Envíos a todo el país</li>
-                    </ul>
-                </div>
-            </div>
+    <footer class="bg-primary text-white mt-16">
+        <div class="max-w-container-max mx-auto px-gutter py-10 grid md:grid-cols-3 gap-8">
+            <div><div class="font-extrabold text-xl mb-3">VJ.Lab · El Viejito John</div>
+                <p class="text-white/80 text-sm max-w-xs">Herbolaria tradicional y productos especializados para el cuidado de la piel y el alivio muscular.</p></div>
+            <div><h4 class="font-bold mb-3 uppercase text-sm">Navegar</h4>
+                <ul class="space-y-2 text-sm text-white/80">
+                    <li><a class="hover:text-white" href="index.html">Inicio</a></li>
+                    <li><a class="hover:text-white" href="products.html">Catálogo completo</a></li>
+                    <li><a class="hover:text-white" href="rastreo.html">Rastrea tu pedido</a></li></ul></div>
+            <div><h4 class="font-bold mb-3 uppercase text-sm">Contacto</h4>
+                <ul class="space-y-2 text-sm text-white/80">
+                    <li><a class="hover:text-white" href="https://wa.me/528113160143" target="_blank">WhatsApp 811 316 0143</a></li>
+                    <li>Ventas por mayoreo</li><li>Envíos a todo el país</li></ul></div>
         </div>
-        <div class="max-w-container-max mx-auto px-gutter mt-12 pt-8 border-t border-outline-variant/30 text-center text-sm text-on-surface-variant">
-            <p>© 2024 VJ.Lab. Todos los derechos reservados.</p>
-        </div>
+        <div class="border-t border-white/20"><div class="max-w-container-max mx-auto px-gutter py-5 text-xs text-white/70">
+            <p class="mb-1">Productos de herbolaria tradicional de uso tópico externo. No son medicamentos y su uso no reemplaza la consulta médica. Mantener fuera del alcance de los niños.</p>
+            <p>© <span id="anio"></span> VJ.Lab. Todos los derechos reservados.</p></div></div>
     </footer>
 
     <script>
-        function reveal() {
-            const reveals = document.querySelectorAll(".reveal");
-            for (let i = 0; i < reveals.length; i++) {
-                const windowHeight = window.innerHeight;
-                const elementTop = reveals[i].getBoundingClientRect().top;
-                const elementVisible = 100;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
-                }
-            }
-        }
-        window.addEventListener("scroll", reveal);
-        reveal();
-
-        function safeParseJSON(raw, fallback) {
-            try { const p = JSON.parse(raw); return p || fallback; } catch (e) { return fallback; }
-        }
+        document.getElementById('anio').textContent = new Date().getFullYear();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const { fmt, esc, precioFinal, precioNivel, textoMinimo, videoHTML, ICONOS } = VJCatalogo;
+            const { fmt, esc, precioFinal, videoHTML, ICONOS } = VJCatalogo;
             const { productos, niveles, origen } = await VJCatalogo.cargar();
             if (window.VJDistribuidor) await VJDistribuidor.listo;
             // Cuenta autorizada (mayorista, distribuidor, cambaceo) que entró con correo y contraseña
@@ -219,48 +219,70 @@
             const menudeo = productos.filter(p => p.tipo !== 'caja');
             const cajas = productos.filter(p => p.tipo === 'caja');
 
-            const filasNivel = () => '';
-
             const miPrecio = p => (D && D.activo && D.precios[p.id] > 0)
                 ? `<div class="text-xs font-bold text-primary mt-1">Tu precio ${esc(D.etiqueta)}: ${fmt(Math.min(D.precios[p.id], precioFinal(p)))}</div>` : '';
+
             const tarjeta = p => {
-                const verMayoreo = mayorista && p.imagenMayoreo;
-                const img = verMayoreo ? p.imagenMayoreo : p.imagen;
+                const img = (mayorista && p.imagenMayoreo) ? p.imagenMayoreo : p.imagen;
+                const agotado = p.disponible === false;
                 const precio = p.ofertaActiva
-                    ? `<span class="text-xs text-on-surface-variant line-through mr-1">${fmt(p.precio)}</span><span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">${fmt(p.precioOferta)}</span>`
-                    : `<span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">${fmt(p.precio)}</span>`;
-                const video = p.video ? `<details class="mb-3"><summary class="cursor-pointer text-primary text-sm font-bold">▶ Ver video</summary><div class="mt-2">${videoHTML(p.video)}</div></details>` : '';
-                return `<div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-                    <a href="producto.html?p=${esc(p.id)}" class="block"><img loading="lazy" decoding="async" src="${esc(img)}" alt="${esc(p.nombre)}" class="w-full h-48 object-contain p-4 bg-white" onerror="this.src='producto.webp'"></a>
-                    <div class="p-6 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start gap-2 mb-2">
-                            <h3 class="text-xl font-bold text-primary"><a href="producto.html?p=${esc(p.id)}" class="hover:underline">${esc(p.nombre)}</a></h3>
-                            <div class="text-right whitespace-nowrap">${precio}${miPrecio(p)}</div>
+                    ? `<span class="text-xs text-on-surface-variant line-through mr-1">${fmt(p.precio)}</span><span class="text-primary font-extrabold text-lg">${fmt(p.precioOferta)}</span>`
+                    : `<span class="text-primary font-extrabold text-lg">${fmt(p.precio)}</span>`;
+                return `<div class="bg-white rounded-lg border border-outline-variant/30 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                    <a href="producto.html?p=${esc(p.id)}" class="relative block bg-[#f1f6ec]">
+                        <img loading="lazy" decoding="async" src="${esc(img)}" alt="${esc(p.nombre)}" class="vj-img w-full h-44 md:h-56 p-4" onerror="this.onerror=null;this.src='producto.webp'">
+                        ${p.ofertaActiva ? '<span class="absolute top-2 left-2 bg-accent-orange text-white text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:#E85D04">OFERTA</span>' : ''}
+                        ${agotado ? '<span class="absolute top-2 right-2 bg-gray-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">AGOTADO</span>' : ''}
+                    </a>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <p class="text-[11px] uppercase tracking-wide text-on-surface-variant mb-1">${esc(p.categoria || '')}</p>
+                        <h3 class="font-bold text-primary leading-snug mb-2"><a href="producto.html?p=${esc(p.id)}" class="hover:underline">${esc(p.nombre)}</a></h3>
+                        <div class="mb-3">${precio}${miPrecio(p)}</div>
+                        <div class="mt-auto flex gap-2">
+                            <a href="producto.html?p=${esc(p.id)}" class="flex-1 text-center border-2 border-primary text-primary font-bold text-xs uppercase py-2 rounded-full hover:bg-primary hover:text-white transition-all">Ver</a>
+                            ${agotado ? '<span class="flex-1 text-center bg-gray-200 text-gray-500 font-bold text-xs py-2.5 rounded-full">Sin inventario</span>'
+                                : `<button type="button" data-add="${esc(p.id)}" class="flex-1 bg-primary text-white font-bold text-xs uppercase py-2 rounded-full hover:opacity-90 flex items-center justify-center gap-1"><span class="material-symbols-outlined text-base">add_shopping_cart</span> Agregar</button>`}
                         </div>
-                        <p class="text-on-surface-variant text-sm mb-4 flex-grow">${esc(p.descripcion)}</p>
-                        ${video}
-                        ${filasNivel(p)}
-                        ${p.disponible === false ? '<div class="mt-3 w-full text-center bg-gray-200 text-gray-500 font-bold py-3 rounded-xl">Agotado · no hay en inventario</div>' : `<button type="button" data-add="${esc(p.id)}" class="mt-3 w-full text-center bg-primary text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"><span class="material-symbols-outlined text-base">add_shopping_cart</span> Agregar al carrito</button>`}
                     </div>
                 </div>`;
             };
 
-            // Menudeo agrupado por categoría (en el orden en que aparecen)
-            const cont = document.getElementById('catalogo-dinamico');
+            // ---- filtros ----
             const cats = [...new Set(menudeo.map(p => p.categoria || 'Otros'))];
-            cont.innerHTML = cats.map(c => `
-                <section class="reveal active">
-                    <div class="flex items-center gap-4 mb-8 border-b border-outline-variant/30 pb-4">
-                        <span class="material-symbols-outlined text-4xl text-primary">${ICONOS[c] || 'inventory_2'}</span>
-                        <h2 class="text-3xl font-bold text-primary">${esc(c)}</h2>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${menudeo.filter(p => (p.categoria || 'Otros') === c).map(tarjeta).join('')}</div>
-                </section>`).join('') || '<p class="text-center text-on-surface-variant py-12">Próximamente.</p>';
+            let catSel = '', q = '', orden = 'orden';
+            const chips = document.getElementById('chips');
+            const cont = document.getElementById('catalogo-dinamico');
+            const quitaAcentos = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+            function pintarChips() {
+                chips.innerHTML = ['', ...cats].map(c => `<button type="button" data-cat="${esc(c)}" class="vj-chip ${c === catSel ? 'on' : ''}">${c ? esc(c) : 'Todos'}</button>`).join('');
+            }
+            function pintar() {
+                const nq = quitaAcentos(q).trim();
+                let lista = menudeo.filter(p => (!catSel || (p.categoria || 'Otros') === catSel)
+                    && (!nq || quitaAcentos([p.nombre, p.descripcion, p.categoria, p.presentacion].join(' ')).includes(nq)));
+                if (orden === 'menor') lista = [...lista].sort((a, b) => precioFinal(a) - precioFinal(b));
+                else if (orden === 'mayor') lista = [...lista].sort((a, b) => precioFinal(b) - precioFinal(a));
+                else if (orden === 'nombre') lista = [...lista].sort((a, b) => String(a.nombre).localeCompare(String(b.nombre), 'es'));
+                document.getElementById('conteo').textContent = lista.length + (lista.length === 1 ? ' producto' : ' productos');
+                if (!lista.length) { cont.innerHTML = '<div class="text-center py-16"><span class="material-symbols-outlined text-5xl text-outline-variant">search_off</span><p class="text-on-surface-variant mt-2">No encontramos productos con esa búsqueda.</p><button type="button" id="limpiar" class="mt-3 text-primary font-bold underline text-sm">Ver todo el catálogo</button></div>'; return; }
+                // Con "Orden del catálogo" y sin categoría elegida se agrupa por categoría; en otro caso, una sola lista
+                const agrupar = orden === 'orden' && !catSel && !nq;
+                const grid = l => `<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">${l.map(tarjeta).join('')}</div>`;
+                cont.innerHTML = agrupar
+                    ? cats.map(c => `<section class="mb-12"><div class="flex items-center gap-3 mb-5"><span class="material-symbols-outlined text-3xl text-primary">${ICONOS[c] || 'inventory_2'}</span><h2 class="text-2xl font-bold text-primary">${esc(c)}</h2></div>${grid(lista.filter(p => (p.categoria || 'Otros') === c))}</section>`).join('')
+                    : grid(lista);
+            }
+            chips.addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (!b) return; catSel = b.dataset.cat; pintarChips(); pintar(); });
+            document.getElementById('buscar').addEventListener('input', e => { q = e.target.value; pintar(); });
+            document.getElementById('orden').addEventListener('change', e => { orden = e.target.value; pintar(); });
+            cont.addEventListener('click', e => { if (e.target.id === 'limpiar') { q = ''; catSel = ''; document.getElementById('buscar').value = ''; pintarChips(); pintar(); } });
+            pintarChips(); pintar();
 
             // Diagnóstico: abrir products.html?diag=1 para ver de dónde salen los datos
             if (/[?&]diag/.test(location.search)) {
                 const d = window.VJ_DIAG || {};
-                cont.insertAdjacentHTML('afterbegin', `<div class="p-4 rounded-xl text-sm font-mono" style="background:#fff3cd;color:#333">
+                cont.insertAdjacentHTML('beforebegin', `<div class="p-4 mb-4 rounded-xl text-sm font-mono" style="background:#fff3cd;color:#333">
                     DIAGNÓSTICO — fuente: <b>${esc(origen)}</b> · productos: <b>${productos.length}</b> · Firestore listo: ${esc(d.listo)} · SDK cargado: ${esc(d.firebase)}<br>
                     Motivo: ${esc(d.motivo || 'ninguno')}</div>`);
             }
