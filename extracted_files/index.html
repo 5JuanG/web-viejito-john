@@ -229,7 +229,7 @@ window.addEventListener("scroll", reveal);
               <p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-lg">${esc(b.texto)}</p>
               ${b.boton ? `<a href="${esc(linkOk(b.enlace))}" class="inline-block border-2 border-primary text-primary px-8 py-3 rounded-full font-bold uppercase text-sm hover:bg-primary hover:text-white transition-all">${esc(b.boton)}</a>` : ''}
             </div>
-            <div class="order-1 md:order-2 flex justify-center">${img(b.imagen, 'h-64 md:h-[420px] w-auto max-w-full drop-shadow-xl')}</div>
+            <div class="order-1 md:order-2 flex justify-center"><div class="bg-white rounded-[2rem] shadow-xl p-4 md:p-6 flex items-center justify-center"><img loading="lazy" decoding="async" src="${src(b.imagen)}" alt="${esc(b.titulo)}" class="h-56 md:h-[380px] w-auto max-w-full object-contain" onerror="this.onerror=null;this.src='producto.webp'"></div></div>
           </div>
         </div>`).join('')}
       </div>
